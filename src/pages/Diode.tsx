@@ -1,0 +1,663 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { StarField } from '@/components/electronics/StarField';
+import { EducationalPanel } from '@/components/electronics/EducationalPanel';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, ArrowLeft, Zap } from 'lucide-react';
+
+// ------------------------------------------------------------------
+// Full updated file: PN junction animation corrected so the P and N
+// substrates join (touch) and the depletion region forms centered
+// at the interface, extending into both sides equally.
+// Dialogs are responsive and scrollable; SVGs preserve aspect ratio.
+// ------------------------------------------------------------------
+
+function PNJunctionIntro() {
+  const [t, setT] = useState(0);
+  const [joined, setJoined] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => setT(v => v + 1), 30);
+    return () => clearInterval(id);
+  }, []);
+
+  // SVG coordinate system
+  const svgW = 900;
+  const svgH = 460;
+
+  // Layout: center-based so P and N always meet at a well-defined boundary
+  const centerX = svgW / 2;
+  const rectY = 80;
+  const rectH = 220;
+  const blockW = 300;
+  const halfGapWhenSeparated = 24; // each side half-gap -> total 48
+  const gap = joined ? 0 : halfGapWhenSeparated * 2;
+  const pX = centerX - gap / 2 - blockW;
+  const nX = centerX + gap / 2;
+
+  // Boundary X (center)
+  const boundaryX = centerX;
+
+  // Depletion region
+  const depletionMaxHalf = 90; // px into each side
+  const depletionProgress = joined ? Math.min(1, t * 0.012) : 0;
+  const depletionHalfWidth = depletionMaxHalf * depletionProgress;
+
+  // grid for particles
+  const cols = 8;
+  const rows = 5;
+  const paddingX = 28;
+  const paddingY = 28;
+  const spacingX = Math.floor((blockW - paddingX * 2) / (cols - 1));
+  const spacingY = Math.floor((rectH - paddingY * 2) / (rows - 1));
+
+  const holes = useMemo(() => Array.from({ length: cols * rows }).map((_, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return {
+      id: i,
+      baseX: pX + paddingX + col * spacingX,
+      y: rectY + paddingY + row * spacingY
+    };
+  }), [pX, spacingX, spacingY]);
+
+  const electrons = useMemo(() => Array.from({ length: cols * rows }).map((_, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return {
+      id: i,
+      baseX: nX + paddingX + col * spacingX,
+      y: rectY + paddingY + row * spacingY
+    };
+  }), [nX, spacingX, spacingY]);
+
+  const isInsideDepletion = (cx) => {
+    const left = boundaryX - depletionHalfWidth;
+    const right = boundaryX + depletionHalfWidth;
+    return depletionProgress > 0 && cx >= left && cx <= right;
+  };
+
+  return (
+    <div className="glass-card p-3 md:p-4 relative">
+      <div className="absolute right-4 top-4 z-10">
+        <Button onClick={() => setJoined(v => !v)} variant={joined ? 'destructive' : 'default'} className="px-4 py-2">
+          {joined ? 'Disconnect Junction' : 'Form Junction'}
+        </Button>
+      </div>
+
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet"
+           className="w-full h-auto max-h-[75vh] rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 shadow-[0_0_40px_rgba(139,92,246,0.3)] overflow-hidden animate-border-glow">
+        <defs>
+          <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+
+          <linearGradient id="pTypeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(255,100,150,0.18)" />
+            <stop offset="100%" stopColor="rgba(255,80,130,0.08)" />
+          </linearGradient>
+          <linearGradient id="nTypeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(100,150,255,0.18)" />
+            <stop offset="100%" stopColor="rgba(80,130,255,0.08)" />
+          </linearGradient>
+
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="0.5" />
+          </pattern>
+
+          <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,255,255,0.85)" />
+          </marker>
+        </defs>
+
+        <rect width={svgW} height={svgH} fill="url(#grid)" />
+
+        {/* P block */}
+        <g>
+          <rect x={pX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#pTypeGrad)" stroke="rgba(255,120,180,0.45)" strokeWidth="2" filter="url(#softGlow)" />
+          <text x={pX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-pink-300 text-sm font-semibold">P-Type Semiconductor</text>
+
+          {holes.map(h => {
+            const drift = joined ? Math.max(0, (boundaryX - h.baseX) * 0.02 * depletionProgress) : Math.sin((t + h.id * 10) * 0.02) * 0.9;
+            const cx = h.baseX + drift;
+            const inside = isInsideDepletion(cx);
+            return (
+              <g key={`hole-${h.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
+                <circle cx={cx} cy={h.y} r="11" fill="none" stroke="rgba(255,160,200,0.78)" strokeWidth="2" strokeDasharray="4 2" />
+                <text x={cx} y={h.y + 4} textAnchor="middle" className="fill-pink-200 text-xs font-bold">+</text>
+              </g>
+            );
+          })}
+        </g>
+
+        {/* N block */}
+        <g>
+          <rect x={nX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#nTypeGrad)" stroke="rgba(120,180,255,0.45)" strokeWidth="2" filter="url(#softGlow)" />
+          <text x={nX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-blue-300 text-sm font-semibold">N-Type Semiconductor</text>
+
+          {electrons.map(e => {
+            const drift = joined ? -Math.max(0, (e.baseX - boundaryX) * 0.02 * depletionProgress) : Math.sin((t + e.id * 9) * 0.02) * 0.9;
+            const cx = e.baseX + drift;
+            const inside = isInsideDepletion(cx);
+            return (
+              <g key={`elec-${e.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
+                <circle cx={cx} cy={e.y} r="9" fill="none" stroke="rgba(150,200,255,0.9)" strokeWidth="2" />
+                <text x={cx} y={e.y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">−</text>
+              </g>
+            );
+          })}
+        </g>
+
+        {/* Depletion region centered at boundary */}
+        {depletionProgress > 0 ? (
+          <g>
+            <rect x={boundaryX - depletionHalfWidth} y={rectY + 8} width={depletionHalfWidth * 2} height={rectH - 16} rx="8"
+                  fill="rgba(220,220,255,0.06)" stroke="rgba(200,200,220,0.36)" strokeWidth="1.4" strokeDasharray="6 4" />
+            {/* immobile ions along both sides */}
+            {Array.from({ length: rows }).map((_, i) => {
+              const y = rectY + paddingY + i * spacingY;
+              const leftIonX = boundaryX - depletionHalfWidth + 12;
+              const rightIonX = boundaryX + depletionHalfWidth - 12;
+              return (
+                <g key={`ion-${i}`}>
+                  <circle cx={leftIonX} cy={y} r="8" fill="none" stroke="rgba(255,150,200,0.95)" strokeWidth="1.6" />
+                  <text x={leftIonX} y={y + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">−</text>
+
+                  <circle cx={rightIonX} cy={y} r="8" fill="none" stroke="rgba(150,200,255,0.95)" strokeWidth="1.6" />
+                  <text x={rightIonX} y={y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">+</text>
+                </g>
+              );
+            })}
+
+            <line x1={boundaryX + depletionHalfWidth - 8} y1={rectY + rectH + 10}
+                  x2={boundaryX - depletionHalfWidth + 8} y2={rectY + rectH + 10}
+                  stroke="rgba(255,245,150,0.95)" strokeWidth="3" markerEnd="url(#arrowHead)" />
+            <text x={boundaryX} y={rectY + rectH + 28} textAnchor="middle" className="fill-yellow-200/90 text-[12px] font-semibold">Depletion Region</text>
+            <text x={boundaryX} y={rectY + rectH + 44} textAnchor="middle" className="fill-yellow-100/90 text-[11px]">Direction of electric field (N → P)</text>
+          </g>
+        ) : (
+          <g>
+            <rect x={boundaryX - 2} y={rectY + 4} width={4} height={rectH - 8} rx="4" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 4" />
+          </g>
+        )}
+
+        {/* status caption */}
+        <g>
+          <rect x="20" y="360" width="620" height="56" rx="10" fill="rgba(0,0,0,0.36)" />
+          <text x="34" y="378" className="fill-white/90 text-sm">
+            {depletionProgress > 0 ? 'Junction formed: Depletion region present between P and N' : joined ? 'Joining...' : 'Separated: P and N regions not joined'}
+          </text>
+          <text x="34" y="396" className="fill-white/60 text-xs">Use the top-right button to {joined ? 'disconnect' : 'form'} the junction</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+// Helper to compute centered positions for bias tabs
+function useCenteredBoxes() {
+  // standard layout inside bias SVGs
+  const pX = 150;
+  const boxW = 120;
+  const nX = 330;
+  const boundary = (pX + boxW + nX) / 2;
+  return { pX, boxW, nX, boundary };
+}
+
+// --- Forward Bias Tab ---
+function ForwardBiasTab() {
+  const [voltage, setVoltage] = useState(0);
+  const [t, setT] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setT(v => v + 1), 30);
+    return () => clearInterval(id);
+  }, []);
+
+  const { pX, boxW, nX, boundary } = useCenteredBoxes();
+
+  const isAboveThreshold = voltage >= 0.7;
+  const currentFlow = isAboveThreshold ? (voltage - 0.7) * 100 : 0;
+  const barrierWidthPx = Math.max(10, 60 - voltage * 40);
+  const barrierX = boundary - barrierWidthPx / 2;
+
+  const cols = 5;
+  const rows = 4;
+  const paddingX = 15;
+  const paddingY = 15;
+  const spacingX = (boxW - 2 * paddingX) / (cols - 1);
+  const spacingY = (120 - 2 * paddingY) / (rows - 1);
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-green-500/30 p-4 shadow-lg shadow-green-500/20">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-base font-bold text-foreground">Applied Voltage</h3>
+          <div className="flex items-center gap-3">
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - 0.1))} className="h-10 w-10 p-0 text-lg font-bold">−</Button>
+            <span className="text-2xl font-mono font-bold text-green-400 min-w-[100px] text-center">{voltage.toFixed(2)}V</span>
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(1.5, v + 0.1))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
+          </div>
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+          <span>Min: 0V</span>
+          <span className="text-yellow-400 font-medium">Threshold: 0.7V</span>
+          <span>Max: 1.5V</span>
+        </div>
+      </div>
+
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
+          <defs>
+            <filter id="glowForward"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(100,200,255,1)"/><stop offset="100%" stopColor="rgba(100,200,255,0)"/></radialGradient>
+          </defs>
+
+          {/* Battery / connectors */}
+          <g>
+            <rect x="20" y="100" width="60" height="80" rx="8" fill="rgba(50,50,50,0.8)" stroke="rgba(100,100,100,0.5)" strokeWidth="2" />
+            <rect x="35" y="90" width="30" height="10" rx="2" fill="rgba(100,100,100,0.8)" />
+            <text x="50" y="135" textAnchor="middle" className="fill-green-400 text-lg font-bold">+</text>
+            <text x="50" y="165" textAnchor="middle" className="fill-red-400 text-lg font-bold">−</text>
+            <text x="50" y="195" textAnchor="middle" className="fill-white/60 text-xs">{voltage.toFixed(1)}V</text>
+          </g>
+
+          {/* wires (visual) */}
+          <path d="M 80 120 L 140 120" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
+          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
+
+          {/* P block */}
+          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
+          <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
+
+          {/* holes */}
+          {Array.from({ length: cols * rows }).map((_, i) => {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const baseX = pX + paddingX + col * spacingX;
+            const baseY = 80 + paddingY + row * spacingY;
+            const moveX = isAboveThreshold ? Math.sin((t + i * 20) * 0.05) * 3 + (currentFlow * 0.03) : Math.sin((t + i * 20) * 0.03) * 2;
+            return (
+              <g key={`hole-f-${i}`}>
+                <circle cx={baseX + moveX} cy={baseY} r="8" fill="none" stroke="rgba(255,150,200,0.8)" strokeWidth="2" strokeDasharray="3 2" />
+                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className="fill-pink-200 text-xs font-bold">+</text>
+              </g>
+            );
+          })}
+
+          {/* barrier (centered at boundary) */}
+          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="6" fill="rgba(200,200,255,0.1)" stroke="rgba(200,200,220,0.3)" strokeWidth="1" strokeDasharray="4 4" />
+          <text x={boundary} y={210} textAnchor="middle" className="fill-white/50 text-[10px]">{barrierWidthPx > 30 ? 'Barrier' : 'depleting region getting reduced'}</text>
+
+          {/* N block */}
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
+
+          {/* electrons */}
+          {Array.from({ length: cols * rows }).map((_, i) => {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const baseX = nX + paddingX + col * spacingX;
+            const baseY = 80 + paddingY + row * spacingY;
+            const moveX = isAboveThreshold ? -Math.sin((t + i * 15) * 0.05) * 3 - (currentFlow * 0.03) : Math.sin((t + i * 15) * 0.03) * 2;
+            return (
+              <circle key={`elec-f-${i}`} cx={baseX + moveX} cy={baseY} r="6" fill="url(#electronGlow)" filter="url(#glowForward)" />
+            );
+          })}
+
+          {/* current flow dots */}
+          {isAboveThreshold && (
+            <g>
+              {Array.from({ length: 6 }).map((_, i) => {
+                const x = boundary + ((t * 2 + i * 50) % 200) - 100;
+                const opacity = Math.abs(Math.sin(((t * 2 + i * 50) % 200) / 200 * Math.PI));
+                return <circle key={`flow-${i}`} cx={x} cy={140} r="4" fill="rgba(100,255,150,0.8)" style={{ opacity: opacity * (currentFlow / 30) }} filter="url(#glowForward)" />;
+              })}
+              <text x={boundary} y={230} textAnchor="middle" className="fill-cyan-400 text-sm font-medium">Current flowing – diode behaves as short circuit</text>
+            </g>
+          )}
+
+          {/* LED */}
+          <g>
+            {isAboveThreshold && (
+              <circle
+                cx="520"
+                cy="140"
+                r="40"
+                fill="rgba(255,255,150,0.16)"
+                filter="url(#glowForward)"
+              />
+            )}
+            <circle cx="520" cy="140" r="30" fill={isAboveThreshold ? `rgba(255,255,100,${Math.min(1, currentFlow / 80)})` : 'rgba(100,100,100,0.3)'} stroke={isAboveThreshold ? 'rgba(255,255,150,0.8)' : 'rgba(150,150,150,0.5)'} strokeWidth="3" />
+            <text x="520" y="145" textAnchor="middle" className={`text-sm font-bold ${isAboveThreshold ? 'fill-amber-900' : 'fill-white/40'}`}>{isAboveThreshold ? 'ON' : 'OFF'}</text>
+            <text x="520" y="185" textAnchor="middle" className="fill-white/60 text-xs">LED</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// --- Reverse Bias Tab ---
+function ReverseBiasTab() {
+  const [voltage, setVoltage] = useState(0);
+  const [t, setT] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setT(v => v + 1), 30);
+    return () => clearInterval(id);
+  }, []);
+
+  const { pX, boxW, nX, boundary } = useCenteredBoxes();
+
+  const barrierHalfPx = 25 + voltage * 4;
+  const barrierWidthPx = barrierHalfPx * 2;
+  const barrierX = boundary - barrierHalfPx;
+  const leakageCurrent = voltage > 0 ? 0.001 * voltage : 0;
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-red-500/30 p-4 shadow-lg shadow-red-500/20">
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-base font-bold text-foreground">Reverse Voltage</h3>
+          <div className="flex items-center gap-3">
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - 0.5))} className="h-10 w-10 p-0 text-lg font-bold">−</Button>
+            <span className="text-2xl font-mono font-bold text-red-400 min-w-[100px] text-center">-{voltage.toFixed(1)}V</span>
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(10, v + 0.5))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
+          </div>
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground mt-2"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
+      </div>
+
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
+          <defs><filter id="glowReverse"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+
+          {/* battery */}
+          <g>
+            <rect x="20" y="100" width="60" height="80" rx="8" fill="rgba(50,50,50,0.8)" stroke="rgba(100,100,100,0.5)" strokeWidth="2" />
+            <rect x="35" y="90" width="30" height="10" rx="2" fill="rgba(100,100,100,0.8)" />
+            <text x="50" y="135" textAnchor="middle" className="fill-red-400 text-lg font-bold">−</text>
+            <text x="50" y="165" textAnchor="middle" className="fill-green-400 text-lg font-bold">+</text>
+            <text x="50" y="195" textAnchor="middle" className="fill-white/60 text-xs">-{voltage.toFixed(1)}V</text>
+          </g>
+
+          {/* wires */}
+          <path d="M 80 120 L 140 120" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
+          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
+
+          {/* P box */}
+          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
+          <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
+
+          {/* N box */}
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
+
+          {/* particles (simple) */}
+          {Array.from({ length: 6 }).map((_, i) => {
+            const leftX = pX + 20 + (i % 3) * 25;
+            const leftY = 100 + Math.floor(i / 3) * 50;
+            const rightX = nX + 20 + (i % 3) * 25;
+            const rightY = 100 + Math.floor(i / 3) * 50;
+            const moveLeft = -voltage * 2 + Math.sin((t + i * 20) * 0.02) * 2;
+            const moveRight = voltage * 2 + Math.sin((t + i * 15) * 0.02) * 2;
+            return (
+              <g key={`part-r-${i}`}>
+                <circle cx={leftX + moveLeft} cy={leftY} r="10" fill="none" stroke="rgba(255,150,200,0.7)" strokeWidth="2" strokeDasharray="3 2" />
+                <text x={leftX + moveLeft} y={leftY + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">+</text>
+                <circle cx={rightX + moveRight} cy={rightY} r="6" fill="rgba(100,180,255,0.9)" filter="url(#glowReverse)" />
+              </g>
+            );
+          })}
+
+          {/* depletion region (centered) */}
+          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="8" fill="rgba(255,100,100,0.1)" stroke="rgba(255,100,100,0.4)" strokeWidth="2" strokeDasharray="6 3" />
+          <text x={boundary} y={215} textAnchor="middle" className="fill-red-300/80 text-xs font-semibold">WIDENED DEPLETION ZONE</text>
+
+          {/* ions inside depletion */}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <g key={`ions-r-${i}`}>
+              <circle cx={boundary - barrierHalfPx / 1.5} cy={95 + i * 25} r="6" fill="none" stroke="rgba(255,150,200,0.9)" strokeWidth="1.5" />
+              <text x={boundary - barrierHalfPx / 1.5} y={99 + i * 25} textAnchor="middle" className="fill-pink-300 text-[10px] font-bold">−</text>
+              <circle cx={boundary + barrierHalfPx / 1.5} cy={95 + i * 25} r="6" fill="none" stroke="rgba(150,200,255,0.9)" strokeWidth="1.5" />
+              <text x={boundary + barrierHalfPx / 1.5} y={99 + i * 25} textAnchor="middle" className="fill-blue-300 text-[10px] font-bold">+</text>
+            </g>
+          ))}
+
+          {/* small leakage */}
+          {voltage > 2 && <g style={{ opacity: 0.4 }}>
+            <circle cx={boundary + ((t * 0.5) % 60) - 30} cy={140} r="2" fill="rgba(255,200,100,0.8)" />
+            <text x={boundary} y={220} textAnchor="middle" className="fill-yellow-400/60 text-[10px]">Tiny leakage current (minority carriers)</text>
+          </g>}
+
+          {/* no-current indicator */}
+          <g>
+            <circle cx="520" cy="140" r="30" fill="rgba(50,50,50,0.5)" stroke="rgba(100,100,100,0.5)" strokeWidth="3" />
+            <line x1="505" y1="125" x2="535" y2="155" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
+            <line x1="535" y1="125" x2="505" y2="155" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
+            <text x="520" y="185" textAnchor="middle" className="fill-red-400/60 text-xs">NO CURRENT</text>
+          </g>
+          <text x={boundary} y="235" textAnchor="middle" className="fill-orange-300/80 text-[10px]">Diode behaves as open circuit (no current)</text>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// --- Breakdown Tab ---
+function BreakdownTab() {
+  const [voltage, setVoltage] = useState(0);
+  const [breakdownType, setBreakdownType] = useState('zener');
+  const [t, setT] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setT(v => v + 1), 20);
+    return () => clearInterval(id);
+  }, []);
+
+  const breakdownVoltage = breakdownType === 'zener' ? 5.1 : 50;
+  const isBreakdown = voltage >= breakdownVoltage;
+  const breakdownCurrent = isBreakdown ? (voltage - breakdownVoltage) * 20 : 0;
+  const centerBoundary = 300;
+  const maxHalf = 150;
+  const halfWidth = Math.min(maxHalf, (voltage / (breakdownType === 'zener' ? 10 : 80)) * maxHalf);
+
+  const maxVoltage = breakdownType === 'zener' ? 10 : 80;
+  const step = breakdownType === 'zener' ? 0.5 : 2;
+
+  return (
+    <div className="space-y-2">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-purple-500/30 p-2 shadow-lg shadow-purple-500/20">
+        <div className="grid grid-cols-2 gap-2">
+          <Button size="sm" variant={breakdownType === 'zener' ? 'default' : 'outline'} onClick={() => { setBreakdownType('zener'); setVoltage(0); }} className="h-auto py-2 flex-col text-sm">
+            <Zap className="w-5 h-5 mb-1" />
+            <span className="font-bold text-sm">Zener (~5V)</span>
+          </Button>
+          <Button size="sm" variant={breakdownType === 'avalanche' ? 'default' : 'outline'} onClick={() => { setBreakdownType('avalanche'); setVoltage(0); }} className="h-auto py-2 flex-col text-sm">
+            <Zap className="w-5 h-5 mb-1" />
+            <span className="font-bold text-sm">Avalanche (&gt;50V)</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-purple-500/30 p-2 shadow-lg shadow-purple-500/20">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-bold text-foreground">Reverse Voltage</h3>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - step))} className="h-8 w-8 p-0 text-base font-bold">−</Button>
+            <span className={`text-xl font-mono font-bold min-w-[90px] text-center ${isBreakdown ? 'text-red-400 animate-pulse' : 'text-orange-400'}`}>-{voltage.toFixed(1)}V</span>
+            <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(maxVoltage, v + step))} className="h-8 w-8 p-0 text-base font-bold">+</Button>
+          </div>
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+          <span>0V</span>
+          <span className="text-red-400 font-medium">Breakdown: {breakdownVoltage}V</span>
+          <span>Max: {maxVoltage}V</span>
+        </div>
+      </div>
+
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-2 shadow-lg shadow-primary/20">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[48vh] rounded-lg bg-gradient-to-br from-slate-900 via-purple-950/20 to-slate-950">
+          <defs>
+            <filter id="intenseGlow"><feGaussianBlur stdDeviation="8" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+
+          <rect x="100" y="30" width="400" height="180" rx="16" fill="rgba(100,50,150,0.2)" stroke="rgba(200,150,255,0.4)" strokeWidth="2" />
+          <text x="300" y="20" textAnchor="middle" className="fill-purple-300 text-sm font-semibold">Depletion Region (Zoomed View)</text>
+
+          {/* field lines */}
+          {Array.from({ length: 7 }).map((_, i) => {
+            const intensity = isBreakdown ? 1 : Math.min(1, voltage / breakdownVoltage);
+            return <line key={i} x1="120" y1={45 + i * 24} x2="480" y2={45 + i * 24}
+                         stroke={`rgba(255,255,100,${0.1 + intensity * 0.3})`} strokeWidth={1 + intensity * 2}
+                         strokeDasharray={isBreakdown ? 'none' : '8 4'} />;
+          })}
+
+          {/* fixed ions */}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <g key={i}>
+              <circle cx={150} cy={55 + i * 40} r="9" fill="none" stroke="rgba(255,150,200,0.8)" strokeWidth="2" />
+              <text x={150} y={60 + i * 40} textAnchor="middle" className="fill-pink-300 text-sm font-bold">−</text>
+              <circle cx={450} cy={55 + i * 40} r="9" fill="none" stroke="rgba(150,200,255,0.8)" strokeWidth="2" />
+              <text x={450} y={60 + i * 40} textAnchor="middle" className="fill-blue-300 text-sm font-bold">+</text>
+            </g>
+          ))}
+
+          {/* depletion rect centered */}
+          <rect x={centerBoundary - halfWidth} y={45} width={halfWidth * 2} height={140} rx="8"
+                fill="rgba(220,220,255,0.04)" stroke="rgba(200,200,220,0.36)" strokeDasharray="6 4" />
+
+          {/* breakdown electrons */}
+          {isBreakdown && (breakdownType === 'zener' ? (
+            Array.from({ length: 10 }).map((_, i) => {
+              const progress = ((t * 3 + i * 30) % 300) / 300;
+              const x = 150 + progress * 300;
+              const y = 60 + (i % 3) * 35 + Math.sin(progress * Math.PI * 4) * 10;
+              return <circle key={`zener-e-${i}`} cx={x} cy={y} r="4" fill="rgba(100,255,255,1)" filter="url(#intenseGlow)" />;
+            })
+          ) : (
+            Array.from({ length: 15 }).map((_, i) => {
+              const wave = Math.floor(i / 5);
+              const progress = ((t * 4 + i * 25 + wave * 50) % 400) / 400;
+              const x = 150 + progress * 300;
+              const y = 50 + (i % 4) * 30 + Math.sin(progress * Math.PI * 6) * 12;
+              const size = 3 + wave * 1;
+              return <circle key={`aval-e-${i}`} cx={x} cy={y} r={size} fill={`rgba(255,${200 - wave * 30},100,1)`} filter="url(#intenseGlow)" />;
+            })
+          ))}
+
+          {/* sparks */}
+          {isBreakdown && Array.from({ length: 2 }).map((_, i) => {
+            const flicker = Math.sin((t + i * 100) * 0.2) > 0.7;
+            if (!flicker) return null;
+            return <path key={`spark-${i}`} d={`M ${220 + i * 100} ${70 + i * 25} L ${240 + i * 100} ${90 + i * 25} L ${230 + i * 100} ${90 + i * 25} L ${250 + i * 100} ${115 + i * 25}`} stroke="rgba(255,255,200,0.9)" strokeWidth="2" fill="none" filter="url(#intenseGlow)" />;
+          })}
+
+          <text x="300" y="240" textAnchor="middle" className={`text-lg font-bold ${isBreakdown ? 'fill-red-400' : 'fill-orange-300'}`}>
+            {isBreakdown ? '⚡ BREAKDOWN ⚡' : `Approaching (${Math.round((voltage / breakdownVoltage) * 100)}%)`}
+          </text>
+          <text x="300" y="265" textAnchor="middle" className="fill-white/60 text-xs">
+            {breakdownType === 'zener' ? 'Zener: electron tunneling in heavily doped junction' : 'Avalanche: impact ionization in lightly doped junction'}
+          </text>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// --- Tabs wrapper ---
+function InteractiveBiasDemo() {
+  const [biasMode, setBiasMode] = useState('forward');
+
+  return (
+    <div className="space-y-2 h-full flex flex-col">
+      <Tabs value={biasMode} onValueChange={(v) => setBiasMode(v)} className="w-full flex-1 flex flex-col">
+        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted/50">
+          <TabsTrigger value="forward" className="flex items-center gap-2 py-3 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 transition-all">
+            <ArrowRight className="w-5 h-5" />
+            <span>Forward Bias</span>
+          </TabsTrigger>
+          <TabsTrigger value="reverse" className="flex items-center gap-2 py-3 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 transition-all">
+            <ArrowLeft className="w-5 h-5" />
+            <span>Reverse Bias</span>
+          </TabsTrigger>
+          <TabsTrigger value="breakdown" className="flex items-center gap-2 py-3 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400 transition-all">
+            <Zap className="w-5 h-5" />
+            <span>Breakdown</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {biasMode === 'forward' && <ForwardBiasTab />}
+      {biasMode === 'reverse' && <ReverseBiasTab />}
+      {biasMode === 'breakdown' && <BreakdownTab />}
+    </div>
+  );
+}
+
+// --- Page ---
+export default function Diode() {
+  const [showEducation, setShowEducation] = useState(false);
+  const [openJunction, setOpenJunction] = useState(true);
+  const [openBias, setOpenBias] = useState(false);
+
+  return (
+    <div className="relative h-screen bg-background overflow-hidden">
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-cosmic-purple/10 to-cosmic-blue/10 animate-gradient-slow" />
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.15),transparent_50%)] animate-pulse-slow" />
+      <div className="fixed inset-0 opacity-30">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-primary/20 blur-xl animate-float"
+            style={{
+              width: `${Math.random() * 300 + 100}px`,
+              height: `${Math.random() * 300 + 100}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${Math.random() * 20 + 15}s`,
+            }}
+          />
+        ))}
+      </div>
+      <StarField />
+
+      <div className="relative z-10 h-full flex flex-col items-center justify-center p-4">
+        <EducationalPanel
+          isVisible={showEducation}
+          onClose={() => setShowEducation(false)}
+          title="Explore the PN Junction Diode! 🟣"
+          explanation="A diode allows current to flow in one direction. It’s formed by joining P-type and N-type semiconductors, creating a depletion region and a built-in potential barrier."
+          formula="I–V Characteristics"
+          formulaExplanation="Forward conduction above threshold; reverse leakage until breakdown"
+          didYouKnow="Zener diodes are used for voltage regulation by operating in the breakdown region."
+          stageColor="capacitor"
+        />
+
+        {!showEducation && (
+          <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-4 h-full">
+            {openJunction && (
+              <div className="w-full bg-card/95 backdrop-blur-sm rounded-2xl border border-border/50 p-4 shadow-2xl flex flex-col h-full">
+                <div className="mb-3 flex justify-between items-start">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-bold text-foreground">Formation of a PN Junction Diode</h2>
+                    <p className="text-sm md:text-base text-muted-foreground mt-1">Join P-type and N-type regions to create a depletion zone and internal electric field.</p>
+                  </div>
+                  <Button size="sm" onClick={() => { setOpenJunction(false); setOpenBias(true); }}>Next</Button>
+                </div>
+                <PNJunctionIntro />
+              </div>
+            )}
+
+            {openBias && (
+              <div className="w-full bg-card/95 backdrop-blur-sm rounded-2xl border border-border/50 p-4 shadow-2xl flex flex-col h-full overflow-auto">
+                <InteractiveBiasDemo />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
