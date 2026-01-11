@@ -127,7 +127,7 @@ export function ValuesPanel({ values, computed, onValuesChange }: ValuesPanelPro
         onChange={(v) => onValuesChange({ ...values, voltage: v })}
         color="blue"
       />
-      
+
       <ValueControl
         label="R1"
         value={values.r1}
@@ -138,7 +138,7 @@ export function ValuesPanel({ values, computed, onValuesChange }: ValuesPanelPro
         onChange={(v) => onValuesChange({ ...values, r1: v })}
         color="orange"
       />
-      
+
       <ValueControl
         label="R2"
         value={values.r2}
@@ -149,23 +149,32 @@ export function ValuesPanel({ values, computed, onValuesChange }: ValuesPanelPro
         onChange={(v) => onValuesChange({ ...values, r2: v })}
         color="orange"
       />
-      
-      {/* Computed Values - Compact Display */}
-      <div className="pt-2 mt-2 border-t border-orange-500/20 space-y-1.5">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground font-semibold">Total R:</span>
-          <span className="font-bold text-orange-300 text-sm">{computed.totalResistance}Ω</span>
-        </div>
-        <div className="flex justify-between items-center bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-2 border-blue-400/40 rounded-lg px-2 py-1.5 shadow-lg shadow-blue-500/20">
+
+      {/* Computed Values - Highlighted Display */}
+      <div className="pt-2 mt-2 border-t border-slate-300 space-y-1.5">
+        {/* Total Resistance - Highlighted Box */}
+        <div className="flex justify-between items-center bg-gradient-to-r from-orange-100 to-amber-50 border-2 border-orange-400 rounded-lg px-2 py-1.5 shadow-md">
           <div className="flex flex-col">
-            <span className="text-blue-200 font-bold text-xs">Current:</span>
-            <span className="text-[9px] text-blue-300/80 font-mono">I = V/R</span>
+            <span className="text-orange-800 font-bold text-xs">Total R:</span>
+            <span className="text-[9px] text-orange-600 font-mono">R = R₁ + R₂</span>
           </div>
-          <span className="font-black text-blue-200 text-base tracking-wide">{computed.current}A</span>
+          <span className="font-black text-orange-700 text-base tracking-wide">{computed.totalResistance}Ω</span>
         </div>
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground font-semibold">Power:</span>
-          <span className="font-bold text-emerald-300 text-sm">{computed.power}W</span>
+        {/* Current - Highlighted Box */}
+        <div className="flex justify-between items-center bg-gradient-to-r from-blue-100 to-cyan-50 border-2 border-blue-400 rounded-lg px-2 py-1.5 shadow-md">
+          <div className="flex flex-col">
+            <span className="text-blue-800 font-bold text-xs">Current:</span>
+            <span className="text-[9px] text-blue-600 font-mono">I = V/R</span>
+          </div>
+          <span className="font-black text-blue-700 text-base tracking-wide">{computed.current}A</span>
+        </div>
+        {/* Power - Highlighted Box */}
+        <div className="flex justify-between items-center bg-gradient-to-r from-emerald-100 to-green-50 border-2 border-emerald-500 rounded-lg px-2 py-1.5 shadow-md">
+          <div className="flex flex-col">
+            <span className="text-emerald-800 font-bold text-xs">Power:</span>
+            <span className="text-[9px] text-emerald-600 font-mono">P = V × I</span>
+          </div>
+          <span className="font-black text-emerald-700 text-base tracking-wide">{computed.power}W</span>
         </div>
       </div>
     </div>

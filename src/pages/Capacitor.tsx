@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StarField } from '@/components/electronics/StarField';
 import { Button } from '@/components/ui/button';
 import { Zap, Battery, Lightbulb, RotateCcw, Play, Unplug, Info } from 'lucide-react';
 
@@ -47,7 +46,7 @@ const CapacitorPage = () => {
       case 'simple':
         return capacitance;
       case 'series':
-        return 1 / (1/capacitance + 1/capacitance2 + 1/capacitance3);
+        return 1 / (1 / capacitance + 1 / capacitance2 + 1 / capacitance3);
       case 'parallel':
         return capacitance + capacitance2 + capacitance3;
     }
@@ -208,10 +207,8 @@ const CapacitorPage = () => {
   };
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-background via-cosmic-purple/10 to-cosmic-blue/10" />
-      <StarField />
+    <div className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 30%, #7dd3fc 70%, #38bdf8 100%)' }}>
+      {/* Light blue background without stars */}
 
       {/* Main content */}
       <div className="relative z-10 h-screen flex items-center justify-center p-6">
@@ -219,25 +216,24 @@ const CapacitorPage = () => {
           {/* Header */}
           <div className="text-center mb-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2">
-              <span className="text-white drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">What are </span>
+              <span className="text-slate-800 drop-shadow-sm">What are </span>
               <span className="bg-gradient-to-r from-[#06b6d4] via-[#8b5cf6] to-[#ec4899] bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(139,92,246,0.6)]">Capacitors</span>
-              <span className="text-white drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">?</span>
+              <span className="text-slate-800 drop-shadow-sm">?</span>
             </h1>
-            <p className="text-base md:text-lg text-white/70 font-bold tracking-wide drop-shadow-lg">Explore How Capacitors Store Energy in Electric Fields</p>
+            <p className="text-base md:text-lg text-slate-600 font-bold tracking-wide">Explore How Capacitors Store Energy in Electric Fields</p>
           </div>
 
           {/* Mode tabs */}
           <div className="flex justify-center mb-3">
-            <div className="inline-flex rounded-xl border-2 border-blue-500/30 bg-card/60 backdrop-blur-xl p-1 shadow-2xl">
+            <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-xl p-1 shadow-lg">
               {(['simple', 'series', 'parallel'] as CircuitMode[]).map(m => (
                 <button
                   key={m}
                   onClick={() => handleModeChange(m)}
-                  className={`px-8 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ${
-                    mode === m
-                      ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg shadow-cyan-500/50'
-                      : 'text-white/60 hover:text-white/90'
-                  }`}
+                  className={`px-8 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ${mode === m
+                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg shadow-cyan-500/50'
+                    : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   {m.charAt(0).toUpperCase() + m.slice(1)}
                 </button>
@@ -246,23 +242,23 @@ const CapacitorPage = () => {
           </div>
 
           {/* Main display */}
-          <div className="relative flex-1 rounded-3xl border-2 border-blue-500/30 p-4 overflow-hidden" style={{
-            background: 'linear-gradient(135deg, hsl(var(--card)/0.95) 0%, hsl(var(--background)/0.98) 100%)',
-            boxShadow: '0 24px 60px rgba(139, 92, 246, 0.2), 0 0 120px rgba(139, 92, 246, 0.1)'
+          <div className="relative flex-1 rounded-3xl border-2 border-slate-300 p-4 overflow-hidden" style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.98) 100%)',
+            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.1), 0 0 60px rgba(56, 189, 248, 0.1)'
           }}>
             <div className="flex gap-2 h-full">
               {/* Circuit (60%) */}
-              <div className="flex-[60] relative rounded-2xl border-2 border-purple-500/30 bg-gradient-to-br from-background/50 to-background/70 backdrop-blur-md overflow-hidden shadow-2xl">
+              <div className="flex-[60] relative rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50/80 to-blue-50/90 backdrop-blur-md overflow-hidden shadow-lg">
                 {/* Info box */}
                 <div className="absolute top-2 left-2 z-20 max-w-xs">
-                  <div className="bg-card/95 backdrop-blur-md border-2 border-primary/30 rounded-lg p-2 shadow-xl">
+                  <div className="bg-white/95 backdrop-blur-md border-2 border-sky-300 rounded-lg p-2 shadow-lg">
                     <div className="flex items-start gap-2">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
                         <span className="text-xl">💡</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-xs font-bold text-primary mb-0.5">{info.title}</h3>
-                        <p className="text-[10px] text-muted-foreground leading-snug">{info.description}</p>
+                        <h3 className="text-xs font-bold text-cyan-600 mb-0.5">{info.title}</h3>
+                        <p className="text-[10px] text-slate-600 leading-snug">{info.description}</p>
                       </div>
                     </div>
                   </div>
@@ -311,7 +307,7 @@ const CapacitorPage = () => {
                         <line x1="100" y1="190" x2="350" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="410" y1="190" x2="660" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="660" y1="190" x2="660" y2="410" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        
+
                         {stage !== 'discharge' && stage !== 'discharged' ? (
                           <>
                             <line x1="660" y1="410" x2="430" y2="410" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
@@ -320,11 +316,11 @@ const CapacitorPage = () => {
                         ) : (
                           <line x1="660" y1="410" x2="100" y2="410" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         )}
-                        
+
                         <line x1="100" y1="410" x2="100" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="350" y1="190" x2="350" y2="170" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="410" y1="190" x2="410" y2="170" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        
+
                         <line x1="330" y1="410" x2="330" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="430" y1="410" x2="430" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
 
@@ -388,10 +384,10 @@ const CapacitorPage = () => {
                         <line x1="500" y1="190" x2="500" y2="170" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="540" y1="170" x2="540" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="540" y1="190" x2="640" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        
+
                         {/* Right vertical */}
                         <line x1="640" y1="190" x2="640" y2="410" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        
+
                         {/* Bottom wire */}
                         {stage !== 'discharge' && stage !== 'discharged' ? (
                           <>
@@ -401,10 +397,10 @@ const CapacitorPage = () => {
                         ) : (
                           <line x1="640" y1="410" x2="100" y2="410" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         )}
-                        
+
                         {/* Left vertical */}
                         <line x1="100" y1="410" x2="100" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        
+
                         {/* Battery connection lines */}
                         <line x1="330" y1="410" x2="330" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="430" y1="410" x2="430" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
@@ -575,7 +571,7 @@ const CapacitorPage = () => {
                             <text x="45" y="5" textAnchor="start" className="text-xs font-semibold" fill="rgba(147, 197, 253, 0.9)">{voltage}V</text>
                           </g>
                         )}
-                        
+
                         {/* Wires on left side when no battery during discharge */}
                         {(stage === 'discharge' || stage === 'discharged') && (
                           <g transform="translate(150, 300)">
@@ -602,14 +598,14 @@ const CapacitorPage = () => {
                     {electrons.map(e => {
                       let x = 100;
                       let y = 190;
-                      
+
                       // Simple path calculation
                       const totalProgress = e.progress % 1;
-                      
+
                       if (mode === 'simple') {
                         const pathLength = 1420; // approximate total
                         const dist = totalProgress * pathLength;
-                        
+
                         if (dist < 560) { // top horizontal
                           x = 100 + dist;
                           y = 190;
@@ -626,7 +622,7 @@ const CapacitorPage = () => {
                       } else if (mode === 'series') {
                         const pathLength = 1460;
                         const dist = totalProgress * pathLength;
-                        
+
                         if (dist < 540) { // top horizontal
                           x = 100 + dist;
                           y = 190;
@@ -644,12 +640,12 @@ const CapacitorPage = () => {
                         // Determine which branch this electron takes - evenly distributed
                         const branchIndex = Math.floor(e.id) % 3; // 0, 1, or 2 for three capacitor branches
                         const capacitorX = branchIndex === 0 ? 320 : branchIndex === 1 ? 450 : 580;
-                        
+
                         if (stage === 'discharge' || stage === 'discharged') {
                           // During discharge: one-way flow from capacitors through bulb
                           const pathLength = 950;
                           const dist = totalProgress * pathLength;
-                          
+
                           if (dist < 200) { // down through capacitor (from stored charge)
                             x = capacitorX;
                             y = 200 + (400 - 200) * (dist / 200);
@@ -672,7 +668,7 @@ const CapacitorPage = () => {
                           // During charging: flow through battery on left side
                           const pathLength = 1000;
                           const dist = totalProgress * pathLength;
-                          
+
                           if (dist < 200) { // left vertical up from bottom to top rail
                             x = 150;
                             y = 400 - (400 - 200) * (dist / 200);
@@ -693,7 +689,7 @@ const CapacitorPage = () => {
                           }
                         }
                       }
-                      
+
                       return (
                         <circle key={e.id} cx={x} cy={y} r="5" fill="rgba(56, 189, 248, 0.95)" filter="url(#glow)" />
                       );
@@ -719,12 +715,12 @@ const CapacitorPage = () => {
               {/* Controls (40%) */}
               <div className="flex-[40] flex flex-col gap-0.5 h-full overflow-hidden">
                 {/* Controls Panel */}
-                <div className="bg-gradient-to-br from-card/70 to-card/50 backdrop-blur-xl rounded-xl border-2 border-purple-500/40 p-1.5 shadow-2xl flex-shrink-0">
+                <div className="bg-white/90 backdrop-blur-xl rounded-xl border-2 border-slate-300 p-1.5 shadow-lg flex-shrink-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
                       <Zap className="w-3 h-3 text-white" />
                     </div>
-                    <h3 className="text-xs font-black text-white tracking-[0.1em] uppercase">CONTROLS</h3>
+                    <h3 className="text-xs font-black text-slate-700 tracking-[0.1em] uppercase">CONTROLS</h3>
                   </div>
 
                   <div className="space-y-1.5">
@@ -813,25 +809,25 @@ const CapacitorPage = () => {
                 </div>
 
                 {/* Circuit Basics */}
-                <div className="bg-gradient-to-br from-card/70 to-card/50 backdrop-blur-xl rounded-xl border-2 border-purple-500/40 p-1.5 shadow-2xl flex-shrink-0">
+                <div className="bg-white/90 backdrop-blur-xl rounded-xl border-2 border-slate-300 p-1.5 shadow-lg flex-shrink-0">
                   <div className="flex items-center gap-1 mb-1">
                     <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center">
                       <Info className="w-2.5 h-2.5 text-white" />
                     </div>
-                    <h3 className="text-xs font-black text-white tracking-[0.1em] uppercase">CIRCUIT BASICS</h3>
+                    <h3 className="text-xs font-black text-slate-700 tracking-[0.1em] uppercase">CIRCUIT BASICS</h3>
                   </div>
                   <div className="space-y-1">
                     <div>
-                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-cyan-300 via-purple-300 to-pink-300 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Description</h4>
-                      {mode === 'simple' && <p className="text-[10px] text-white/95 leading-tight font-bold">A basic circuit with one capacitor that stores energy in an electric field.</p>}
-                      {mode === 'series' && <p className="text-[10px] text-white/95 leading-tight font-bold">Capacitors in series: Total capacitance decreases. Same charge on each.</p>}
-                      {mode === 'parallel' && <p className="text-[10px] text-white/95 leading-tight font-bold">Capacitors in parallel: Total capacitance increases. Same voltage across each.</p>}
+                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Description</h4>
+                      {mode === 'simple' && <p className="text-[10px] text-slate-700 leading-tight font-bold">A basic circuit with one capacitor that stores energy in an electric field.</p>}
+                      {mode === 'series' && <p className="text-[10px] text-slate-700 leading-tight font-bold">Capacitors in series: Total capacitance decreases. Same charge on each.</p>}
+                      {mode === 'parallel' && <p className="text-[10px] text-slate-700 leading-tight font-bold">Capacitors in parallel: Total capacitance increases. Same voltage across each.</p>}
                     </div>
-                    <div className="bg-gradient-to-br from-purple-500/40 to-pink-500/30 rounded-lg p-1 border-2 border-purple-400/70">
-                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-cyan-200 via-purple-200 to-pink-200 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Formula</h4>
-                      {mode === 'simple' && <div className="text-sm font-serif text-white font-bold">Q = C × V</div>}
-                      {mode === 'series' && <div className="text-[11px] font-serif text-white font-bold">1/C<sub>total</sub> = 1/C₁ + 1/C₂ + 1/C₃</div>}
-                      {mode === 'parallel' && <div className="text-[11px] font-serif text-white font-bold">C<sub>total</sub> = C₁ + C₂ + C₃</div>}
+                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-1 border-2 border-purple-300">
+                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-cyan-600 via-purple-600 to-pink-600 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Formula</h4>
+                      {mode === 'simple' && <div className="text-sm font-serif text-slate-800 font-bold">Q = C × V</div>}
+                      {mode === 'series' && <div className="text-[11px] font-serif text-slate-800 font-bold">1/C<sub>total</sub> = 1/C₁ + 1/C₂ + 1/C₃</div>}
+                      {mode === 'parallel' && <div className="text-[11px] font-serif text-slate-800 font-bold">C<sub>total</sub> = C₁ + C₂ + C₃</div>}
                     </div>
                   </div>
                 </div>

@@ -18,12 +18,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     const padding = Math.min(width, height) * 0.08;
     const centerX = width / 2;
     const centerY = height / 2;
-    
+
     // Scale circuit to fit nicely
     const scale = Math.min(width, height) / 500;
     const circuitWidth = Math.min(width - padding * 2, 600 * scale);
     const circuitHeight = Math.min(height - padding * 2, 350 * scale);
-    
+
     const left = centerX - circuitWidth / 2;
     const right = centerX + circuitWidth / 2;
     const top = centerY - circuitHeight / 2;
@@ -33,49 +33,54 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
 
     switch (mode) {
       case 'combination':
-        // Simple circuit - NEAT RECTANGULAR LAYOUT
+        // Simple circuit - RECTANGULAR LAYOUT like reference image
+        // Battery on left, components on top horizontal wire
         const batteryWidth = componentSize * 1.4;
         const batteryHeight = componentSize * 2.6;
-        const batteryX = left + componentSize * 1.0;
+        const batteryX = left + componentSize * 0.8;
         const batteryCenterX = batteryX + batteryWidth / 2;
         const batteryY = centerY - batteryHeight / 2;
         const batteryPosTerminal = batteryY;
         const batteryNegTerminal = batteryY + batteryHeight;
-        
-        const topWireY = top + componentSize * 1.5;
-        const bottomWireY = bottom - componentSize * 1.5;
-        
+
+        // Top wire level - where components sit ON TOP of
+        const simpleTopWireY = top + componentSize * 2.5;
+        const bottomWireY = bottom - componentSize * 1.2;
+
+        // Resistor on top wire
         const r1Width = componentSize * 2.0;
         const r1Height = componentSize * 0.9;
-        const r1X = left + componentSize * 3.5;
-        const r1Y = topWireY - r1Height / 2;
-        const r1CenterY = topWireY;
+        const r1X = centerX - componentSize * 1.5;
+        const r1Y = simpleTopWireY - r1Height / 2;
         const r1LeftLead = r1X;
         const r1RightLead = r1X + r1Width;
-        
-        const bulbWidth = componentSize * 2.0;
-        const bulbHeight = componentSize * 2.0;
-        const bulbX = right - componentSize * 3.5;
-        const bulbY = topWireY - bulbHeight / 2;
-        const bulbCenterY = topWireY;
-        const terminalWidth = bulbWidth * 0.08;
-        const bulbLeftTerminal = bulbX - terminalWidth;
-        const bulbRightTerminal = bulbX + bulbWidth + terminalWidth;
-        
+
+        // Bulb on top wire - positioned to the right
+        const bulbWidth = componentSize * 1.8;
+        const bulbHeight = componentSize * 2.2;
+        const bulbX = right - componentSize * 3.0;
+        const bulbY = simpleTopWireY; // Bulb base sits ON the wire
+        const bulbCenterX = bulbX + bulbWidth / 2;
+
         const rightWireX = right - componentSize * 1.0;
-        const leftWireX = left + componentSize * 1.0;
-        
+
         return {
           mainPath: [
+            // From battery positive terminal up to top wire
             { x: batteryCenterX, y: batteryPosTerminal },
-            { x: batteryCenterX, y: topWireY },
-            { x: r1LeftLead, y: topWireY },
-            { x: r1RightLead, y: topWireY },
-            { x: bulbLeftTerminal, y: topWireY },
-            { x: bulbRightTerminal, y: topWireY },
-            { x: rightWireX, y: topWireY },
+            { x: batteryCenterX, y: simpleTopWireY },
+            // Along top wire through resistor
+            { x: r1LeftLead, y: simpleTopWireY },
+            { x: r1RightLead, y: simpleTopWireY },
+            // To bulb center (base contact)
+            { x: bulbCenterX, y: simpleTopWireY },
+            // Continue to right corner
+            { x: rightWireX, y: simpleTopWireY },
+            // Down to bottom wire
             { x: rightWireX, y: bottomWireY },
+            // Along bottom wire back to battery
             { x: batteryCenterX, y: bottomWireY },
+            // To battery negative terminal
             { x: batteryCenterX, y: batteryNegTerminal },
           ],
           components: {
@@ -87,58 +92,62 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         };
 
       case 'series':
-        // Series circuit - NEAT HORIZONTAL LAYOUT
+        // Series circuit - RECTANGULAR LAYOUT like reference image
         const seriesBatteryWidth = componentSize * 1.4;
         const seriesBatteryHeight = componentSize * 2.6;
-        const seriesBatteryX = left + componentSize * 1.0;
+        const seriesBatteryX = left + componentSize * 0.8;
         const seriesBatteryCenterX = seriesBatteryX + seriesBatteryWidth / 2;
         const seriesBatteryY = centerY - seriesBatteryHeight / 2;
         const seriesBatteryTop = seriesBatteryY;
         const seriesBatteryBottom = seriesBatteryY + seriesBatteryHeight;
-        
-        const seriesTopRailY = top + componentSize * 1.5;
-        const seriesBottomRailY = bottom - componentSize * 1.5;
-        
+
+        // Top wire where components sit on top of
+        const seriesTopRailY = top + componentSize * 2.5;
+        const seriesBottomRailY = bottom - componentSize * 1.2;
+
+        // R1 on top wire
         const seriesR1Width = componentSize * 1.7;
         const seriesR1Height = componentSize * 0.85;
-        const seriesR1X = left + componentSize * 3.5;
+        const seriesR1X = centerX - componentSize * 3.0;
         const seriesR1Y = seriesTopRailY - seriesR1Height / 2;
-        const seriesR1CenterY = seriesTopRailY;
         const seriesR1Left = seriesR1X;
         const seriesR1Right = seriesR1X + seriesR1Width;
-        
+
+        // R2 on top wire
         const seriesR2Width = componentSize * 1.7;
         const seriesR2Height = componentSize * 0.85;
-        const seriesR2X = centerX + componentSize * 0.5;
+        const seriesR2X = centerX + componentSize * 0.2;
         const seriesR2Y = seriesTopRailY - seriesR2Height / 2;
-        const seriesR2CenterY = seriesTopRailY;
         const seriesR2Left = seriesR2X;
         const seriesR2Right = seriesR2X + seriesR2Width;
-        
-        const seriesBulbWidth = componentSize * 2.0;
-        const seriesBulbHeight = componentSize * 2.0;
-        const seriesBulbX = right - componentSize * 3.5;
-        const seriesBulbY = seriesTopRailY - seriesBulbHeight / 2;
-        const seriesBulbCenterY = seriesTopRailY;
-        const seriesBulbTerminalWidth = seriesBulbWidth * 0.08;
-        const seriesBulbLeft = seriesBulbX - seriesBulbTerminalWidth;
-        const seriesBulbRight = seriesBulbX + seriesBulbWidth + seriesBulbTerminalWidth;
-        
+
+        // Bulb on top wire
+        const seriesBulbWidth = componentSize * 1.8;
+        const seriesBulbHeight = componentSize * 2.2;
+        const seriesBulbX = right - componentSize * 3.0;
+        const seriesBulbY = seriesTopRailY; // Bulb base ON the wire
+        const seriesBulbCenterX = seriesBulbX + seriesBulbWidth / 2;
+
         const seriesRightWireX = right - componentSize * 1.0;
-        const seriesLeftWireX = left + componentSize * 1.0;
-        
+
         return {
           mainPath: [
+            // From battery positive terminal up to top wire
             { x: seriesBatteryCenterX, y: seriesBatteryTop },
             { x: seriesBatteryCenterX, y: seriesTopRailY },
+            // Through R1
             { x: seriesR1Left, y: seriesTopRailY },
             { x: seriesR1Right, y: seriesTopRailY },
+            // Through R2
             { x: seriesR2Left, y: seriesTopRailY },
             { x: seriesR2Right, y: seriesTopRailY },
-            { x: seriesBulbLeft, y: seriesTopRailY },
-            { x: seriesBulbRight, y: seriesTopRailY },
+            // Through bulb (center contact)
+            { x: seriesBulbCenterX, y: seriesTopRailY },
+            // To right corner
             { x: seriesRightWireX, y: seriesTopRailY },
+            // Down to bottom wire
             { x: seriesRightWireX, y: seriesBottomRailY },
+            // Back to battery
             { x: seriesBatteryCenterX, y: seriesBottomRailY },
             { x: seriesBatteryCenterX, y: seriesBatteryBottom },
           ],
@@ -153,7 +162,8 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
 
       case 'parallel':
       default:
-        // Parallel circuit - SIMPLIFIED HORIZONTAL LAYOUT
+        // Parallel circuit - Clean layout like reference image
+        // R1 on top, R2 on bottom, vertical wires connecting on left and right
         const parallelBatteryWidth = componentSize * 1.4;
         const parallelBatteryHeight = componentSize * 2.6;
         const parallelBatteryX = left + componentSize * 0.8;
@@ -161,68 +171,78 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const parallelBatteryY = centerY - parallelBatteryHeight / 2;
         const parallelBatteryTop = parallelBatteryY;
         const parallelBatteryBottom = parallelBatteryY + parallelBatteryHeight;
-        
-        // Simple branch positions - extended horizontal wire from battery
-        const topBranchY = centerY - componentSize * 1.2;
-        const bottomBranchY = centerY + componentSize * 1.2;
-        const branchSplitX = left + componentSize * 3.5;
-        const branchJoinX = right - componentSize * 2.8;
-        
-        // R1 and R2 horizontally aligned in center
-        const parallelR1Width = componentSize * 1.7;
+
+        // Branch levels aligned with battery center (horizontal alignment)
+        const batteryCenter = parallelBatteryY + parallelBatteryHeight / 2;
+        const topBranchY = batteryCenter - componentSize * 3.5;
+        const bottomBranchY = batteryCenter - componentSize * 1.5;
+
+        // Wire levels
+        const topWireY = top + componentSize * 1.8; // Top wire
+        const bottomReturnY = bottom - componentSize * 1.5; // Bottom return wire
+
+        // Left vertical line (splits current) and right vertical line (joins current)
+        const leftVerticalX = left + componentSize * 3.2;
+        const rightVerticalX = centerX + componentSize * 0.5; // Compact parallel section
+
+        // R1 on top branch - CENTERED on wire line
+        const parallelR1Width = componentSize * 2.2;
         const parallelR1Height = componentSize * 0.8;
-        const parallelR1Y = topBranchY - parallelR1Height / 2;
-        const parallelR1X = centerX - parallelR1Width / 2;
+        const parallelR1X = (leftVerticalX + rightVerticalX) / 2 - parallelR1Width / 2;
+        const parallelR1Y = topBranchY - parallelR1Height / 2; // Centered on wire
         const parallelR1Left = parallelR1X;
         const parallelR1Right = parallelR1X + parallelR1Width;
-        
-        const parallelR2Width = componentSize * 1.7;
+
+        // R2 on bottom branch - CENTERED on wire line
+        const parallelR2Width = componentSize * 2.2;
         const parallelR2Height = componentSize * 0.8;
-        const parallelR2Y = bottomBranchY - parallelR2Height / 2;
-        const parallelR2X = centerX - parallelR2Width / 2;
+        const parallelR2X = (leftVerticalX + rightVerticalX) / 2 - parallelR2Width / 2;
+        const parallelR2Y = bottomBranchY - parallelR2Height / 2; // Centered on wire
         const parallelR2Left = parallelR2X;
         const parallelR2Right = parallelR2X + parallelR2Width;
-        
-        // Bulb on right side - positioned further right to avoid wire overlap
-        const parallelBottomY = bottom - componentSize * 1.2;
-        const parallelBulbWidth = componentSize * 2.0;
+
+        // Bulb on top wire AFTER the parallel junction
+        const parallelBulbWidth = componentSize * 1.6;
         const parallelBulbHeight = componentSize * 2.0;
-        const parallelBulbX = right - componentSize * 2.5;
-        const parallelBulbY = centerY - parallelBulbHeight / 2;
-        const parallelBulbTerminalWidth = parallelBulbWidth * 0.08;
-        const parallelBulbLeft = parallelBulbX - parallelBulbTerminalWidth;
-        const parallelBulbRight = parallelBulbX + parallelBulbWidth + parallelBulbTerminalWidth;
-        
+        const parallelBulbX = right - componentSize * 2.8;
+        const parallelBulbY = topWireY; // Bulb on top wire for visibility
+        const parallelBulbCenterX = parallelBulbX + parallelBulbWidth / 2;
+
+        const parallelRightWireX = right - componentSize * 1.0;
+
         return {
           mainPath: [
+            // Battery positive to horizontal, then to left vertical split point
             { x: parallelBatteryCenterX, y: parallelBatteryTop },
-            { x: parallelBatteryCenterX, y: centerY },
-            { x: branchSplitX, y: centerY },
+            { x: parallelBatteryCenterX, y: topWireY },
+            { x: leftVerticalX, y: topWireY },
           ],
           branches: {
             top: [
-              { x: branchSplitX, y: centerY },
-              { x: branchSplitX, y: topBranchY },
+              // Top branch: from split up to R1, through R1, down to join
+              { x: leftVerticalX, y: topWireY },
+              { x: leftVerticalX, y: topBranchY },
               { x: parallelR1Left, y: topBranchY },
               { x: parallelR1Right, y: topBranchY },
-              { x: branchJoinX, y: topBranchY },
-              { x: branchJoinX, y: centerY },
+              { x: rightVerticalX, y: topBranchY },
+              { x: rightVerticalX, y: topWireY },
             ],
             bottom: [
-              { x: branchSplitX, y: centerY },
-              { x: branchSplitX, y: bottomBranchY },
+              // Bottom branch: from split down to R2, through R2, up to join
+              { x: leftVerticalX, y: topWireY },
+              { x: leftVerticalX, y: bottomBranchY },
               { x: parallelR2Left, y: bottomBranchY },
               { x: parallelR2Right, y: bottomBranchY },
-              { x: branchJoinX, y: bottomBranchY },
-              { x: branchJoinX, y: centerY },
+              { x: rightVerticalX, y: bottomBranchY },
+              { x: rightVerticalX, y: topWireY },
             ],
             after: [
-              { x: branchJoinX, y: centerY },
-              { x: parallelBulbLeft, y: centerY },
-              { x: parallelBulbRight, y: centerY },
-              { x: parallelBulbRight + componentSize * 0.5, y: centerY },
-              { x: parallelBulbRight + componentSize * 0.5, y: parallelBottomY },
-              { x: parallelBatteryCenterX, y: parallelBottomY },
+              // After junction: to bulb, down to return wire, back to battery
+              { x: rightVerticalX, y: topWireY },
+              { x: parallelBulbCenterX, y: topWireY }, // Through bulb
+              { x: parallelRightWireX, y: topWireY },
+              { x: parallelRightWireX, y: bottomReturnY },
+              { x: parallelBatteryCenterX, y: bottomReturnY },
               { x: parallelBatteryCenterX, y: parallelBatteryBottom },
             ],
           },
@@ -237,12 +257,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
   }, [mode]);
 
   // Enhanced wire drawing with better aesthetics
-  const drawWire = useCallback((ctx: CanvasRenderingContext2D, points: {x: number, y: number}[], pulseIntensity: number = 0) => {
+  const drawWire = useCallback((ctx: CanvasRenderingContext2D, points: { x: number, y: number }[], pulseIntensity: number = 0) => {
     if (points.length < 2) return;
-    
+
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    
+
     // Outer glow
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
@@ -252,7 +272,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 + pulseIntensity * 0.2})`;
     ctx.lineWidth = 12;
     ctx.stroke();
-    
+
     // Mid glow
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
@@ -262,21 +282,21 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.strokeStyle = `rgba(100, 150, 200, ${0.3 + pulseIntensity * 0.2})`;
     ctx.lineWidth = 6;
     ctx.stroke();
-    
+
     // Main copper wire
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
-    const gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[points.length-1].x, points[points.length-1].y);
+    const gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[points.length - 1].x, points[points.length - 1].y);
     gradient.addColorStop(0, '#b87333');
     gradient.addColorStop(0.5, '#d4956a');
     gradient.addColorStop(1, '#b87333');
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 4;
     ctx.stroke();
-    
+
     // Wire highlight
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
@@ -292,12 +312,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
   const drawBattery = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, voltage: number) => {
     const centerX = x + width / 2;
     const centerY = y + height / 2;
-    
+
     // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
     ctx.shadowBlur = 12;
     ctx.shadowOffsetY = 4;
-    
+
     // Battery body - metallic vertical cylinder
     const bodyGradient = ctx.createLinearGradient(x, y, x + width, y);
     bodyGradient.addColorStop(0, '#1a1a1a');
@@ -305,62 +325,74 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     bodyGradient.addColorStop(0.5, '#2a2a2a');
     bodyGradient.addColorStop(0.7, '#3a3a3a');
     bodyGradient.addColorStop(1, '#1a1a1a');
-    
+
     ctx.fillStyle = bodyGradient;
     ctx.beginPath();
     ctx.roundRect(x, y + height * 0.08, width, height * 0.84, 6);
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
-    
+
     // TOP TERMINAL - Positive (+) - RED - connects to wire
     ctx.fillStyle = '#ef4444';
     ctx.beginPath();
     ctx.roundRect(centerX - width * 0.25, y, width * 0.5, height * 0.1, 3);
     ctx.fill();
-    
+
     // Plus symbol on top terminal
     ctx.fillStyle = '#fff';
     ctx.font = `bold ${Math.max(14, width * 0.35)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('+', centerX, y + height * 0.05);
-    
+
     // Terminal shine
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.beginPath();
     ctx.roundRect(centerX - width * 0.15, y + 2, width * 0.3, height * 0.04, 2);
     ctx.fill();
-    
+
     // BOTTOM TERMINAL - Negative (-) - BLUE - connects to wire
     ctx.fillStyle = '#3b82f6';
     ctx.beginPath();
     ctx.roundRect(centerX - width * 0.2, y + height * 0.92, width * 0.4, height * 0.08, 2);
     ctx.fill();
-    
+
     // Minus symbol on bottom terminal
     ctx.fillStyle = '#fff';
     ctx.font = `bold ${Math.max(12, width * 0.3)}px Inter`;
     ctx.fillText('−', centerX, y + height * 0.96);
-    
+
     // Battery label area
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.beginPath();
     ctx.roundRect(x + width * 0.12, y + height * 0.25, width * 0.76, height * 0.5, 4);
     ctx.fill();
-    
+
     // Voltage display - large and centered
     ctx.fillStyle = '#22c55e';
     ctx.font = `bold ${Math.max(16, width * 0.4)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${voltage}V`, centerX, centerY);
-    
+
     // Battery type label
     ctx.fillStyle = '#888';
     ctx.font = `600 ${Math.max(8, width * 0.18)}px Inter`;
     ctx.fillText('DC', centerX, y + height * 0.85);
+
+    // Battery label BESIDE the battery (to the left)
+    ctx.fillStyle = '#6d28d9';
+    ctx.font = `800 ${Math.max(12, width * 0.35)}px Inter`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetY = 2;
+    ctx.fillText('Battery', x - 10, y + height * 0.15);
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
   }, []);
 
   // Realistic resistor with color bands
@@ -369,61 +401,61 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     const bodyWidth = width * 0.7;
     const bodyHeight = height * 0.8;
     const bodyX = x + (width - bodyWidth) / 2;
-    
+
     // Lead wires
     ctx.strokeStyle = '#b87333';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
-    
+
     ctx.beginPath();
     ctx.moveTo(x, centerY);
     ctx.lineTo(bodyX, centerY);
     ctx.stroke();
-    
+
     ctx.beginPath();
     ctx.moveTo(bodyX + bodyWidth, centerY);
     ctx.lineTo(x + width, centerY);
     ctx.stroke();
-    
+
     // Shadow
     ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
     ctx.shadowBlur = 4;
     ctx.shadowOffsetY = 2;
-    
+
     // Resistor body - beige/tan color like real resistors
-    const bodyGradient = ctx.createLinearGradient(bodyX, centerY - bodyHeight/2, bodyX, centerY + bodyHeight/2);
+    const bodyGradient = ctx.createLinearGradient(bodyX, centerY - bodyHeight / 2, bodyX, centerY + bodyHeight / 2);
     bodyGradient.addColorStop(0, '#e8d4b8');
     bodyGradient.addColorStop(0.5, '#d4b896');
     bodyGradient.addColorStop(1, '#c4a882');
-    
+
     ctx.fillStyle = bodyGradient;
     ctx.beginPath();
-    ctx.roundRect(bodyX, centerY - bodyHeight/2, bodyWidth, bodyHeight, 4);
+    ctx.roundRect(bodyX, centerY - bodyHeight / 2, bodyWidth, bodyHeight, 4);
     ctx.fill();
-    
+
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
-    
+
     // Color bands (simplified - 3 bands based on value)
     const bandWidth = bodyWidth * 0.08;
     const bandPositions = [0.2, 0.35, 0.5, 0.75];
     const colors = ['#8B4513', '#ff0000', '#ff8c00', '#d4af37']; // Brown, Red, Orange, Gold
-    
+
     bandPositions.forEach((pos, i) => {
       ctx.fillStyle = colors[i % colors.length];
-      ctx.fillRect(bodyX + bodyWidth * pos, centerY - bodyHeight/2 + 2, bandWidth, bodyHeight - 4);
+      ctx.fillRect(bodyX + bodyWidth * pos, centerY - bodyHeight / 2 + 2, bandWidth, bodyHeight - 4);
     });
-    
-    // Label above with premium color - LARGER AND MORE PROMINENT
+
+    // Label above with DARKER PURPLE color - More prominent
     const labelGradient = ctx.createLinearGradient(x, y - 12, x + width, y - 12);
-    labelGradient.addColorStop(0, '#f59e0b');
-    labelGradient.addColorStop(0.5, '#ff8c00');
-    labelGradient.addColorStop(1, '#d97706');
+    labelGradient.addColorStop(0, '#7c3aed');
+    labelGradient.addColorStop(0.5, '#6d28d9');
+    labelGradient.addColorStop(1, '#5b21b6');
     ctx.fillStyle = labelGradient;
     ctx.font = `800 ${Math.max(14, height * 0.6)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    
+
     // Enhanced text shadow for depth and prominence
     ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
     ctx.shadowBlur = 3;
@@ -431,7 +463,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.fillText(label, x + width / 2, y - 5);
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
-    
+
     // Value below - LARGER AND MORE VISIBLE
     ctx.fillStyle = '#9ca3af';
     ctx.font = `600 ${Math.max(11, height * 0.45)}px Inter`;
@@ -442,21 +474,31 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.shadowBlur = 0;
   }, []);
 
-  // Realistic light bulb with horizontal wire terminals (NOT merged)
+  // Realistic light bulb sitting ABOVE the wire (like reference image)
+  // Wire passes through the base, bulb glass is above
   const drawBulb = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, brightness: number) => {
     const centerX = x + width / 2;
-    const centerY = y + height / 2;
-    const bulbRadius = Math.min(width, height) * 0.32;
-    const bulbCenterY = centerY - height * 0.08;
-    
-    // Glow effect
+    // Wire level is the Y position passed in (this is where the wire runs)
+    const wireY = y;
+
+    // Bulb dimensions
+    const bulbRadius = Math.min(width, height) * 0.38;
+    const baseWidth = bulbRadius * 0.65;
+    const baseHeight = bulbRadius * 1.1;
+
+    // Position bulb ABOVE the wire - base connects at wire level
+    const baseBottom = wireY;
+    const baseTop = baseBottom - baseHeight;
+    const bulbCenterY = baseTop - bulbRadius + 5;
+
+    // Glow effect when lit
     if (brightness > 0.1) {
       const glowLayers = 4;
       for (let i = glowLayers; i >= 0; i--) {
         const radius = bulbRadius * (1.5 + i * 0.8);
-        const alpha = brightness * 0.15 * (1 - i / glowLayers);
+        const alpha = brightness * 0.18 * (1 - i / glowLayers);
         const gradient = ctx.createRadialGradient(centerX, bulbCenterY, 0, centerX, bulbCenterY, radius);
-        gradient.addColorStop(0, `rgba(255, 220, 100, ${alpha})`);
+        gradient.addColorStop(0, `rgba(255, 230, 120, ${alpha})`);
         gradient.addColorStop(1, 'rgba(255, 200, 50, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -464,129 +506,116 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         ctx.fill();
       }
     }
-    
-    // Glass bulb
+
+    // Glass bulb (the round part on top)
     const glassGradient = ctx.createRadialGradient(
       centerX - bulbRadius * 0.3, bulbCenterY - bulbRadius * 0.3, 0,
       centerX, bulbCenterY, bulbRadius
     );
-    
-    const glowColor = brightness > 0.3 
-      ? `rgba(255, 240, 200, ${0.8 + brightness * 0.2})`
-      : 'rgba(240, 240, 245, 0.9)';
-    const innerGlow = brightness > 0.3 
-      ? `rgba(255, 200, 80, ${brightness * 0.8})`
-      : 'rgba(220, 220, 225, 0.7)';
-    
+
+    const glowColor = brightness > 0.3
+      ? `rgba(255, 245, 200, ${0.85 + brightness * 0.15})`
+      : 'rgba(255, 253, 240, 0.95)';
+    const innerGlow = brightness > 0.3
+      ? `rgba(255, 220, 100, ${brightness * 0.7})`
+      : 'rgba(250, 248, 235, 0.8)';
+
     glassGradient.addColorStop(0, glowColor);
-    glassGradient.addColorStop(0.7, innerGlow);
-    glassGradient.addColorStop(1, 'rgba(200, 200, 205, 0.6)');
-    
+    glassGradient.addColorStop(0.6, innerGlow);
+    glassGradient.addColorStop(1, 'rgba(220, 218, 210, 0.7)');
+
     ctx.fillStyle = glassGradient;
     ctx.beginPath();
     ctx.arc(centerX, bulbCenterY, bulbRadius, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Glass outline
-    ctx.strokeStyle = 'rgba(100, 100, 110, 0.5)';
+    ctx.strokeStyle = 'rgba(80, 80, 90, 0.4)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    
-    // Glass highlight
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+
+    // Glass highlight (reflection)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.beginPath();
-    ctx.ellipse(centerX - bulbRadius * 0.35, bulbCenterY - bulbRadius * 0.35, bulbRadius * 0.25, bulbRadius * 0.15, -Math.PI / 4, 0, Math.PI * 2);
+    ctx.ellipse(centerX - bulbRadius * 0.35, bulbCenterY - bulbRadius * 0.35, bulbRadius * 0.22, bulbRadius * 0.12, -Math.PI / 4, 0, Math.PI * 2);
     ctx.fill();
-    
-    // Filament
-    const filamentY = bulbCenterY + bulbRadius * 0.1;
+
+    // Filament inside the bulb
+    const filamentY = bulbCenterY + bulbRadius * 0.15;
     ctx.beginPath();
-    ctx.moveTo(centerX - bulbRadius * 0.4, filamentY + 5);
-    ctx.quadraticCurveTo(centerX - bulbRadius * 0.2, filamentY - bulbRadius * 0.5, centerX, filamentY + 5);
-    ctx.quadraticCurveTo(centerX + bulbRadius * 0.2, filamentY - bulbRadius * 0.5, centerX + bulbRadius * 0.4, filamentY + 5);
-    
+    ctx.moveTo(centerX - bulbRadius * 0.35, filamentY + 3);
+    ctx.quadraticCurveTo(centerX - bulbRadius * 0.15, filamentY - bulbRadius * 0.4, centerX, filamentY + 3);
+    ctx.quadraticCurveTo(centerX + bulbRadius * 0.15, filamentY - bulbRadius * 0.4, centerX + bulbRadius * 0.35, filamentY + 3);
+
     if (brightness > 0.3) {
-      ctx.strokeStyle = `rgba(255, 200, 100, ${0.8 + brightness * 0.2})`;
-      ctx.shadowColor = 'rgba(255, 200, 50, 0.8)';
-      ctx.shadowBlur = 6;
+      ctx.strokeStyle = `rgba(255, 210, 100, ${0.8 + brightness * 0.2})`;
+      ctx.shadowColor = 'rgba(255, 200, 50, 0.9)';
+      ctx.shadowBlur = 8;
     } else {
-      ctx.strokeStyle = '#888';
+      ctx.strokeStyle = '#777';
       ctx.shadowBlur = 0;
     }
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.shadowBlur = 0;
-    
-    // Screw base (below the glass bulb)
-    const baseTop = bulbCenterY + bulbRadius;
-    const baseWidth = bulbRadius * 0.75;
-    const baseHeight = height * 0.28;
-    
-    // Base neck - trapezoid shape
-    ctx.fillStyle = '#1a1a1a';
+
+    // Neck transition from glass to base
+    ctx.fillStyle = '#2a2a2a';
     ctx.beginPath();
-    ctx.moveTo(centerX - bulbRadius * 0.38, baseTop);
-    ctx.lineTo(centerX - baseWidth / 2, baseTop + 3);
-    ctx.lineTo(centerX - baseWidth / 2, baseTop + baseHeight);
-    ctx.lineTo(centerX + baseWidth / 2, baseTop + baseHeight);
-    ctx.lineTo(centerX + baseWidth / 2, baseTop + 3);
-    ctx.lineTo(centerX + bulbRadius * 0.38, baseTop);
+    ctx.moveTo(centerX - bulbRadius * 0.4, bulbCenterY + bulbRadius * 0.9);
+    ctx.lineTo(centerX - baseWidth / 2, baseTop + 4);
+    ctx.lineTo(centerX + baseWidth / 2, baseTop + 4);
+    ctx.lineTo(centerX + bulbRadius * 0.4, bulbCenterY + bulbRadius * 0.9);
     ctx.closePath();
     ctx.fill();
-    
-    // Base threads
-    const threadCount = 2;
+
+    // Screw base (metallic gray/silver)
+    const baseGradient = ctx.createLinearGradient(centerX - baseWidth / 2, baseTop, centerX + baseWidth / 2, baseTop);
+    baseGradient.addColorStop(0, '#4a4a4a');
+    baseGradient.addColorStop(0.3, '#6a6a6a');
+    baseGradient.addColorStop(0.5, '#5a5a5a');
+    baseGradient.addColorStop(0.7, '#6a6a6a');
+    baseGradient.addColorStop(1, '#4a4a4a');
+
+    ctx.fillStyle = baseGradient;
+    ctx.beginPath();
+    ctx.roundRect(centerX - baseWidth / 2, baseTop + 4, baseWidth, baseHeight - 4, [0, 0, 3, 3]);
+    ctx.fill();
+
+    // Screw threads on base
+    const threadCount = 3;
+    const threadSpacing = (baseHeight - 12) / threadCount;
     for (let i = 0; i < threadCount; i++) {
-      const threadY = baseTop + 5 + i * (baseHeight - 8) / threadCount;
-      ctx.fillStyle = '#333';
-      ctx.fillRect(centerX - baseWidth / 2, threadY, baseWidth, 1.5);
+      const threadY = baseTop + 10 + i * threadSpacing;
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(centerX - baseWidth / 2, threadY);
+      ctx.lineTo(centerX + baseWidth / 2, threadY);
+      ctx.stroke();
     }
-    
-    // LEFT TERMINAL - precise wire connection (extends LEFT from bulb)
-    const terminalWidth = width * 0.08;
-    const terminalHeight = height * 0.14;
-    
-    // Shadow for depth
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetY = 2;
-    
-    ctx.fillStyle = '#d4a574'; // Brass/copper color
-    ctx.strokeStyle = '#8b5a3c';
+
+    // Bottom contact point (connects to wire)
+    ctx.fillStyle = '#555';
+    ctx.beginPath();
+    ctx.arc(centerX, baseBottom, baseWidth * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
-    
-    ctx.beginPath();
-    ctx.roundRect(x - terminalWidth, centerY - terminalHeight/2, terminalWidth, terminalHeight, 1);
-    ctx.fill();
     ctx.stroke();
-    
-    // RIGHT TERMINAL - precise wire connection (extends RIGHT from bulb)
-    ctx.beginPath();
-    ctx.roundRect(x + width, centerY - terminalHeight/2, terminalWidth, terminalHeight, 1);
-    ctx.fill();
-    ctx.stroke();
-    
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-    
-    // Contact point
-    ctx.fillStyle = '#666';
-    ctx.beginPath();
-    ctx.arc(centerX, baseTop + baseHeight + 2, baseWidth * 0.22, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Label
-    ctx.fillStyle = '#6b7280';
-    ctx.font = `600 ${Math.max(9, width * 0.2)}px Inter`;
+
+    // Label below the wire
+    ctx.fillStyle = '#374151';
+    ctx.font = `600 ${Math.max(11, width * 0.24)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText('Bulb', centerX, y + height + 4);
+    ctx.fillText('Bulb', centerX, wireY + 12);
   }, []);
 
   // Smaller, precise electron with crisp glow
   const drawElectron = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, brightness: number = 1) => {
-    const size = 4 + brightness * 2;
-    
+    const size = 5; // Constant size for uniform electrons
+
     // Compact glow layers - less overwhelming
     for (let i = 3; i >= 0; i--) {
       const layerSize = size * (1.8 + i * 0.6);
@@ -595,13 +624,13 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
       gradient.addColorStop(0, `rgba(0, 224, 255, ${layerAlpha})`);
       gradient.addColorStop(0.5, `rgba(14, 165, 233, ${layerAlpha * 0.6})`);
       gradient.addColorStop(1, 'rgba(0, 224, 255, 0)');
-      
+
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(x, y, layerSize, 0, Math.PI * 2);
       ctx.fill();
     }
-    
+
     // Core with clean gradient
     const coreGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
     coreGradient.addColorStop(0, '#e0f2fe');
@@ -611,7 +640,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.beginPath();
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Bright center highlight
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.beginPath();
@@ -620,24 +649,24 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
   }, []);
 
   // Get position along path
-  const getPositionOnPath = useCallback((path: {x: number, y: number}[], progress: number) => {
+  const getPositionOnPath = useCallback((path: { x: number, y: number }[], progress: number) => {
     if (path.length < 2) return path[0];
-    
+
     const totalLength = path.reduce((acc, point, i) => {
       if (i === 0) return 0;
       const dx = point.x - path[i - 1].x;
       const dy = point.y - path[i - 1].y;
       return acc + Math.sqrt(dx * dx + dy * dy);
     }, 0);
-    
+
     const targetLength = progress * totalLength;
     let currentLength = 0;
-    
+
     for (let i = 1; i < path.length; i++) {
       const dx = path[i].x - path[i - 1].x;
       const dy = path[i].y - path[i - 1].y;
       const segmentLength = Math.sqrt(dx * dx + dy * dy);
-      
+
       if (currentLength + segmentLength >= targetLength) {
         const t = (targetLength - currentLength) / segmentLength;
         return {
@@ -645,10 +674,10 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
           y: path[i - 1].y + dy * t,
         };
       }
-      
+
       currentLength += segmentLength;
     }
-    
+
     return path[path.length - 1];
   }, []);
 
@@ -677,8 +706,8 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
       x: 0,
       y: 0,
       pathIndex: 0,
-      progress: i / electronCount,
-      speed: 0.006 + Math.random() * 0.003,
+      progress: i / electronCount, // Evenly spaced
+      speed: 0.007, // Same speed for all to prevent clumping
       branch: Math.random() > 0.5 ? 'top' : 'bottom',
     }));
 
@@ -686,16 +715,54 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
 
     const animate = () => {
       const rect = canvas.getBoundingClientRect();
-      
-      // Transparent background to match capacitor/inductor style
+
+      // Light blue gradient background for improved visibility
       ctx.clearRect(0, 0, rect.width, rect.height);
+
+      // Create radial gradient from center - LIGHTEST BLUE shades
+      const bgGradient = ctx.createRadialGradient(
+        rect.width / 2, rect.height / 2, 0,
+        rect.width / 2, rect.height / 2, Math.max(rect.width, rect.height) * 0.8
+      );
+      bgGradient.addColorStop(0, '#f0f9ff');    // Lightest sky blue
+      bgGradient.addColorStop(0.3, '#e0f2fe');  // Very light cyan-blue
+      bgGradient.addColorStop(0.6, '#bae6fd');  // Soft light blue
+      bgGradient.addColorStop(1, '#7dd3fc');    // Light blue edge
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, rect.width, rect.height);
+
+      // Add subtle grid pattern for depth - lighter blue
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.12)';
+      ctx.lineWidth = 1;
+      const gridSize = 30;
+      for (let x = 0; x < rect.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, rect.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < rect.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(rect.width, y);
+        ctx.stroke();
+      }
 
       const paths = getCircuitPaths(rect.width, rect.height);
       const { components } = paths;
 
       const maxCurrent = 2;
       const brightness = Math.min(computed.current / maxCurrent, 1);
-      const speedFactor = 0.5 + brightness * 1.5;
+
+      // Electron speed inversely proportional to resistance
+      // Higher resistance = slower electrons (more accurate physics)
+      const baseSpeed = 0.8;
+      const minResistance = 1;
+      const maxResistance = 200; // Approximate max when both R1 and R2 are at 100
+      const normalizedResistance = Math.min(computed.totalResistance, maxResistance) / maxResistance;
+      // Speed factor: high resistance -> low speed, low resistance -> high speed
+      const speedFactor = baseSpeed * (1 - normalizedResistance * 0.85) + 0.15; // Keeps minimum speed at 0.15
+
       const pulseIntensity = Math.sin(time * 0.05) * 0.5 + 0.5;
       time++;
 
@@ -723,16 +790,42 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         drawResistor(ctx, components.r2.x, components.r2.y, components.r2.width, components.r2.height, values.r2, components.r2.label || 'R2');
       }
 
+      // Draw bulb - single bulb for all circuit modes
       if (components.bulb) {
         drawBulb(ctx, components.bulb.x, components.bulb.y, components.bulb.width, components.bulb.height, brightness);
       }
 
+      // Calculate probability of electron going through each branch based on resistance
+      // Lower resistance = higher probability (inverse relationship)
+      const r1Conductance = 1 / values.r1; // Conductance = 1/R
+      const r2Conductance = 1 / values.r2;
+      const totalConductance = r1Conductance + r2Conductance;
+      const probTopBranch = r1Conductance / totalConductance; // Probability of taking top branch
+
+      // Calculate branch-specific speed factors for parallel mode
+      // Using inverse relationship (1/R) for more realistic physics
+      // If R is high, speed drops significantly. If R is low, speed is high.
+      const speedFactor1 = Math.min(baseSpeed * (20 / Math.max(values.r1, 1)), baseSpeed * 1.5);
+      const speedFactor2 = Math.min(baseSpeed * (20 / Math.max(values.r2, 1)), baseSpeed * 1.5);
+
       // Update and draw electrons
       electronsRef.current.forEach(electron => {
-        electron.progress += electron.speed * speedFactor;
-        
-        let fullPath: {x: number, y: number}[] = [];
-        
+        // Determine speed based on mode and branch
+        let currentSpeedFactor = speedFactor; // Default global speed
+
+        if (mode === 'parallel') {
+          // In parallel, speed depends on which branch the electron is in
+          // This simulates "current" (I = V/R) - higher R means slower flow
+          currentSpeedFactor = electron.branch === 'top' ? speedFactor1 : speedFactor2;
+
+          // Optionally, we could make them fast in the main wire and slow only in the branch,
+          // but simpler is to make the "branch electron" slow overall, representing that path's current.
+        }
+
+        electron.progress += electron.speed * currentSpeedFactor;
+
+        let fullPath: { x: number, y: number }[] = [];
+
         if (mode === 'series' || mode === 'combination') {
           fullPath = paths.mainPath || [];
         } else if (paths.branches) {
@@ -741,17 +834,30 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
           const afterJunction = paths.branches.after || [];
           fullPath = [...beforeJunction, ...(branch || []).slice(1), ...(afterJunction || []).slice(1)];
         }
-        
+
         if (electron.progress >= 1) {
           electron.progress = 0;
           if (mode !== 'series' && mode !== 'combination') {
-            electron.branch = Math.random() > 0.5 ? 'top' : 'bottom';
+            // Assign branch based on conductance ratio (probability)
+            electron.branch = Math.random() < probTopBranch ? 'top' : 'bottom';
           }
         }
-        
+
         if (fullPath.length > 0) {
           const pos = getPositionOnPath(fullPath, electron.progress);
-          drawElectron(ctx, pos.x, pos.y, brightness);
+
+          // Calculate individual electron brightness
+          // For parallel, brightness matches the speed/current of that branch
+          let electronBrightness = brightness;
+
+          if (mode === 'parallel') {
+            // Scale brightness with speed, capped at 1.0
+            const factor = electron.branch === 'top' ? speedFactor1 : speedFactor2;
+            // Normalize against base speed to get a 0-1 range
+            electronBrightness = Math.min(factor / (baseSpeed * 0.5), 1) * brightness;
+          }
+
+          drawElectron(ctx, pos.x, pos.y, electronBrightness);
         }
       });
 
@@ -769,8 +875,8 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
   }, [mode, values, computed, getCircuitPaths, drawWire, drawBattery, drawResistor, drawBulb, drawElectron, getPositionOnPath]);
 
   return (
-    <canvas 
-      ref={canvasRef} 
+    <canvas
+      ref={canvasRef}
       className="w-full h-full"
       style={{ backgroundColor: 'transparent' }}
     />
