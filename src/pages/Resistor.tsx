@@ -113,6 +113,21 @@ const ResistorPage = () => {
               <div className="flex-[60] relative rounded-2xl border-2 border-orange-500/30 bg-gradient-to-br from-background/50 to-background/70 backdrop-blur-md overflow-hidden shadow-2xl" style={{
                 boxShadow: 'inset 0 2px 16px rgba(0,0,0,0.3), 0 8px 32px rgba(251,146,60,0.15)'
               }}>
+                {/* Hint box - interactive based on mode */}
+                <div className="absolute top-2 left-2 z-20 max-w-xs">
+                  <div className="bg-card/95 backdrop-blur-md border-2 border-orange-500/30 rounded-lg p-2 shadow-xl">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+                        <span className="text-xl">💡</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xs font-bold text-orange-400 mb-0.5">{info.title}</h3>
+                        <p className="text-[10px] text-muted-foreground leading-snug">{info.description}</p>
+                        <p className="text-[9px] text-orange-300/70 mt-1 italic">{info.tip}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <CircuitCanvas mode={mode} values={values} />
               </div>
 
@@ -126,10 +141,10 @@ const ResistorPage = () => {
                     </div>
                     <h3 className="text-xs font-black text-white tracking-[0.15em] uppercase drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">CONTROLS</h3>
                   </div>
-                  <ValuesPanel 
-                    values={values} 
-                    computed={computed} 
-                    onValuesChange={setValues} 
+                  <ValuesPanel
+                    values={values}
+                    computed={computed}
+                    onValuesChange={setValues}
                   />
                 </div>
 
