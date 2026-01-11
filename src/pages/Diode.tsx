@@ -41,7 +41,8 @@ function PNJunctionIntro() {
 
   // Depletion region
   const depletionMaxHalf = 90; // px into each side
-  const depletionProgress = joined ? Math.min(1, t * 0.012) : 0;
+  // Slower depletion formation: ~3-4 seconds (t * 0.004 means 250 frames = ~4 seconds at 60fps)
+  const depletionProgress = joined ? Math.min(1, t * 0.004) : 0;
   const depletionHalfWidth = depletionMaxHalf * depletionProgress;
 
   // grid for particles
@@ -87,9 +88,9 @@ function PNJunctionIntro() {
       </div>
 
       <svg viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet"
-           className="w-full h-auto max-h-[75vh] rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 shadow-[0_0_40px_rgba(139,92,246,0.3)] overflow-hidden animate-border-glow">
+        className="w-full h-auto max-h-[75vh] rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 shadow-[0_0_40px_rgba(139,92,246,0.3)] overflow-hidden animate-border-glow">
         <defs>
-          <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
 
           <linearGradient id="pTypeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="rgba(255,100,150,0.18)" />
@@ -111,66 +112,90 @@ function PNJunctionIntro() {
 
         <rect width={svgW} height={svgH} fill="url(#grid)" />
 
-        {/* P block */}
+        {/* P block - Majority: HOLES (⊕), Minority: electrons (⊖) */}
         <g>
           <rect x={pX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#pTypeGrad)" stroke="rgba(255,120,180,0.45)" strokeWidth="2" filter="url(#softGlow)" />
           <text x={pX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-pink-300 text-sm font-semibold">P-Type Semiconductor</text>
 
+          {/* P-type carriers - majority HOLES (⊕) and minority electrons (⊖) */}
           {holes.map(h => {
             const drift = joined ? Math.max(0, (boundaryX - h.baseX) * 0.02 * depletionProgress) : Math.sin((t + h.id * 10) * 0.02) * 0.9;
             const cx = h.baseX + drift;
             const inside = isInsideDepletion(cx);
+            // Minority electrons (⊖) are about 1 in 6 (rare)
+            const isMinority = (h.id % 6 === 3);
             return (
-              <g key={`hole-${h.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
-                <circle cx={cx} cy={h.y} r="11" fill="none" stroke="rgba(255,160,200,0.78)" strokeWidth="2" strokeDasharray="4 2" />
-                <text x={cx} y={h.y + 4} textAnchor="middle" className="fill-pink-200 text-xs font-bold">+</text>
+              <g key={`pcarrier-${h.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
+                <circle cx={cx} cy={h.y} r="11" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,160,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,160,200,0.9)'} strokeWidth="2" />
+                <text x={cx} y={h.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
         </g>
 
-        {/* N block */}
+        {/* N block - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
         <g>
           <rect x={nX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#nTypeGrad)" stroke="rgba(120,180,255,0.45)" strokeWidth="2" filter="url(#softGlow)" />
           <text x={nX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-blue-300 text-sm font-semibold">N-Type Semiconductor</text>
 
+          {/* N-type carriers - majority ELECTRONS (⊖) and minority holes (⊕) */}
           {electrons.map(e => {
             const drift = joined ? -Math.max(0, (e.baseX - boundaryX) * 0.02 * depletionProgress) : Math.sin((t + e.id * 9) * 0.02) * 0.9;
             const cx = e.baseX + drift;
             const inside = isInsideDepletion(cx);
+            // Minority holes (⊕) are about 1 in 6 (rare)
+            const isMinority = (e.id % 6 === 3);
             return (
-              <g key={`elec-${e.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
-                <circle cx={cx} cy={e.y} r="9" fill="none" stroke="rgba(150,200,255,0.9)" strokeWidth="2" />
-                <text x={cx} y={e.y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">−</text>
+              <g key={`ncarrier-${e.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
+                <circle cx={cx} cy={e.y} r="11" fill={isMinority ? 'rgba(255,160,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,160,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="2" />
+                <text x={cx} y={e.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
               </g>
             );
           })}
         </g>
+
+
+
 
         {/* Depletion region centered at boundary */}
         {depletionProgress > 0 ? (
           <g>
             <rect x={boundaryX - depletionHalfWidth} y={rectY + 8} width={depletionHalfWidth * 2} height={rectH - 16} rx="8"
-                  fill="rgba(220,220,255,0.06)" stroke="rgba(200,200,220,0.36)" strokeWidth="1.4" strokeDasharray="6 4" />
-            {/* immobile ions along both sides */}
-            {Array.from({ length: rows }).map((_, i) => {
-              const y = rectY + paddingY + i * spacingY;
-              const leftIonX = boundaryX - depletionHalfWidth + 12;
-              const rightIonX = boundaryX + depletionHalfWidth - 12;
-              return (
-                <g key={`ion-${i}`}>
-                  <circle cx={leftIonX} cy={y} r="8" fill="none" stroke="rgba(255,150,200,0.95)" strokeWidth="1.6" />
-                  <text x={leftIonX} y={y + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">−</text>
+              fill="rgba(220,220,255,0.08)" stroke="rgba(200,200,220,0.46)" strokeWidth="1.8" strokeDasharray="6 4" />
 
-                  <circle cx={rightIonX} cy={y} r="8" fill="none" stroke="rgba(150,200,255,0.95)" strokeWidth="1.6" />
-                  <text x={rightIonX} y={y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">+</text>
-                </g>
-              );
+            {/* Immobile ions inside depletion region - equal on both sides */}
+            {Array.from({ length: rows }).map((_, rowIdx) => {
+              const y = rectY + paddingY + rowIdx * spacingY;
+              // Calculate equal number of ion columns for both sides
+              const ionCols = Math.max(1, Math.min(3, Math.floor(depletionHalfWidth / 25)));
+              const ionSpacing = depletionHalfWidth / (ionCols + 1);
+
+              return Array.from({ length: ionCols }).map((_, colIdx) => {
+                // Negative ions on P-side (left half) - equally spaced
+                const leftIonX = boundaryX - ionSpacing * (colIdx + 1);
+                // Positive ions on N-side (right half) - equally spaced (mirror position)
+                const rightIonX = boundaryX + ionSpacing * (colIdx + 1);
+
+                return (
+                  <g key={`ion-${rowIdx}-${colIdx}`} style={{ opacity: 0.5 + depletionProgress * 0.5 }}>
+                    {/* Negative ion on P-side (acceptor ion) */}
+                    <g>
+                      <circle cx={leftIonX} cy={y} r="9" fill="rgba(255,150,200,0.15)" stroke="rgba(255,150,200,0.95)" strokeWidth="1.8" />
+                      <text x={leftIonX} y={y + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">−</text>
+                    </g>
+                    {/* Positive ion on N-side (donor ion) */}
+                    <g>
+                      <circle cx={rightIonX} cy={y} r="9" fill="rgba(150,200,255,0.15)" stroke="rgba(150,200,255,0.95)" strokeWidth="1.8" />
+                      <text x={rightIonX} y={y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">+</text>
+                    </g>
+                  </g>
+                );
+              });
             })}
 
             <line x1={boundaryX + depletionHalfWidth - 8} y1={rectY + rectH + 10}
-                  x2={boundaryX - depletionHalfWidth + 8} y2={rectY + rectH + 10}
-                  stroke="rgba(255,245,150,0.95)" strokeWidth="3" markerEnd="url(#arrowHead)" />
+              x2={boundaryX - depletionHalfWidth + 8} y2={rectY + rectH + 10}
+              stroke="rgba(255,245,150,0.95)" strokeWidth="3" markerEnd="url(#arrowHead)" />
             <text x={boundaryX} y={rectY + rectH + 28} textAnchor="middle" className="fill-yellow-200/90 text-[12px] font-semibold">Depletion Region</text>
             <text x={boundaryX} y={rectY + rectH + 44} textAnchor="middle" className="fill-yellow-100/90 text-[11px]">Direction of electric field (N → P)</text>
           </g>
@@ -245,11 +270,31 @@ function ForwardBiasTab() {
         </div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20 relative">
+        {/* Hint box overlay */}
+        <div className="absolute top-4 left-4 z-20 max-w-[200px]">
+          <div className="bg-card/95 backdrop-blur-md border-2 border-green-500/30 rounded-lg p-2 shadow-xl">
+            <div className="flex items-start gap-2">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                <span className="text-sm">💡</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[10px] font-bold text-green-400 mb-0.5">
+                  {isAboveThreshold ? 'Conducting!' : 'Below Threshold'}
+                </h3>
+                <p className="text-[9px] text-muted-foreground leading-snug">
+                  {isAboveThreshold
+                    ? 'Barrier overcome! Current flows freely through the diode.'
+                    : 'Increase voltage to 0.7V to overcome the barrier potential.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
           <defs>
-            <filter id="glowForward"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(100,200,255,1)"/><stop offset="100%" stopColor="rgba(100,200,255,0)"/></radialGradient>
+            <filter id="glowForward"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(100,200,255,1)" /><stop offset="100%" stopColor="rgba(100,200,255,0)" /></radialGradient>
           </defs>
 
           {/* Battery / connectors */}
@@ -265,42 +310,82 @@ function ForwardBiasTab() {
           <path d="M 80 120 L 140 120" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
           <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
 
-          {/* P block */}
+          {/* P block - Majority: HOLES (⊕), Minority: electrons (⊖) */}
           <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
           <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
 
-          {/* holes */}
+          {/* P-type carriers - majority HOLES (⊕) and minority electrons (⊖) - neat grid */}
           {Array.from({ length: cols * rows }).map((_, i) => {
             const col = i % cols;
             const row = Math.floor(i / cols);
             const baseX = pX + paddingX + col * spacingX;
             const baseY = 80 + paddingY + row * spacingY;
             const moveX = isAboveThreshold ? Math.sin((t + i * 20) * 0.05) * 3 + (currentFlow * 0.03) : Math.sin((t + i * 20) * 0.03) * 2;
+            // Minority electrons (⊖) are about 1 in 6 (rare)
+            const isMinority = (i % 6 === 3);
             return (
-              <g key={`hole-f-${i}`}>
-                <circle cx={baseX + moveX} cy={baseY} r="8" fill="none" stroke="rgba(255,150,200,0.8)" strokeWidth="2" strokeDasharray="3 2" />
-                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className="fill-pink-200 text-xs font-bold">+</text>
+              <g key={`pcarrier-f-${i}`}>
+                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,150,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,150,200,0.9)'} strokeWidth="1.5" />
+                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
 
-          {/* barrier (centered at boundary) */}
+          {/* barrier (centered at boundary) with fixed ions */}
           <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="6" fill="rgba(200,200,255,0.1)" stroke="rgba(200,200,220,0.3)" strokeWidth="1" strokeDasharray="4 4" />
-          <text x={boundary} y={210} textAnchor="middle" className="fill-white/50 text-[10px]">{barrierWidthPx > 30 ? 'Barrier' : 'depleting region getting reduced'}</text>
+          {/* Depletion region: Equal columns of ⊖ on P-side and ⊕ on N-side - ions fit within box */}
+          {barrierWidthPx > 15 && (
+            <>
+              {/* P-side column(s) of negative ions (⊖) - exactly within depletion box */}
+              {Array.from({ length: Math.max(1, Math.min(2, Math.floor(barrierWidthPx / 30))) }).map((_, colIdx) => (
+                Array.from({ length: 4 }).map((_, rowIdx) => {
+                  // Box is at y=85, height=110, so y ranges from 85 to 195
+                  // Ions at y=95 to y=180 (with r=6, that's 89-186 which fits in 85-195)
+                  const ionX = Math.max(barrierX + 8, boundary - 10 - colIdx * 16);
+                  const ionY = 95 + rowIdx * 25;
+                  return (
+                    <g key={`p-ion-${colIdx}-${rowIdx}`} style={{ opacity: Math.min(1, barrierWidthPx / 40) }}>
+                      <circle cx={ionX} cy={ionY} r="6" fill="rgba(255,150,200,0.2)" stroke="rgba(255,150,200,0.9)" strokeWidth="1.5" />
+                      <text x={ionX} y={ionY + 3} textAnchor="middle" className="text-[9px] font-bold fill-pink-300">−</text>
+                    </g>
+                  );
+                })
+              ))}
+              {/* N-side column(s) of positive ions (⊕) - exactly within depletion box */}
+              {Array.from({ length: Math.max(1, Math.min(2, Math.floor(barrierWidthPx / 30))) }).map((_, colIdx) => (
+                Array.from({ length: 4 }).map((_, rowIdx) => {
+                  const ionX = Math.min(barrierX + barrierWidthPx - 8, boundary + 10 + colIdx * 16);
+                  const ionY = 95 + rowIdx * 25;
+                  return (
+                    <g key={`n-ion-${colIdx}-${rowIdx}`} style={{ opacity: Math.min(1, barrierWidthPx / 40) }}>
+                      <circle cx={ionX} cy={ionY} r="6" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.9)" strokeWidth="1.5" />
+                      <text x={ionX} y={ionY + 3} textAnchor="middle" className="text-[9px] font-bold fill-blue-300">+</text>
+                    </g>
+                  );
+                })
+              ))}
+            </>
+          )}
+          <text x={boundary} y={210} textAnchor="middle" className="fill-white/50 text-[10px]">{barrierWidthPx > 30 ? 'Depletion Region' : 'Barrier shrinking!'}</text>
 
-          {/* N block */}
+          {/* N block - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
           <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
           <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
 
-          {/* electrons */}
+          {/* N-type carriers - majority ELECTRONS (⊖) and minority holes (⊕) - neat grid */}
           {Array.from({ length: cols * rows }).map((_, i) => {
             const col = i % cols;
             const row = Math.floor(i / cols);
             const baseX = nX + paddingX + col * spacingX;
             const baseY = 80 + paddingY + row * spacingY;
             const moveX = isAboveThreshold ? -Math.sin((t + i * 15) * 0.05) * 3 - (currentFlow * 0.03) : Math.sin((t + i * 15) * 0.03) * 2;
+            // Minority holes (⊕) are about 1 in 6 (rare)
+            const isMinority = (i % 6 === 3);
             return (
-              <circle key={`elec-f-${i}`} cx={baseX + moveX} cy={baseY} r="6" fill="url(#electronGlow)" filter="url(#glowForward)" />
+              <g key={`ncarrier-f-${i}`}>
+                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(255,150,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,150,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="1.5" />
+                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
+              </g>
             );
           })}
 
@@ -312,7 +397,11 @@ function ForwardBiasTab() {
                 const opacity = Math.abs(Math.sin(((t * 2 + i * 50) % 200) / 200 * Math.PI));
                 return <circle key={`flow-${i}`} cx={x} cy={140} r="4" fill="rgba(100,255,150,0.8)" style={{ opacity: opacity * (currentFlow / 30) }} filter="url(#glowForward)" />;
               })}
-              <text x={boundary} y={230} textAnchor="middle" className="fill-cyan-400 text-sm font-medium">Current flowing – diode behaves as short circuit</text>
+              {/* Prominent status box */}
+              <g>
+                <rect x={boundary - 130} y={222} width="260" height="28" rx="6" fill="rgba(0,200,150,0.2)" stroke="rgba(100,255,200,0.5)" strokeWidth="1.5" />
+                <text x={boundary} y={240} textAnchor="middle" className="fill-cyan-300 text-sm font-bold drop-shadow-lg">⚡ Current flowing – Short Circuit ⚡</text>
+              </g>
             </g>
           )}
 
@@ -368,9 +457,27 @@ function ReverseBiasTab() {
         <div className="flex justify-between text-xs text-muted-foreground mt-2"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20 relative">
+        {/* Hint box overlay */}
+        <div className="absolute top-4 left-4 z-20 max-w-[200px]">
+          <div className="bg-card/95 backdrop-blur-md border-2 border-red-500/30 rounded-lg p-2 shadow-xl">
+            <div className="flex items-start gap-2">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                <span className="text-sm">🚫</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[10px] font-bold text-red-400 mb-0.5">Reverse Bias</h3>
+                <p className="text-[9px] text-muted-foreground leading-snug">
+                  {voltage > 5
+                    ? 'High reverse voltage! Depletion zone very wide.'
+                    : 'Depletion zone widens. No current flows (open circuit).'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
-          <defs><filter id="glowReverse"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <defs><filter id="glowReverse"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
 
           {/* battery */}
           <g>
@@ -385,44 +492,104 @@ function ReverseBiasTab() {
           <path d="M 80 120 L 140 120" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
           <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
 
-          {/* P box */}
+          {/* P box - Majority: HOLES (⊕), Minority: electrons (⊖) */}
           <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
           <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
 
-          {/* N box */}
-          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
-          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
-
-          {/* particles (simple) */}
-          {Array.from({ length: 6 }).map((_, i) => {
-            const leftX = pX + 20 + (i % 3) * 25;
-            const leftY = 100 + Math.floor(i / 3) * 50;
-            const rightX = nX + 20 + (i % 3) * 25;
-            const rightY = 100 + Math.floor(i / 3) * 50;
-            const moveLeft = -voltage * 2 + Math.sin((t + i * 20) * 0.02) * 2;
-            const moveRight = voltage * 2 + Math.sin((t + i * 15) * 0.02) * 2;
+          {/* P-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
+          {Array.from({ length: 20 }).map((_, i) => {
+            const cols = 5;
+            const rows = 4;
+            const paddingX = 15;
+            const paddingY = 15;
+            const spacingX = (boxW - 2 * paddingX) / (cols - 1);
+            const spacingY = (120 - 2 * paddingY) / (rows - 1);
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const baseX = pX + paddingX + col * spacingX;
+            const baseY = 80 + paddingY + row * spacingY;
+            // Clamp movement: carriers move LEFT (away from junction) but stay within P-box (not past pX + 12)
+            // Also cannot enter depletion region (baseX + moveLeft must be < barrierX - 10)
+            const maxMoveToLeft = Math.min(voltage * 2, baseX - pX - 12);
+            const moveLeft = -maxMoveToLeft + Math.sin((t + i * 20) * 0.02) * 1;
+            // Final X position clamped to stay within P-box boundaries
+            const finalX = Math.max(pX + 12, Math.min(baseX + moveLeft, pX + boxW - 12));
+            // Minority electrons (⊖) are about 1 in 6 (rare)
+            const isMinority = (i % 6 === 3);
             return (
-              <g key={`part-r-${i}`}>
-                <circle cx={leftX + moveLeft} cy={leftY} r="10" fill="none" stroke="rgba(255,150,200,0.7)" strokeWidth="2" strokeDasharray="3 2" />
-                <text x={leftX + moveLeft} y={leftY + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">+</text>
-                <circle cx={rightX + moveRight} cy={rightY} r="6" fill="rgba(100,180,255,0.9)" filter="url(#glowReverse)" />
+              <g key={`pcarrier-r-${i}`}>
+                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,150,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,150,200,0.9)'} strokeWidth="1.5" />
+                <text x={finalX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
 
-          {/* depletion region (centered) */}
+          {/* N box - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
+
+          {/* N-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
+          {Array.from({ length: 20 }).map((_, i) => {
+            const cols = 5;
+            const rows = 4;
+            const paddingX = 15;
+            const paddingY = 15;
+            const spacingX = (boxW - 2 * paddingX) / (cols - 1);
+            const spacingY = (120 - 2 * paddingY) / (rows - 1);
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const baseX = nX + paddingX + col * spacingX;
+            const baseY = 80 + paddingY + row * spacingY;
+            // Clamp movement: carriers move RIGHT (away from junction) but stay within N-box (not past nX + boxW - 12)
+            const maxMoveToRight = Math.min(voltage * 2, (nX + boxW - 12) - baseX);
+            const moveRight = maxMoveToRight + Math.sin((t + i * 15) * 0.02) * 1;
+            // Final X position clamped to stay within N-box boundaries
+            const finalX = Math.max(nX + 12, Math.min(baseX + moveRight, nX + boxW - 12));
+            // Minority holes (⊕) are about 1 in 6 (rare)
+            const isMinority = (i % 6 === 3);
+            return (
+              <g key={`ncarrier-r-${i}`}>
+                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(255,150,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,150,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="1.5" />
+                <text x={finalX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
+              </g>
+            );
+          })}
+
+          {/* depletion region (centered) - widens in reverse bias */}
           <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="8" fill="rgba(255,100,100,0.1)" stroke="rgba(255,100,100,0.4)" strokeWidth="2" strokeDasharray="6 3" />
           <text x={boundary} y={215} textAnchor="middle" className="fill-red-300/80 text-xs font-semibold">WIDENED DEPLETION ZONE</text>
 
-          {/* ions inside depletion */}
-          {Array.from({ length: 4 }).map((_, i) => (
-            <g key={`ions-r-${i}`}>
-              <circle cx={boundary - barrierHalfPx / 1.5} cy={95 + i * 25} r="6" fill="none" stroke="rgba(255,150,200,0.9)" strokeWidth="1.5" />
-              <text x={boundary - barrierHalfPx / 1.5} y={99 + i * 25} textAnchor="middle" className="fill-pink-300 text-[10px] font-bold">−</text>
-              <circle cx={boundary + barrierHalfPx / 1.5} cy={95 + i * 25} r="6" fill="none" stroke="rgba(150,200,255,0.9)" strokeWidth="1.5" />
-              <text x={boundary + barrierHalfPx / 1.5} y={99 + i * 25} textAnchor="middle" className="fill-blue-300 text-[10px] font-bold">+</text>
-            </g>
-          ))}
+          {/* Equal columns of ions: P-side ⊖, N-side ⊕ - ions fit exactly within box */}
+          <>
+            {/* P-side columns of negative ions (⊖) - clamped within depletion box */}
+            {Array.from({ length: Math.max(1, Math.min(3, Math.floor(barrierHalfPx / 18))) }).map((_, colIdx) => (
+              Array.from({ length: 4 }).map((_, rowIdx) => {
+                // Clamp ionX to stay within depletion box (barrierX to barrierX + barrierWidthPx)
+                const ionX = Math.max(barrierX + 8, boundary - 10 - colIdx * 16);
+                const ionY = 95 + rowIdx * 25;
+                return (
+                  <g key={`p-ion-r-${colIdx}-${rowIdx}`}>
+                    <circle cx={ionX} cy={ionY} r="6" fill="rgba(255,150,200,0.2)" stroke="rgba(255,150,200,0.9)" strokeWidth="1.5" />
+                    <text x={ionX} y={ionY + 3} textAnchor="middle" className="fill-pink-300 text-[10px] font-bold">−</text>
+                  </g>
+                );
+              })
+            ))}
+            {/* N-side columns of positive ions (⊕) - clamped within depletion box */}
+            {Array.from({ length: Math.max(1, Math.min(3, Math.floor(barrierHalfPx / 18))) }).map((_, colIdx) => (
+              Array.from({ length: 4 }).map((_, rowIdx) => {
+                // Clamp ionX to stay within depletion box
+                const ionX = Math.min(barrierX + barrierWidthPx - 8, boundary + 10 + colIdx * 16);
+                const ionY = 95 + rowIdx * 25;
+                return (
+                  <g key={`n-ion-r-${colIdx}-${rowIdx}`}>
+                    <circle cx={ionX} cy={ionY} r="6" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.9)" strokeWidth="1.5" />
+                    <text x={ionX} y={ionY + 3} textAnchor="middle" className="fill-blue-300 text-[10px] font-bold">+</text>
+                  </g>
+                );
+              })
+            ))}
+          </>
 
           {/* small leakage */}
           {voltage > 2 && <g style={{ opacity: 0.4 }}>
@@ -496,10 +663,30 @@ function BreakdownTab() {
         </div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-2 shadow-lg shadow-primary/20">
+      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-2 shadow-lg shadow-primary/20 relative">
+        {/* Hint box overlay */}
+        <div className="absolute top-3 left-3 z-20 max-w-[180px]">
+          <div className="bg-card/95 backdrop-blur-md border-2 border-purple-500/30 rounded-lg p-2 shadow-xl">
+            <div className="flex items-start gap-2">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <span className="text-sm">⚡</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[10px] font-bold text-purple-400 mb-0.5">
+                  {isBreakdown ? '⚡ BREAKDOWN!' : breakdownType === 'zener' ? 'Zener Diode' : 'Avalanche'}
+                </h3>
+                <p className="text-[9px] text-muted-foreground leading-snug">
+                  {isBreakdown
+                    ? (breakdownType === 'zener' ? 'Quantum tunneling active! Electrons pass through barrier.' : 'Impact ionization cascade! Carriers multiply.')
+                    : `Increase voltage to ${breakdownVoltage}V to trigger breakdown.`}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[48vh] rounded-lg bg-gradient-to-br from-slate-900 via-purple-950/20 to-slate-950">
           <defs>
-            <filter id="intenseGlow"><feGaussianBlur stdDeviation="8" result="blur" /><feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="intenseGlow"><feGaussianBlur stdDeviation="8" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           </defs>
 
           <rect x="100" y="30" width="400" height="180" rx="16" fill="rgba(100,50,150,0.2)" stroke="rgba(200,150,255,0.4)" strokeWidth="2" />
@@ -509,8 +696,8 @@ function BreakdownTab() {
           {Array.from({ length: 7 }).map((_, i) => {
             const intensity = isBreakdown ? 1 : Math.min(1, voltage / breakdownVoltage);
             return <line key={i} x1="120" y1={45 + i * 24} x2="480" y2={45 + i * 24}
-                         stroke={`rgba(255,255,100,${0.1 + intensity * 0.3})`} strokeWidth={1 + intensity * 2}
-                         strokeDasharray={isBreakdown ? 'none' : '8 4'} />;
+              stroke={`rgba(255,255,100,${0.1 + intensity * 0.3})`} strokeWidth={1 + intensity * 2}
+              strokeDasharray={isBreakdown ? 'none' : '8 4'} />;
           })}
 
           {/* fixed ions */}
@@ -525,33 +712,62 @@ function BreakdownTab() {
 
           {/* depletion rect centered */}
           <rect x={centerBoundary - halfWidth} y={45} width={halfWidth * 2} height={140} rx="8"
-                fill="rgba(220,220,255,0.04)" stroke="rgba(200,200,220,0.36)" strokeDasharray="6 4" />
+            fill="rgba(220,220,255,0.04)" stroke="rgba(200,200,220,0.36)" strokeDasharray="6 4" />
 
-          {/* breakdown electrons */}
+          {/* breakdown electrons - covering all 4 rows from top to bottom (y: 50 to 175) */}
           {isBreakdown && (breakdownType === 'zener' ? (
-            Array.from({ length: 10 }).map((_, i) => {
-              const progress = ((t * 3 + i * 30) % 300) / 300;
-              const x = 150 + progress * 300;
-              const y = 60 + (i % 3) * 35 + Math.sin(progress * Math.PI * 4) * 10;
+            Array.from({ length: 16 }).map((_, i) => {
+              const progress = ((t * 3 + i * 20) % 300) / 300;
+              const x = 120 + progress * 360; // Full width from edge to edge
+              const row = i % 4; // 4 rows to cover full height
+              const y = 55 + row * 40; // From row 0 at y=55 to row 3 at y=175
               return <circle key={`zener-e-${i}`} cx={x} cy={y} r="4" fill="rgba(100,255,255,1)" filter="url(#intenseGlow)" />;
             })
           ) : (
-            Array.from({ length: 15 }).map((_, i) => {
+            Array.from({ length: 20 }).map((_, i) => {
               const wave = Math.floor(i / 5);
-              const progress = ((t * 4 + i * 25 + wave * 50) % 400) / 400;
-              const x = 150 + progress * 300;
-              const y = 50 + (i % 4) * 30 + Math.sin(progress * Math.PI * 6) * 12;
-              const size = 3 + wave * 1;
+              const progress = ((t * 4 + i * 20 + wave * 40) % 400) / 400;
+              const x = 120 + progress * 360; // Full width from edge to edge
+              const row = i % 4; // 4 rows to cover full height
+              const y = 55 + row * 40; // From row 0 at y=55 to row 3 at y=175
+              const size = 3 + wave * 0.5;
               return <circle key={`aval-e-${i}`} cx={x} cy={y} r={size} fill={`rgba(255,${200 - wave * 30},100,1)`} filter="url(#intenseGlow)" />;
             })
           ))}
 
-          {/* sparks */}
-          {isBreakdown && Array.from({ length: 2 }).map((_, i) => {
-            const flicker = Math.sin((t + i * 100) * 0.2) > 0.7;
-            if (!flicker) return null;
-            return <path key={`spark-${i}`} d={`M ${220 + i * 100} ${70 + i * 25} L ${240 + i * 100} ${90 + i * 25} L ${230 + i * 100} ${90 + i * 25} L ${250 + i * 100} ${115 + i * 25}`} stroke="rgba(255,255,200,0.9)" strokeWidth="2" fill="none" filter="url(#intenseGlow)" />;
-          })}
+          {/* Multiple small lightning-style sparks across the breakdown region */}
+          {isBreakdown && (
+            <>
+              {[
+                { x: 160, y: 50, scale: 0.6, delay: 0 },
+                { x: 220, y: 70, scale: 0.7, delay: 50 },
+                { x: 280, y: 55, scale: 0.5, delay: 100 },
+                { x: 340, y: 65, scale: 0.65, delay: 75 },
+                { x: 400, y: 50, scale: 0.55, delay: 25 },
+                { x: 180, y: 120, scale: 0.6, delay: 60 },
+                { x: 250, y: 130, scale: 0.7, delay: 90 },
+                { x: 320, y: 115, scale: 0.5, delay: 40 },
+                { x: 380, y: 125, scale: 0.65, delay: 110 },
+                { x: 440, y: 110, scale: 0.55, delay: 80 },
+              ].map((spark, i) => {
+                const flicker = Math.sin((t + spark.delay) * 0.2) > 0.5;
+                if (!flicker) return null;
+                const wobble = Math.sin(t * 0.15 + i) * 3;
+                const s = spark.scale;
+                return (
+                  <path
+                    key={`spark-${i}`}
+                    d={`M ${spark.x + wobble} ${spark.y} L ${spark.x + 15 * s + wobble} ${spark.y + 20 * s} L ${spark.x + 8 * s + wobble} ${spark.y + 20 * s} L ${spark.x + 25 * s + wobble} ${spark.y + 45 * s} L ${spark.x + 15 * s + wobble} ${spark.y + 45 * s} L ${spark.x + 30 * s + wobble} ${spark.y + 70 * s}`}
+                    stroke="rgba(255,255,200,0.9)"
+                    strokeWidth={1.5}
+                    fill="none"
+                    filter="url(#intenseGlow)"
+                  />
+                );
+              })}
+            </>
+          )}
+
 
           <text x="300" y="240" textAnchor="middle" className={`text-lg font-bold ${isBreakdown ? 'fill-red-400' : 'fill-orange-300'}`}>
             {isBreakdown ? '⚡ BREAKDOWN ⚡' : `Approaching (${Math.round((voltage / breakdownVoltage) * 100)}%)`}
