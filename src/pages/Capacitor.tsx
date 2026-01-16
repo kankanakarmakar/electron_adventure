@@ -336,23 +336,23 @@ const CapacitorPage = () => {
                               ))}
                             </g>
                           )}
-                          <text x="-35" y="55" className="text-base font-bold" fill="rgba(59, 130, 246, 1)">−</text>
-                          <text x="35" y="55" className="text-base font-bold" fill="rgba(236, 72, 153, 1)">+</text>
-                          <text x="0" y="8" textAnchor="middle" className="text-sm font-bold" fill="rgba(226, 232, 240, 0.9)">⚡ Capacitor</text>
-                          <text x="0" y="100" textAnchor="middle" className="text-sm font-semibold" fill="rgba(167, 139, 250, 0.9)">{capacitance}µF</text>
+                          <text x="-35" y="55" className="text-base font-bold" fill="#3b82f6">−</text>
+                          <text x="35" y="55" className="text-base font-bold" fill="#ec4899">+</text>
+                          <text x="0" y="8" textAnchor="middle" className="text-sm font-bold" fill="#1e293b">⚡ Capacitor</text>
+                          <text x="0" y="100" textAnchor="middle" className="text-sm font-semibold" fill="#7c3aed">{capacitance}µF</text>
                         </g>
 
-                        {/* Battery - Always visible */}
+                        {/* Battery - Clearly Visible */}
                         <g transform="translate(380, 370)">
-                          <rect x="-50" y="-30" width="100" height="70" rx="10" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(148, 163, 184, 0.5)" strokeWidth="2" filter="url(#glow)" />
-                          <rect x="-55" y="-10" width="10" height="30" rx="3" fill="rgba(239, 68, 68, 0.6)" />
-                          <rect x="45" y="-10" width="10" height="30" rx="3" fill="rgba(34, 197, 94, 0.6)" />
-                          <circle cx="-25" cy="10" r="16" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.8)" strokeWidth="2" />
-                          <text x="-25" y="16" textAnchor="middle" className="text-lg font-bold" fill="rgba(239, 68, 68, 1)">+</text>
-                          <circle cx="25" cy="10" r="16" fill="rgba(34, 197, 94, 0.2)" stroke="rgba(34, 197, 94, 0.8)" strokeWidth="2" />
-                          <text x="25" y="16" textAnchor="middle" className="text-lg font-bold" fill="rgba(34, 197, 94, 1)">−</text>
-                          <text x="0" y="-40" textAnchor="middle" className="text-sm font-bold" fill="rgba(226, 232, 240, 0.9)">🔋 Battery</text>
-                          <text x="0" y="55" textAnchor="middle" className="text-sm font-semibold" fill="rgba(147, 197, 253, 0.9)">{voltage}V</text>
+                          <rect x="-55" y="-35" width="110" height="80" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                          <rect x="-60" y="-12" width="12" height="34" rx="4" fill="#ef4444" />
+                          <rect x="48" y="-12" width="12" height="34" rx="4" fill="#22c55e" />
+                          <circle cx="-25" cy="5" r="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                          <text x="-25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#ef4444">+</text>
+                          <circle cx="25" cy="5" r="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                          <text x="25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#22c55e">−</text>
+                          <text x="0" y="-45" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#1e293b">🔋 Battery</text>
+                          <text x="0" y="60" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
                         </g>
 
                         {/* Bulb */}
@@ -453,17 +453,17 @@ const CapacitorPage = () => {
                           <text x="0" y="85" textAnchor="middle" className="text-[10px] font-semibold" fill="rgba(147, 197, 253, 0.9)">{capacitance3}µF</text>
                         </g>
 
-                        {/* Battery - Always visible */}
+                        {/* Battery - Clearly Visible */}
                         <g transform="translate(380, 370)">
-                          <rect x="-50" y="-30" width="100" height="70" rx="10" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(148, 163, 184, 0.5)" strokeWidth="2" filter="url(#glow)" />
-                          <rect x="-55" y="-10" width="10" height="30" rx="3" fill="rgba(239, 68, 68, 0.6)" />
-                          <rect x="45" y="-10" width="10" height="30" rx="3" fill="rgba(34, 197, 94, 0.6)" />
-                          <circle cx="-25" cy="10" r="16" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.8)" strokeWidth="2" />
-                          <text x="-25" y="16" textAnchor="middle" className="text-lg font-bold" fill="rgba(239, 68, 68, 1)">+</text>
-                          <circle cx="25" cy="10" r="16" fill="rgba(34, 197, 94, 0.2)" stroke="rgba(34, 197, 94, 0.8)" strokeWidth="2" />
-                          <text x="25" y="16" textAnchor="middle" className="text-lg font-bold" fill="rgba(34, 197, 94, 1)">−</text>
-                          <text x="0" y="-40" textAnchor="middle" className="text-sm font-bold" fill="rgba(226, 232, 240, 0.9)">🔋 Battery</text>
-                          <text x="0" y="55" textAnchor="middle" className="text-sm font-semibold" fill="rgba(147, 197, 253, 0.9)">{voltage}V</text>
+                          <rect x="-55" y="-35" width="110" height="80" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                          <rect x="-60" y="-12" width="12" height="34" rx="4" fill="#ef4444" />
+                          <rect x="48" y="-12" width="12" height="34" rx="4" fill="#22c55e" />
+                          <circle cx="-25" cy="5" r="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                          <text x="-25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#ef4444">+</text>
+                          <circle cx="25" cy="5" r="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                          <text x="25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#22c55e">−</text>
+                          <text x="0" y="-45" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#1e293b">🔋 Battery</text>
+                          <text x="0" y="60" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
                         </g>
 
                         {/* Bulb */}
@@ -555,20 +555,20 @@ const CapacitorPage = () => {
                           <text x="0" y="65" textAnchor="middle" className="text-xs font-bold" fill="rgba(147, 197, 253, 1)">{capacitance3}µF</text>
                         </g>
 
-                        {/* Battery - Visible during charging stages */}
+                        {/* Battery - Clearly Visible */}
                         {stage !== 'discharge' && stage !== 'discharged' && (
                           <g transform="translate(150, 300)">
-                            <line x1="0" y1="-100" x2="0" y2="-50" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                            <line x1="0" y1="50" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                            <rect x="-30" y="-50" width="60" height="100" rx="10" fill="rgba(15, 23, 42, 0.9)" stroke="rgba(148, 163, 184, 0.5)" strokeWidth="2" filter="url(#glow)" />
-                            <rect x="-10" y="-55" width="20" height="10" rx="3" fill="rgba(239, 68, 68, 0.6)" />
-                            <rect x="-10" y="45" width="20" height="10" rx="3" fill="rgba(34, 197, 94, 0.6)" />
-                            <circle cx="0" cy="-20" r="14" fill="rgba(239, 68, 68, 0.2)" stroke="rgba(239, 68, 68, 0.8)" strokeWidth="2" />
-                            <text x="0" y="-14" textAnchor="middle" className="text-base font-bold" fill="rgba(239, 68, 68, 1)">+</text>
-                            <circle cx="0" cy="20" r="14" fill="rgba(34, 197, 94, 0.2)" stroke="rgba(34, 197, 94, 0.8)" strokeWidth="2" />
-                            <text x="0" y="26" textAnchor="middle" className="text-base font-bold" fill="rgba(34, 197, 94, 1)">−</text>
-                            <text x="-45" y="5" textAnchor="end" className="text-sm font-bold" fill="rgba(226, 232, 240, 0.9)">🔋</text>
-                            <text x="45" y="5" textAnchor="start" className="text-xs font-semibold" fill="rgba(147, 197, 253, 0.9)">{voltage}V</text>
+                            <line x1="0" y1="-100" x2="0" y2="-55" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                            <line x1="0" y1="55" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                            <rect x="-35" y="-55" width="70" height="110" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                            <rect x="-12" y="-60" width="24" height="12" rx="4" fill="#ef4444" />
+                            <rect x="-12" y="48" width="24" height="12" rx="4" fill="#22c55e" />
+                            <circle cx="0" cy="-22" r="16" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                            <text x="0" y="-15" textAnchor="middle" fontSize="22" fontWeight="bold" fill="#ef4444">+</text>
+                            <circle cx="0" cy="22" r="16" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                            <text x="0" y="29" textAnchor="middle" fontSize="22" fontWeight="bold" fill="#22c55e">−</text>
+                            <text x="-50" y="5" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">🔋</text>
+                            <text x="50" y="5" textAnchor="start" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
                           </g>
                         )}
 

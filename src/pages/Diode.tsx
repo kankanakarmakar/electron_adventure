@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StarField } from '@/components/electronics/StarField';
 import { EducationalPanel } from '@/components/electronics/EducationalPanel';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -88,17 +87,17 @@ function PNJunctionIntro() {
       </div>
 
       <svg viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet"
-        className="w-full h-auto max-h-[75vh] rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 shadow-[0_0_40px_rgba(139,92,246,0.3)] overflow-hidden animate-border-glow">
+        className="w-full h-auto max-h-[75vh] rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 shadow-lg overflow-hidden">
         <defs>
           <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
 
           <linearGradient id="pTypeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(255,100,150,0.18)" />
-            <stop offset="100%" stopColor="rgba(255,80,130,0.08)" />
+            <stop offset="0%" stopColor="rgba(244,114,182,0.4)" />
+            <stop offset="100%" stopColor="rgba(236,72,153,0.25)" />
           </linearGradient>
           <linearGradient id="nTypeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(100,150,255,0.18)" />
-            <stop offset="100%" stopColor="rgba(80,130,255,0.08)" />
+            <stop offset="0%" stopColor="rgba(96,165,250,0.4)" />
+            <stop offset="100%" stopColor="rgba(59,130,246,0.25)" />
           </linearGradient>
 
           <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -254,35 +253,59 @@ function ForwardBiasTab() {
 
   return (
     <div className="space-y-3">
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-green-500/30 p-4 shadow-lg shadow-green-500/20">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-green-400 p-4 shadow-lg">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-foreground">Applied Voltage</h3>
-          <div className="flex items-center gap-3">
+          <h3 className="text-base font-bold text-slate-800">Applied Voltage</h3>
+          <div
+            className="flex items-center gap-3"
+            role="spinbutton"
+            tabIndex={0}
+            aria-valuemin={0}
+            aria-valuemax={1.5}
+            aria-valuenow={voltage}
+            aria-label="Applied Voltage"
+            onKeyDown={(e) => {
+              const key = e.key;
+              if (key === 'ArrowUp' || key === 'PageUp') {
+                e.preventDefault();
+                setVoltage(v => Math.min(1.5, v + 0.1));
+              } else if (key === 'ArrowDown' || key === 'PageDown') {
+                e.preventDefault();
+                setVoltage(v => Math.max(0, v - 0.1));
+              } else if (key === 'Home') {
+                e.preventDefault();
+                setVoltage(0);
+              } else if (key === 'End') {
+                e.preventDefault();
+                setVoltage(1.5);
+              }
+            }}
+          >
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - 0.1))} className="h-10 w-10 p-0 text-lg font-bold">−</Button>
-            <span className="text-2xl font-mono font-bold text-green-400 min-w-[100px] text-center">{voltage.toFixed(2)}V</span>
+            <span className="text-2xl font-mono font-bold text-green-600 min-w-[100px] text-center">{voltage.toFixed(2)}V</span>
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(1.5, v + 0.1))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+        <div className="flex justify-between text-xs text-slate-500 mt-2">
           <span>Min: 0V</span>
-          <span className="text-yellow-400 font-medium">Threshold: 0.7V</span>
+          <span className="text-amber-600 font-medium">Threshold: 0.7V</span>
           <span>Max: 1.5V</span>
         </div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20 relative">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-3 shadow-lg relative">
         {/* Hint box overlay */}
         <div className="absolute top-4 left-4 z-20 max-w-[200px]">
-          <div className="bg-card/95 backdrop-blur-md border-2 border-green-500/30 rounded-lg p-2 shadow-xl">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-green-400 rounded-lg p-2 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
                 <span className="text-sm">💡</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-green-400 mb-0.5">
+                <h3 className="text-[10px] font-bold text-green-600 mb-0.5">
                   {isAboveThreshold ? 'Conducting!' : 'Below Threshold'}
                 </h3>
-                <p className="text-[9px] text-muted-foreground leading-snug">
+                <p className="text-[9px] text-slate-600 leading-snug">
                   {isAboveThreshold
                     ? 'Barrier overcome! Current flows freely through the diode.'
                     : 'Increase voltage to 0.7V to overcome the barrier potential.'}
@@ -291,28 +314,28 @@ function ForwardBiasTab() {
             </div>
           </div>
         </div>
-        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 border-2 border-sky-300">
           <defs>
             <filter id="glowForward"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-            <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(100,200,255,1)" /><stop offset="100%" stopColor="rgba(100,200,255,0)" /></radialGradient>
+            <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(59,130,246,1)" /><stop offset="100%" stopColor="rgba(59,130,246,0)" /></radialGradient>
           </defs>
 
-          {/* Battery / connectors */}
+          {/* Battery / connectors - darker for visibility */}
           <g>
-            <rect x="20" y="100" width="60" height="80" rx="8" fill="rgba(50,50,50,0.8)" stroke="rgba(100,100,100,0.5)" strokeWidth="2" />
-            <rect x="35" y="90" width="30" height="10" rx="2" fill="rgba(100,100,100,0.8)" />
-            <text x="50" y="135" textAnchor="middle" className="fill-green-400 text-lg font-bold">+</text>
-            <text x="50" y="165" textAnchor="middle" className="fill-red-400 text-lg font-bold">−</text>
-            <text x="50" y="195" textAnchor="middle" className="fill-white/60 text-xs">{voltage.toFixed(1)}V</text>
+            <rect x="20" y="100" width="60" height="80" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+            <rect x="35" y="90" width="30" height="10" rx="2" fill="#4b5563" />
+            <text x="50" y="135" textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold">+</text>
+            <text x="50" y="165" textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold">−</text>
+            <text x="50" y="195" textAnchor="middle" fill="#1e40af" fontSize="12" fontWeight="bold">{voltage.toFixed(1)}V</text>
           </g>
 
-          {/* wires (visual) */}
-          <path d="M 80 120 L 140 120" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
-          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
+          {/* wires (visual) - darker colors for visibility */}
+          <path d="M 80 120 L 140 120" stroke="#ef4444" strokeWidth="4" />
+          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="#3b82f6" strokeWidth="4" />
 
           {/* P block - Majority: HOLES (⊕), Minority: electrons (⊖) */}
-          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
-          <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
+          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#ec4899" strokeWidth="2" />
+          <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#be185d" fontSize="14" fontWeight="bold">P-type</text>
 
           {/* P-type carriers - majority HOLES (⊕) and minority electrons (⊖) - neat grid */}
           {Array.from({ length: cols * rows }).map((_, i) => {
@@ -325,14 +348,14 @@ function ForwardBiasTab() {
             const isMinority = (i % 6 === 3);
             return (
               <g key={`pcarrier-f-${i}`}>
-                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,150,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,150,200,0.9)'} strokeWidth="1.5" />
-                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
+                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(59,130,246,0.3)' : 'rgba(236,72,153,0.3)'} stroke={isMinority ? '#3b82f6' : '#ec4899'} strokeWidth="2" />
+                <text x={baseX + moveX} y={baseY + 4} textAnchor="middle" fill={isMinority ? '#1e40af' : '#be185d'} fontSize="12" fontWeight="bold">{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
 
           {/* barrier (centered at boundary) with fixed ions */}
-          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="6" fill="rgba(200,200,255,0.1)" stroke="rgba(200,200,220,0.3)" strokeWidth="1" strokeDasharray="4 4" />
+          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="6" fill="rgba(148,163,184,0.2)" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
           {/* Depletion region: Equal columns of ⊖ on P-side and ⊕ on N-side - ions fit within box */}
           {barrierWidthPx > 15 && (
             <>
@@ -366,11 +389,11 @@ function ForwardBiasTab() {
               ))}
             </>
           )}
-          <text x={boundary} y={210} textAnchor="middle" className="fill-white/50 text-[10px]">{barrierWidthPx > 30 ? 'Depletion Region' : 'Barrier shrinking!'}</text>
+          <text x={boundary} y={210} textAnchor="middle" fill="#475569" fontSize="11" fontWeight="bold">{barrierWidthPx > 30 ? 'Depletion Region' : 'Barrier shrinking!'}</text>
 
           {/* N block - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
-          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
-          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="2" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e40af" fontSize="14" fontWeight="bold">N-type</text>
 
           {/* N-type carriers - majority ELECTRONS (⊖) and minority holes (⊕) - neat grid */}
           {Array.from({ length: cols * rows }).map((_, i) => {
@@ -383,8 +406,8 @@ function ForwardBiasTab() {
             const isMinority = (i % 6 === 3);
             return (
               <g key={`ncarrier-f-${i}`}>
-                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(255,150,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,150,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="1.5" />
-                <text x={baseX + moveX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
+                <circle cx={baseX + moveX} cy={baseY} r="8" fill={isMinority ? 'rgba(236,72,153,0.3)' : 'rgba(59,130,246,0.3)'} stroke={isMinority ? '#ec4899' : '#3b82f6'} strokeWidth="2" />
+                <text x={baseX + moveX} y={baseY + 4} textAnchor="middle" fill={isMinority ? '#be185d' : '#1e40af'} fontSize="12" fontWeight="bold">{isMinority ? '+' : '−'}</text>
               </g>
             );
           })}
@@ -395,12 +418,12 @@ function ForwardBiasTab() {
               {Array.from({ length: 6 }).map((_, i) => {
                 const x = boundary + ((t * 2 + i * 50) % 200) - 100;
                 const opacity = Math.abs(Math.sin(((t * 2 + i * 50) % 200) / 200 * Math.PI));
-                return <circle key={`flow-${i}`} cx={x} cy={140} r="4" fill="rgba(100,255,150,0.8)" style={{ opacity: opacity * (currentFlow / 30) }} filter="url(#glowForward)" />;
+                return <circle key={`flow-${i}`} cx={x} cy={140} r="4" fill="#22c55e" style={{ opacity: opacity * (currentFlow / 30) }} filter="url(#glowForward)" />;
               })}
               {/* Prominent status box */}
               <g>
-                <rect x={boundary - 130} y={222} width="260" height="28" rx="6" fill="rgba(0,200,150,0.2)" stroke="rgba(100,255,200,0.5)" strokeWidth="1.5" />
-                <text x={boundary} y={240} textAnchor="middle" className="fill-cyan-300 text-sm font-bold drop-shadow-lg">⚡ Current flowing – Short Circuit ⚡</text>
+                <rect x={boundary - 130} y={222} width="260" height="28" rx="6" fill="rgba(34,197,94,0.2)" stroke="#22c55e" strokeWidth="2" />
+                <text x={boundary} y={240} textAnchor="middle" fill="#15803d" fontSize="13" fontWeight="bold">⚡ Current flowing – Short Circuit ⚡</text>
               </g>
             </g>
           )}
@@ -412,13 +435,13 @@ function ForwardBiasTab() {
                 cx="520"
                 cy="140"
                 r="40"
-                fill="rgba(255,255,150,0.16)"
+                fill="rgba(250,204,21,0.3)"
                 filter="url(#glowForward)"
               />
             )}
-            <circle cx="520" cy="140" r="30" fill={isAboveThreshold ? `rgba(255,255,100,${Math.min(1, currentFlow / 80)})` : 'rgba(100,100,100,0.3)'} stroke={isAboveThreshold ? 'rgba(255,255,150,0.8)' : 'rgba(150,150,150,0.5)'} strokeWidth="3" />
-            <text x="520" y="145" textAnchor="middle" className={`text-sm font-bold ${isAboveThreshold ? 'fill-amber-900' : 'fill-white/40'}`}>{isAboveThreshold ? 'ON' : 'OFF'}</text>
-            <text x="520" y="185" textAnchor="middle" className="fill-white/60 text-xs">LED</text>
+            <circle cx="520" cy="140" r="30" fill={isAboveThreshold ? `rgba(250,204,21,${Math.min(1, currentFlow / 80)})` : '#94a3b8'} stroke={isAboveThreshold ? '#eab308' : '#64748b'} strokeWidth="3" />
+            <text x="520" y="147" textAnchor="middle" fill={isAboveThreshold ? '#854d0e' : '#475569'} fontSize="14" fontWeight="bold">{isAboveThreshold ? 'ON' : 'OFF'}</text>
+            <text x="520" y="185" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="bold">LED</text>
           </g>
         </svg>
       </div>
@@ -445,29 +468,53 @@ function ReverseBiasTab() {
 
   return (
     <div className="space-y-3">
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-red-500/30 p-4 shadow-lg shadow-red-500/20">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-red-400 p-4 shadow-lg">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="text-base font-bold text-foreground">Reverse Voltage</h3>
-          <div className="flex items-center gap-3">
+          <h3 className="text-base font-bold text-slate-800">Reverse Voltage</h3>
+          <div
+            className="flex items-center gap-3"
+            role="spinbutton"
+            tabIndex={0}
+            aria-valuemin={0}
+            aria-valuemax={10}
+            aria-valuenow={voltage}
+            aria-label="Reverse Voltage"
+            onKeyDown={(e) => {
+              const key = e.key;
+              if (key === 'ArrowUp' || key === 'PageUp') {
+                e.preventDefault();
+                setVoltage(v => Math.min(10, v + 0.5));
+              } else if (key === 'ArrowDown' || key === 'PageDown') {
+                e.preventDefault();
+                setVoltage(v => Math.max(0, v - 0.5));
+              } else if (key === 'Home') {
+                e.preventDefault();
+                setVoltage(0);
+              } else if (key === 'End') {
+                e.preventDefault();
+                setVoltage(10);
+              }
+            }}
+          >
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - 0.5))} className="h-10 w-10 p-0 text-lg font-bold">−</Button>
-            <span className="text-2xl font-mono font-bold text-red-400 min-w-[100px] text-center">-{voltage.toFixed(1)}V</span>
+            <span className="text-2xl font-mono font-bold text-red-600 min-w-[100px] text-center">-{voltage.toFixed(1)}V</span>
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(10, v + 0.5))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground mt-2"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
+        <div className="flex justify-between text-xs text-slate-500 mt-2"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-3 shadow-lg shadow-primary/20 relative">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-3 shadow-lg relative">
         {/* Hint box overlay */}
         <div className="absolute top-4 left-4 z-20 max-w-[200px]">
-          <div className="bg-card/95 backdrop-blur-md border-2 border-red-500/30 rounded-lg p-2 shadow-xl">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-red-400 rounded-lg p-2 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
                 <span className="text-sm">🚫</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-red-400 mb-0.5">Reverse Bias</h3>
-                <p className="text-[9px] text-muted-foreground leading-snug">
+                <h3 className="text-[10px] font-bold text-red-600 mb-0.5">Reverse Bias</h3>
+                <p className="text-[9px] text-slate-600 leading-snug">
                   {voltage > 5
                     ? 'High reverse voltage! Depletion zone very wide.'
                     : 'Depletion zone widens. No current flows (open circuit).'}
@@ -476,25 +523,25 @@ function ReverseBiasTab() {
             </div>
           </div>
         </div>
-        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-slate-900 to-slate-950">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 border-2 border-sky-300">
           <defs><filter id="glowReverse"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
 
-          {/* battery */}
+          {/* battery - dark for visibility */}
           <g>
-            <rect x="20" y="100" width="60" height="80" rx="8" fill="rgba(50,50,50,0.8)" stroke="rgba(100,100,100,0.5)" strokeWidth="2" />
-            <rect x="35" y="90" width="30" height="10" rx="2" fill="rgba(100,100,100,0.8)" />
-            <text x="50" y="135" textAnchor="middle" className="fill-red-400 text-lg font-bold">−</text>
-            <text x="50" y="165" textAnchor="middle" className="fill-green-400 text-lg font-bold">+</text>
-            <text x="50" y="195" textAnchor="middle" className="fill-white/60 text-xs">-{voltage.toFixed(1)}V</text>
+            <rect x="20" y="100" width="60" height="80" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+            <rect x="35" y="90" width="30" height="10" rx="2" fill="#4b5563" />
+            <text x="50" y="135" textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold">−</text>
+            <text x="50" y="165" textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold">+</text>
+            <text x="50" y="195" textAnchor="middle" fill="#1e40af" fontSize="12" fontWeight="bold">-{voltage.toFixed(1)}V</text>
           </g>
 
-          {/* wires */}
-          <path d="M 80 120 L 140 120" stroke="rgba(100,100,255,0.6)" strokeWidth="3" />
-          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
+          {/* wires - solid colors for visibility */}
+          <path d="M 80 120 L 140 120" stroke="#3b82f6" strokeWidth="4" />
+          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="#ef4444" strokeWidth="4" />
 
           {/* P box - Majority: HOLES (⊕), Minority: electrons (⊖) */}
-          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(255,100,150,0.15)" stroke="rgba(255,150,200,0.5)" strokeWidth="2" />
-          <text x={pX + boxW / 2} y={70} textAnchor="middle" className="fill-pink-300 text-sm">P-type</text>
+          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#ec4899" strokeWidth="2" />
+          <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#be185d" fontSize="14" fontWeight="bold">P-type</text>
 
           {/* P-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
           {Array.from({ length: 20 }).map((_, i) => {
@@ -518,15 +565,15 @@ function ReverseBiasTab() {
             const isMinority = (i % 6 === 3);
             return (
               <g key={`pcarrier-r-${i}`}>
-                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,150,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,150,200,0.9)'} strokeWidth="1.5" />
-                <text x={finalX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
+                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(59,130,246,0.3)' : 'rgba(236,72,153,0.3)'} stroke={isMinority ? '#3b82f6' : '#ec4899'} strokeWidth="2" />
+                <text x={finalX} y={baseY + 4} textAnchor="middle" fill={isMinority ? '#1e40af' : '#be185d'} fontSize="12" fontWeight="bold">{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
 
           {/* N box - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
-          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(100,150,255,0.15)" stroke="rgba(150,200,255,0.5)" strokeWidth="2" />
-          <text x={nX + boxW / 2} y={70} textAnchor="middle" className="fill-blue-300 text-sm">N-type</text>
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="2" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e40af" fontSize="14" fontWeight="bold">N-type</text>
 
           {/* N-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
           {Array.from({ length: 20 }).map((_, i) => {
@@ -549,8 +596,8 @@ function ReverseBiasTab() {
             const isMinority = (i % 6 === 3);
             return (
               <g key={`ncarrier-r-${i}`}>
-                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(255,150,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,150,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="1.5" />
-                <text x={finalX} y={baseY + 3} textAnchor="middle" className={`text-[10px] font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
+                <circle cx={finalX} cy={baseY} r="8" fill={isMinority ? 'rgba(236,72,153,0.3)' : 'rgba(59,130,246,0.3)'} stroke={isMinority ? '#ec4899' : '#3b82f6'} strokeWidth="2" />
+                <text x={finalX} y={baseY + 4} textAnchor="middle" fill={isMinority ? '#be185d' : '#1e40af'} fontSize="12" fontWeight="bold">{isMinority ? '+' : '−'}</text>
               </g>
             );
           })}
@@ -634,7 +681,7 @@ function BreakdownTab() {
 
   return (
     <div className="space-y-2">
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-purple-500/30 p-2 shadow-lg shadow-purple-500/20">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-purple-400 p-2 shadow-lg">
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" variant={breakdownType === 'zener' ? 'default' : 'outline'} onClick={() => { setBreakdownType('zener'); setVoltage(0); }} className="h-auto py-2 flex-col text-sm">
             <Zap className="w-5 h-5 mb-1" />
@@ -647,35 +694,59 @@ function BreakdownTab() {
         </div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-purple-500/30 p-2 shadow-lg shadow-purple-500/20">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-purple-400 p-2 shadow-lg">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-base font-bold text-foreground">Reverse Voltage</h3>
-          <div className="flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-800">Reverse Voltage</h3>
+          <div
+            className="flex items-center gap-2"
+            role="spinbutton"
+            tabIndex={0}
+            aria-valuemin={0}
+            aria-valuemax={maxVoltage}
+            aria-valuenow={voltage}
+            aria-label="Reverse Voltage"
+            onKeyDown={(e) => {
+              const key = e.key;
+              if (key === 'ArrowUp' || key === 'PageUp') {
+                e.preventDefault();
+                setVoltage(v => Math.min(maxVoltage, v + step));
+              } else if (key === 'ArrowDown' || key === 'PageDown') {
+                e.preventDefault();
+                setVoltage(v => Math.max(0, v - step));
+              } else if (key === 'Home') {
+                e.preventDefault();
+                setVoltage(0);
+              } else if (key === 'End') {
+                e.preventDefault();
+                setVoltage(maxVoltage);
+              }
+            }}
+          >
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.max(0, v - step))} className="h-8 w-8 p-0 text-base font-bold">−</Button>
-            <span className={`text-xl font-mono font-bold min-w-[90px] text-center ${isBreakdown ? 'text-red-400 animate-pulse' : 'text-orange-400'}`}>-{voltage.toFixed(1)}V</span>
+            <span className={`text-xl font-mono font-bold min-w-[90px] text-center ${isBreakdown ? 'text-red-600 animate-pulse' : 'text-orange-600'}`}>-{voltage.toFixed(1)}V</span>
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(maxVoltage, v + step))} className="h-8 w-8 p-0 text-base font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
           <span>0V</span>
-          <span className="text-red-400 font-medium">Breakdown: {breakdownVoltage}V</span>
+          <span className="text-red-600 font-medium">Breakdown: {breakdownVoltage}V</span>
           <span>Max: {maxVoltage}V</span>
         </div>
       </div>
 
-      <div className="bg-card/80 backdrop-blur rounded-xl border-2 border-primary/30 p-2 shadow-lg shadow-primary/20 relative">
+      <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-2 shadow-lg relative">
         {/* Hint box overlay */}
         <div className="absolute top-3 left-3 z-20 max-w-[180px]">
-          <div className="bg-card/95 backdrop-blur-md border-2 border-purple-500/30 rounded-lg p-2 shadow-xl">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-purple-400 rounded-lg p-2 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
                 <span className="text-sm">⚡</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-purple-400 mb-0.5">
+                <h3 className="text-[10px] font-bold text-purple-600 mb-0.5">
                   {isBreakdown ? '⚡ BREAKDOWN!' : breakdownType === 'zener' ? 'Zener Diode' : 'Avalanche'}
                 </h3>
-                <p className="text-[9px] text-muted-foreground leading-snug">
+                <p className="text-[9px] text-slate-600 leading-snug">
                   {isBreakdown
                     ? (breakdownType === 'zener' ? 'Quantum tunneling active! Electrons pass through barrier.' : 'Impact ionization cascade! Carriers multiply.')
                     : `Increase voltage to ${breakdownVoltage}V to trigger breakdown.`}
@@ -684,7 +755,7 @@ function BreakdownTab() {
             </div>
           </div>
         </div>
-        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[48vh] rounded-lg bg-gradient-to-br from-slate-900 via-purple-950/20 to-slate-950">
+        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[48vh] rounded-lg bg-gradient-to-br from-slate-800 via-purple-900/30 to-slate-900">
           <defs>
             <filter id="intenseGlow"><feGaussianBlur stdDeviation="8" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           </defs>
@@ -788,16 +859,16 @@ function InteractiveBiasDemo() {
   return (
     <div className="space-y-2 h-full flex flex-col">
       <Tabs value={biasMode} onValueChange={(v) => setBiasMode(v)} className="w-full flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-muted/50">
-          <TabsTrigger value="forward" className="flex items-center gap-2 py-3 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400 transition-all">
+        <TabsList className="grid w-full grid-cols-3 h-12 p-1 bg-white/80 border-2 border-slate-300 rounded-xl">
+          <TabsTrigger value="forward" className="flex items-center gap-2 py-3 text-slate-600 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-lg">
             <ArrowRight className="w-5 h-5" />
             <span>Forward Bias</span>
           </TabsTrigger>
-          <TabsTrigger value="reverse" className="flex items-center gap-2 py-3 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400 transition-all">
+          <TabsTrigger value="reverse" className="flex items-center gap-2 py-3 text-slate-600 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-lg">
             <ArrowLeft className="w-5 h-5" />
             <span>Reverse Bias</span>
           </TabsTrigger>
-          <TabsTrigger value="breakdown" className="flex items-center gap-2 py-3 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400 transition-all">
+          <TabsTrigger value="breakdown" className="flex items-center gap-2 py-3 text-slate-600 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all rounded-lg">
             <Zap className="w-5 h-5" />
             <span>Breakdown</span>
           </TabsTrigger>
@@ -818,26 +889,8 @@ export default function Diode() {
   const [openBias, setOpenBias] = useState(false);
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      <div className="fixed inset-0 bg-gradient-to-br from-background via-cosmic-purple/10 to-cosmic-blue/10 animate-gradient-slow" />
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(139,92,246,0.15),transparent_50%)] animate-pulse-slow" />
-      <div className="fixed inset-0 opacity-30">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-primary/20 blur-xl animate-float"
-            style={{
-              width: `${Math.random() * 300 + 100}px`,
-              height: `${Math.random() * 300 + 100}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${Math.random() * 20 + 15}s`,
-            }}
-          />
-        ))}
-      </div>
-      <StarField />
+    <div className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 30%, #7dd3fc 70%, #38bdf8 100%)' }}>
+      {/* Light blue background - no stars or floating elements */}
 
       <div className="relative z-10 h-full flex flex-col items-center justify-center p-4">
         <EducationalPanel
@@ -854,11 +907,11 @@ export default function Diode() {
         {!showEducation && (
           <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col gap-4 h-full">
             {openJunction && (
-              <div className="w-full bg-card/95 backdrop-blur-sm rounded-2xl border border-border/50 p-4 shadow-2xl flex flex-col h-full">
+              <div className="w-full bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-slate-300 p-4 shadow-lg flex flex-col h-full">
                 <div className="mb-3 flex justify-between items-start">
                   <div>
-                    <h2 className="text-xl md:text-2xl font-bold text-foreground">Formation of a PN Junction Diode</h2>
-                    <p className="text-sm md:text-base text-muted-foreground mt-1">Join P-type and N-type regions to create a depletion zone and internal electric field.</p>
+                    <h2 className="text-xl md:text-2xl font-bold text-slate-800">Formation of a PN Junction Diode</h2>
+                    <p className="text-sm md:text-base text-slate-600 mt-1">Join P-type and N-type regions to create a depletion zone and internal electric field.</p>
                   </div>
                   <Button size="sm" onClick={() => { setOpenJunction(false); setOpenBias(true); }}>Next</Button>
                 </div>
@@ -867,7 +920,7 @@ export default function Diode() {
             )}
 
             {openBias && (
-              <div className="w-full bg-card/95 backdrop-blur-sm rounded-2xl border border-border/50 p-4 shadow-2xl flex flex-col h-full overflow-auto">
+              <div className="w-full bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-slate-300 p-4 shadow-lg flex flex-col h-full overflow-auto">
                 <InteractiveBiasDemo />
               </div>
             )}

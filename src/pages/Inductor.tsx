@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { StarField } from '@/components/electronics/StarField';
 import { Zap, Info } from 'lucide-react';
 
 type CircuitMode = 'simple' | 'series' | 'parallel';
@@ -74,10 +73,8 @@ const InductorPage = () => {
   const info = getModeInfo();
 
   return (
-    <div className="relative h-screen bg-background overflow-hidden">
-      {/* Background layers */}
-      <div className="fixed inset-0 bg-gradient-to-br from-background via-cosmic-purple/10 to-cosmic-blue/10" />
-      <StarField />
+    <div className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 30%, #7dd3fc 70%, #38bdf8 100%)' }}>
+      {/* Light blue background */}
 
       {/* Main content */}
       <div className="relative z-10 h-screen flex items-center justify-center p-6">
@@ -85,21 +82,21 @@ const InductorPage = () => {
           {/* Header with title */}
           <div className="text-center mb-4">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2">
-              <span className="text-white drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">What are </span>
+              <span className="text-slate-800 drop-shadow-sm">What are </span>
               <span className="bg-gradient-to-r from-[#3b82f6] via-[#6366f1] to-[#8b5cf6] bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(59,130,246,0.6)] animate-gradient">Inductors</span>
-              <span className="text-white drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">?</span>
+              <span className="text-slate-800 drop-shadow-sm">?</span>
             </h1>
-            <p className="text-base md:text-lg text-white/70 font-bold tracking-wide drop-shadow-lg">Explore How Inductors Store Energy in Magnetic Fields</p>
+            <p className="text-base md:text-lg text-slate-600 font-bold tracking-wide">Explore How Inductors Store Energy in Magnetic Fields</p>
           </div>
 
           {/* Mode selector tabs */}
           <div className="flex justify-center mb-3">
-            <div className="inline-flex rounded-xl border-2 border-blue-500/30 bg-card/60 backdrop-blur-xl p-1 shadow-2xl">
+            <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white/80 backdrop-blur-xl p-1 shadow-lg">
               <button
                 onClick={() => setMode('simple')}
                 className={`px-8 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ${mode === 'simple'
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50'
-                  : 'text-white/60 hover:text-white/90'
+                  : 'text-slate-500 hover:text-slate-700'
                   }`}
               >
                 Simple
@@ -108,7 +105,7 @@ const InductorPage = () => {
                 onClick={() => setMode('series')}
                 className={`px-8 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ${mode === 'series'
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50'
-                  : 'text-white/60 hover:text-white/90'
+                  : 'text-slate-500 hover:text-slate-700'
                   }`}
               >
                 Series
@@ -117,7 +114,7 @@ const InductorPage = () => {
                 onClick={() => setMode('parallel')}
                 className={`px-8 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ${mode === 'parallel'
                   ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50'
-                  : 'text-white/60 hover:text-white/90'
+                  : 'text-slate-500 hover:text-slate-700'
                   }`}
               >
                 Parallel
@@ -126,31 +123,15 @@ const InductorPage = () => {
           </div>
 
           {/* Main circuit display card */}
-          <div className="relative flex-1 rounded-3xl border-2 border-blue-500/30 p-4 overflow-hidden" style={{
-            background: 'linear-gradient(135deg, hsl(var(--card)/0.95) 0%, hsl(var(--background)/0.98) 100%)',
-            boxShadow: '0 24px 60px rgba(59, 130, 246, 0.2), 0 0 120px rgba(59, 130, 246, 0.1)'
+          <div className="relative flex-1 rounded-3xl border-2 border-slate-300 p-4 overflow-hidden" style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.98) 100%)',
+            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.1), 0 0 60px rgba(56, 189, 248, 0.1)'
           }}>
             {/* Layout: Circuit (60%), Controls (40%) */}
             <div className="flex gap-2 h-full">
               {/* Left: Circuit Display (60%) - Larger circuit */}
-              <div className="flex-[60] relative rounded-2xl border-2 border-blue-500/30 bg-gradient-to-br from-background/50 to-background/70 backdrop-blur-md overflow-hidden shadow-2xl" style={{
-                boxShadow: 'inset 0 2px 16px rgba(0,0,0,0.3), 0 8px 32px rgba(59,130,246,0.15)'
-              }}>
-                {/* Hint box - interactive based on mode */}
-                <div className="absolute top-2 left-2 z-20 max-w-xs">
-                  <div className="bg-card/95 backdrop-blur-md border-2 border-blue-500/30 rounded-lg p-2 shadow-xl">
-                    <div className="flex items-start gap-2">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                        <span className="text-xl">💡</span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xs font-bold text-blue-400 mb-0.5">{info.title}</h3>
-                        <p className="text-[10px] text-muted-foreground leading-snug">{info.description}</p>
-                        <p className="text-[9px] text-blue-300/70 mt-1 italic">{info.tip}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex-[60] relative rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50/80 to-blue-50/90 backdrop-blur-md overflow-hidden shadow-lg">
+
                 {/* Inductor Circuit Canvas */}
                 <InductorCircuitCanvas
                   mode={mode}
@@ -162,13 +143,13 @@ const InductorPage = () => {
 
               {/* Right: Controls & Info (40%) */}
               <div className="flex-[40] flex flex-col gap-0.5 h-full overflow-hidden">
-                {/* Controls Panel - Enhanced */}
-                <div className="bg-gradient-to-br from-card/70 to-card/50 backdrop-blur-xl rounded-xl border-2 border-blue-500/40 p-1.5 shadow-2xl shadow-blue-500/20 flex-shrink-0 hover:shadow-blue-500/30 transition-shadow duration-300">
+                {/* Controls Panel - Light Theme */}
+                <div className="bg-white/90 backdrop-blur-xl rounded-xl border-2 border-slate-300 p-1.5 shadow-lg flex-shrink-0">
                   <div className="flex items-center gap-1.5 mb-1">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-2 border-blue-400/70 shadow-xl shadow-blue-500/60 animate-pulse">
-                      <Zap className="w-3 h-3 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                      <Zap className="w-3 h-3 text-white" />
                     </div>
-                    <h3 className="text-xs font-black text-white tracking-[0.1em] uppercase drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">CONTROLS</h3>
+                    <h3 className="text-xs font-black text-slate-700 tracking-[0.1em] uppercase">CONTROLS</h3>
                   </div>
 
                   {/* Flip Direction Control */}
@@ -195,22 +176,22 @@ const InductorPage = () => {
                   />
                 </div>
 
-                {/* Info Panel - Enhanced Readability */}
-                <div className="bg-gradient-to-br from-card/70 to-card/50 backdrop-blur-xl rounded-xl border-2 border-blue-500/40 p-1.5 shadow-2xl shadow-blue-500/20 flex-shrink-0 hover:shadow-blue-500/30 transition-shadow duration-300">
+                {/* Info Panel - Light Theme */}
+                <div className="bg-white/90 backdrop-blur-xl rounded-xl border-2 border-slate-300 p-1.5 shadow-lg flex-shrink-0">
                   <div className="flex items-center gap-1 mb-1">
-                    <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center border-2 border-blue-400/70 shadow-xl shadow-blue-500/60 animate-pulse flex-shrink-0">
-                      <Info className="w-2.5 h-2.5 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" />
+                    <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                      <Info className="w-2.5 h-2.5 text-white" />
                     </div>
-                    <h3 className="text-xs font-black text-white tracking-[0.1em] uppercase drop-shadow-[0_3px_10px_rgba(0,0,0,0.9)] bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">CIRCUIT BASICS</h3>
+                    <h3 className="text-xs font-black text-slate-700 tracking-[0.1em] uppercase">CIRCUIT BASICS</h3>
                   </div>
                   <div className="space-y-1">
-                    <div className="animate-fade-in">
-                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-blue-300 via-cyan-300 to-blue-300 bg-clip-text mb-0.5 tracking-[0.1em] uppercase drop-shadow-lg">Description</h4>
-                      <p className="text-[10px] text-white/95 leading-tight font-bold drop-shadow-md hover:text-white transition-colors duration-200">{info.description}</p>
+                    <div>
+                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Description</h4>
+                      <p className="text-[10px] text-slate-700 leading-tight font-bold">{info.description}</p>
                     </div>
-                    <div className="bg-gradient-to-br from-blue-500/40 to-indigo-500/30 rounded-lg p-1 border-2 border-blue-400/70 shadow-2xl shadow-blue-500/40 hover:shadow-blue-500/60 transition-all duration-300 hover:scale-[1.02] animate-pulse-slow">
-                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-blue-200 via-cyan-200 to-blue-200 bg-clip-text mb-0.5 tracking-[0.1em] uppercase drop-shadow-lg animate-gradient">Formula</h4>
-                      <div className="text-sm font-serif text-white font-bold tracking-wide drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)] hover:scale-105 transition-transform duration-200" dangerouslySetInnerHTML={{ __html: info.formula }} />
+                    <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg p-1 border-2 border-blue-300">
+                      <h4 className="text-[9px] font-black text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-clip-text mb-0.5 tracking-[0.1em] uppercase">Formula</h4>
+                      <div className="text-sm font-serif text-slate-800 font-bold tracking-wide" dangerouslySetInnerHTML={{ __html: info.formula }} />
                     </div>
                   </div>
                 </div>
@@ -388,20 +369,20 @@ function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, in
         </div>
       </div>
 
-      {/* Computed Values - Highlighted Box */}
-      <div className="pt-1.5 mt-1.5 border-t border-blue-500/20">
-        <div className="bg-gradient-to-br from-blue-500/40 to-indigo-500/30 rounded-lg p-1.5 border-2 border-blue-400/70 shadow-2xl shadow-blue-500/40 hover:shadow-blue-500/60 transition-all duration-300 hover:scale-[1.02] space-y-0.5">
+      {/* Computed Values - Light Theme Box */}
+      <div className="pt-1.5 mt-1.5 border-t border-slate-200">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-1.5 border-2 border-blue-200 shadow space-y-0.5">
           <div className="flex justify-between text-xs">
-            <span className="text-white/90 font-semibold">Total L:</span>
-            <span className="font-bold text-indigo-200 text-sm drop-shadow-md">{totalInductance.toFixed(2)}mH</span>
+            <span className="text-slate-600 font-semibold">Total L:</span>
+            <span className="font-bold text-indigo-600 text-sm">{totalInductance.toFixed(2)}mH</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-white/90 font-semibold">Voltage:</span>
-            <span className="font-bold text-blue-200 text-sm drop-shadow-md">{inducedVoltage}V</span>
+            <span className="text-slate-600 font-semibold">Voltage:</span>
+            <span className="font-bold text-blue-600 text-sm">{inducedVoltage}V</span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-white/90 font-semibold">Current:</span>
-            <span className="font-bold text-cyan-200 text-sm drop-shadow-md">{current}A</span>
+            <span className="text-slate-600 font-semibold">Current:</span>
+            <span className="font-bold text-cyan-600 text-sm">{current}A</span>
           </div>
         </div>
       </div>
@@ -433,7 +414,7 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
   }, [currentOn]);
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-4">
+    <div className="w-full h-full flex items-center justify-center p-2">
       <style>{`
         @keyframes spin-forward {
           from { transform: rotate(0deg); }
@@ -445,7 +426,7 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
         }
       `}</style>
 
-      <svg viewBox="0 0 600 400" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 550 350" className="w-full h-full max-h-[500px]" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -486,36 +467,64 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
           </>
         )}
 
-        {/* Battery */}
-        <g transform="translate(50, 150)">
-          <rect x="0" y="0" width="40" height="100" rx="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-          <rect x="15" y="-8" width="10" height="8" rx="2" fill="rgba(255,255,255,0.2)" />
-          <text x="20" y="40" textAnchor="middle" fill="#3b82f6" fontSize="24" fontWeight="bold" className="transition-all duration-500">
+        {/* Battery - Left side vertical orientation like Resistor page */}
+        <g transform="translate(40, 100)">
+          {/* Battery body */}
+          <rect x="0" y="0" width="50" height="100" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+          {/* Battery cap (top) */}
+          <rect x="17" y="-8" width="16" height="10" rx="3" fill="#4b5563" stroke="#374151" strokeWidth="2" />
+          {/* Positive terminal area (top) */}
+          <circle cx="25" cy="25" r="14" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" strokeWidth="2" />
+          <text x="25" y="32" textAnchor="middle" fill="#22c55e" fontSize="24" fontWeight="bold">
             {currentDirection === 'forward' ? '+' : '−'}
           </text>
-          <text x="20" y="75" textAnchor="middle" fill="#ef4444" fontSize="24" fontWeight="bold" className="transition-all duration-500">
+          {/* Negative terminal area (bottom) */}
+          <circle cx="25" cy="75" r="14" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" strokeWidth="2" />
+          <text x="25" y="82" textAnchor="middle" fill="#ef4444" fontSize="24" fontWeight="bold">
             {currentDirection === 'forward' ? '−' : '+'}
           </text>
-          <text x="55" y="55" textAnchor="start" fill="rgba(255,255,255,0.6)" fontSize="11">{values.voltage}V</text>
+          {/* Voltage label - larger and more visible */}
+          <rect x="-5" y="108" width="60" height="22" rx="4" fill="white" stroke="#3b82f6" strokeWidth="2" />
+          <text x="25" y="124" textAnchor="middle" fill="#1e40af" fontSize="16" fontWeight="bold">{values.voltage}V</text>
         </g>
 
-        {/* Wire from battery + to inductor */}
-        <line x1="90" y1="170" x2="280" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-        {currentOn && (
-          <>
-            <circle cx="120" cy="170" r="3" fill="#60a5fa">
-              <animate attributeName="cx" from="90" to="280" dur="1.2s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="180" cy="170" r="3" fill="#60a5fa">
-              <animate attributeName="cx" from="90" to="280" dur="1.2s" begin="0.6s" repeatCount="indefinite" />
-            </circle>
-          </>
-        )}
-
+        {/* SIMPLE MODE - Rectangular circuit layout like Resistor */}
         {mode === 'simple' && (
           <>
-            {/* Single Inductor Coil - centered */}
-            <g transform="translate(280, 150)">
+            {/* Wire from battery + (top) going up to top rail */}
+            <line x1="65" y1="100" x2="65" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            {/* Top horizontal rail - left section */}
+            <line x1="65" y1="70" x2="220" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Inductor on top rail */}
+            <g transform="translate(220, 50)">
+              {/* Magnetic field lines - visible when current is on */}
+              {currentOn && (
+                <>
+                  {/* Magnetic field arcs centered around the coil */}
+                  <ellipse cx="40" cy="20" rx="55" ry="30" fill="none" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" strokeDasharray="8,4">
+                    <animate attributeName="stroke-opacity" values="0.3;0.7;0.3" dur="1.5s" repeatCount="indefinite" />
+                  </ellipse>
+                  <ellipse cx="40" cy="20" rx="75" ry="45" fill="none" stroke="rgba(139, 92, 246, 0.4)" strokeWidth="2" strokeDasharray="8,4">
+                    <animate attributeName="stroke-opacity" values="0.2;0.6;0.2" dur="1.5s" begin="0.3s" repeatCount="indefinite" />
+                  </ellipse>
+                  <ellipse cx="40" cy="20" rx="95" ry="60" fill="none" stroke="rgba(139, 92, 246, 0.3)" strokeWidth="2" strokeDasharray="8,4">
+                    <animate attributeName="stroke-opacity" values="0.1;0.5;0.1" dur="1.5s" begin="0.6s" repeatCount="indefinite" />
+                  </ellipse>
+
+                  {/* Field direction arrows on sides */}
+                  <text x="-45" y="25" fill="rgba(139, 92, 246, 0.8)" fontSize="18" fontWeight="bold">
+                    <animate attributeName="fill-opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite" />
+                    ↑
+                  </text>
+                  <text x="120" y="25" fill="rgba(139, 92, 246, 0.8)" fontSize="18" fontWeight="bold">
+                    <animate attributeName="fill-opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite" />
+                    ↓
+                  </text>
+                </>
+              )}
+
+              {/* Inductor coils */}
               {[0, 1, 2, 3, 4].map((i) => (
                 <ellipse
                   key={i}
@@ -524,42 +533,76 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                   rx="10"
                   ry="15"
                   fill="none"
-                  stroke={currentOn ? 'url(#inductorGradient)' : 'rgba(255,255,255,0.2)'}
+                  stroke={currentOn ? 'url(#inductorGradient)' : '#6366f1'}
                   strokeWidth="3"
                   filter={currentOn ? 'url(#glow)' : undefined}
                 />
               ))}
-              <rect x="0" y="10" width="80" height="20" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <rect x="0" y="10" width="80" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
               <text x="40" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="40" y="65" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="12">{values.l1}mH</text>
+              <text x="40" y="55" textAnchor="middle" fill="#475569" fontSize="12">{values.l1}mH</text>
             </g>
 
-            {/* Wire from inductor back to battery negative terminal */}
-            <line x1="360" y1="170" x2="480" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="170" x2="480" y2="230" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="230" x2="70" y2="230" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            {/* Connection to battery bottom terminal */}
-            <line x1="70" y1="230" x2="70" y2="235" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Top horizontal rail - right section (after inductor) */}
+            <line x1="300" y1="70" x2="480" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Right vertical wire - going down */}
+            <line x1="480" y1="70" x2="480" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Bottom horizontal rail - back to battery */}
+            <line x1="480" y1="280" x2="65" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Wire from bottom rail up to battery - (bottom) */}
+            <line x1="65" y1="280" x2="65" y2="200" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Electron animations */}
             {currentOn && (
               <>
-                <circle cx="420" cy="170" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="360" to="480" dur="0.8s" repeatCount="indefinite" />
+                {/* Electron from battery up */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65" dur="0.3s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70" dur="0.3s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="480" cy="200" r="3" fill="#60a5fa">
-                  <animate attributeName="cy" from="170" to="230" dur="0.5s" repeatCount="indefinite" />
+                {/* Electron on top rail left */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;220" dur="1s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="70;70" dur="1s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="275" cy="230" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="480" to="70" dur="1.4s" repeatCount="indefinite" />
+                {/* Electron through inductor */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="220;300" dur="0.6s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="70;70" dur="0.6s" repeatCount="indefinite" />
+                </circle>
+                {/* Electron on top rail right */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="300;480" dur="1s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="70;70" dur="1s" repeatCount="indefinite" />
+                </circle>
+                {/* Electron going down right side */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="480;480" dur="1s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="70;280" dur="1s" repeatCount="indefinite" />
+                </circle>
+                {/* Electron on bottom rail */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="480;65" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="280;280" dur="2s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
           </>
         )}
 
+        {/* SERIES MODE - Rectangular circuit layout like Resistor */}
         {mode === 'series' && (
           <>
-            {/* L1 Inductor */}
-            <g transform="translate(220, 150)">
+            {/* Wire from battery + (top) going up to top rail */}
+            <line x1="65" y1="100" x2="65" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            {/* Top horizontal rail - left section */}
+            <line x1="65" y1="70" x2="150" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* L1 Inductor on top rail */}
+            <g transform="translate(150, 50)">
               {[0, 1, 2, 3, 4].map((i) => (
                 <ellipse
                   key={i}
@@ -568,26 +611,21 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                   rx="8"
                   ry="12"
                   fill="none"
-                  stroke={currentOn ? 'url(#inductorGradient)' : 'rgba(255,255,255,0.2)'}
+                  stroke={currentOn ? 'url(#inductorGradient)' : '#6366f1'}
                   strokeWidth="3"
                   filter={currentOn ? 'url(#glow)' : undefined}
                 />
               ))}
-              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
               <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="32" y="60" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="11">{values.l1}mH</text>
+              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l1}mH</text>
             </g>
 
-            {/* Wire between inductors */}
-            <line x1="284" y1="170" x2="320" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            {currentOn && (
-              <circle cx="302" cy="170" r="3" fill="#60a5fa">
-                <animate attributeName="cx" from="284" to="320" dur="0.3s" repeatCount="indefinite" />
-              </circle>
-            )}
+            {/* Wire between L1 and L2 */}
+            <line x1="214" y1="70" x2="280" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* L2 Inductor */}
-            <g transform="translate(320, 150)">
+            {/* L2 Inductor on top rail */}
+            <g transform="translate(280, 50)">
               {[0, 1, 2, 3, 4].map((i) => (
                 <ellipse
                   key={i}
@@ -596,55 +634,67 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                   rx="8"
                   ry="12"
                   fill="none"
-                  stroke={currentOn ? 'url(#inductorGradient)' : 'rgba(255,255,255,0.2)'}
+                  stroke={currentOn ? 'url(#inductorGradient)' : '#6366f1'}
                   strokeWidth="3"
                   filter={currentOn ? 'url(#glow)' : undefined}
                 />
               ))}
-              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
               <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L2</text>
-              <text x="32" y="60" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="11">{values.l2}mH</text>
+              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l2}mH</text>
             </g>
 
-            {/* Wire from L2 back to battery negative terminal */}
-            <line x1="384" y1="170" x2="480" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="170" x2="480" y2="230" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="230" x2="70" y2="230" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            {/* Connection to battery bottom terminal */}
-            <line x1="70" y1="230" x2="70" y2="235" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Top horizontal rail - right section (after L2) */}
+            <line x1="344" y1="70" x2="480" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Right vertical wire - going down */}
+            <line x1="480" y1="70" x2="480" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Bottom horizontal rail - back to battery */}
+            <line x1="480" y1="280" x2="65" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Wire from bottom rail up to battery - (bottom) */}
+            <line x1="65" y1="280" x2="65" y2="200" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Electron animations */}
             {currentOn && (
               <>
-                <circle cx="432" cy="170" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="384" to="480" dur="0.8s" repeatCount="indefinite" />
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="480" cy="200" r="3" fill="#60a5fa">
-                  <animate attributeName="cy" from="170" to="230" dur="0.5s" repeatCount="indefinite" />
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" begin="1s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" begin="1s" repeatCount="indefinite" />
                 </circle>
-                <circle cx="275" cy="230" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="480" to="70" dur="1.4s" repeatCount="indefinite" />
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" begin="2s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" begin="2s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
           </>
         )}
 
+        {/* PARALLEL MODE - Rectangular circuit layout like Resistor */}
         {mode === 'parallel' && (
           <>
-            {/* Wire from battery comes in and splits at x=230 */}
-            <line x1="280" y1="170" x2="230" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Wire from battery + (top) going up to top rail */}
+            <line x1="65" y1="100" x2="65" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            {/* Top horizontal rail - to split point */}
+            <line x1="65" y1="70" x2="150" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* Split point - vertical lines going to each branch level */}
-            <line x1="230" y1="170" x2="230" y2="115" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="230" y1="170" x2="230" y2="225" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Vertical split at x=150 - going up to L1 branch and down to L2 branch */}
+            <line x1="150" y1="70" x2="150" y2="40" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            <line x1="150" y1="70" x2="150" y2="120" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* Horizontal wires from split to L1 (top) */}
-            <line x1="230" y1="115" x2="260" y2="115" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            {/* Horizontal wires from split to L2 (bottom) */}
-            <line x1="230" y1="225" x2="260" y2="225" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Horizontal wire to L1 (upper branch) */}
+            <line x1="150" y1="40" x2="220" y2="40" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            {/* Horizontal wire to L2 (lower branch) */}
+            <line x1="150" y1="120" x2="220" y2="120" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* L1 Top Branch - CENTERED around x=300 */}
-            {/* translate(268, 95): left edge = 268-8=260, right edge = 268+64+8=340 */}
-            <g transform="translate(268, 95)">
+            {/* L1 Inductor - upper branch */}
+            <g transform="translate(220, 20)">
               {[0, 1, 2, 3, 4].map((i) => (
                 <ellipse
                   key={i}
@@ -653,18 +703,18 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                   rx="8"
                   ry="12"
                   fill="none"
-                  stroke={currentOn ? 'url(#inductorGradient)' : 'rgba(255,255,255,0.2)'}
+                  stroke={currentOn ? 'url(#inductorGradient)' : '#6366f1'}
                   strokeWidth="3"
                   filter={currentOn ? 'url(#glow)' : undefined}
                 />
               ))}
-              <rect x="-8" y="10" width="80" height="20" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
               <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="32" y="53" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="11">{values.l1}mH</text>
+              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l1}mH</text>
             </g>
 
-            {/* L2 Bottom Branch - CENTERED around x=300 */}
-            <g transform="translate(268, 205)">
+            {/* L2 Inductor - lower branch */}
+            <g transform="translate(220, 100)">
               {[0, 1, 2, 3, 4].map((i) => (
                 <ellipse
                   key={i}
@@ -673,62 +723,54 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                   rx="8"
                   ry="12"
                   fill="none"
-                  stroke={currentOn ? 'url(#inductorGradient)' : 'rgba(255,255,255,0.2)'}
+                  stroke={currentOn ? 'url(#inductorGradient)' : '#6366f1'}
                   strokeWidth="3"
                   filter={currentOn ? 'url(#glow)' : undefined}
                 />
               ))}
-              <rect x="-8" y="10" width="80" height="20" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+              <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
               <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L2</text>
-              <text x="32" y="53" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="11">{values.l2}mH</text>
+              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l2}mH</text>
             </g>
 
-            {/* Right side - horizontal wires from coil right edges to join point */}
-            <line x1="340" y1="115" x2="370" y2="115" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="340" y1="225" x2="370" y2="225" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Horizontal wire from L1 to join point */}
+            <line x1="284" y1="40" x2="350" y2="40" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            {/* Horizontal wire from L2 to join point */}
+            <line x1="284" y1="120" x2="350" y2="120" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* Right side - vertical wires joining the two branches */}
-            <line x1="370" y1="115" x2="370" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="370" y1="170" x2="370" y2="225" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Vertical join at x=350 */}
+            <line x1="350" y1="40" x2="350" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+            <line x1="350" y1="70" x2="350" y2="120" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* Wire back to battery negative terminal */}
-            <line x1="370" y1="170" x2="480" y2="170" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="170" x2="480" y2="280" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            <line x1="480" y1="280" x2="70" y2="280" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
-            {/* Connection to battery bottom terminal */}
-            <line x1="70" y1="280" x2="70" y2="250" stroke={currentOn ? '#3b82f6' : 'rgba(255,255,255,0.2)'} strokeWidth="3" />
+            {/* Continue on top rail to right corner */}
+            <line x1="350" y1="70" x2="480" y2="70" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
+            {/* Right vertical wire - going down */}
+            <line x1="480" y1="70" x2="480" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Bottom horizontal rail - back to battery */}
+            <line x1="480" y1="280" x2="65" y2="280" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Wire from bottom rail up to battery - (bottom) */}
+            <line x1="65" y1="280" x2="65" y2="200" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
+
+            {/* Electron animations */}
             {currentOn && (
               <>
-                {/* Electron flow from main wire to split point */}
-                <circle cx="255" cy="170" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="280" to="230" dur="0.3s" repeatCount="indefinite" />
+                {/* Electron on L1 branch */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;40;40;40;40;70;70;280;280" dur="5s" repeatCount="indefinite" />
                 </circle>
-                {/* Electron flow up to L1 branch */}
-                <circle cx="230" cy="142" r="3" fill="#60a5fa">
-                  <animate attributeName="cy" from="170" to="115" dur="0.3s" repeatCount="indefinite" />
+                {/* Electron on L2 branch */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" begin="1s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;120;120;120;120;70;70;280;280" dur="5s" begin="1s" repeatCount="indefinite" />
                 </circle>
-                {/* Electron flow down to L2 branch */}
-                <circle cx="230" cy="197" r="3" fill="#60a5fa">
-                  <animate attributeName="cy" from="170" to="225" dur="0.3s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron flow on L1 horizontal to coil */}
-                <circle cx="245" cy="115" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="230" to="260" dur="0.2s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron flow on L2 horizontal to coil */}
-                <circle cx="245" cy="225" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="230" to="260" dur="0.2s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron flow from join point to main return wire */}
-                <circle cx="425" cy="170" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="370" to="480" dur="1s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="480" cy="225" r="3" fill="#60a5fa">
-                  <animate attributeName="cy" from="170" to="280" dur="0.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="275" cy="280" r="3" fill="#60a5fa">
-                  <animate attributeName="cx" from="480" to="70" dur="1.4s" repeatCount="indefinite" />
+                {/* Extra electron for visual density */}
+                <circle r="4" fill="#60a5fa">
+                  <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" begin="2.5s" repeatCount="indefinite" />
+                  <animate attributeName="cy" values="100;70;70;40;40;40;40;70;70;280;280" dur="5s" begin="2.5s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
