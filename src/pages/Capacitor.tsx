@@ -264,9 +264,9 @@ const CapacitorPage = () => {
                   </div>
                 </div>
 
-                {/* SVG Circuit */}
-                <div className="w-full h-full flex items-center justify-center p-4">
-                  <svg viewBox="0 0 760 480" className="w-full h-full max-h-[450px]" preserveAspectRatio="xMidYMid meet">
+                {/* SVG Circuit - Larger viewBox for bigger circuit */}
+                <div className="w-full h-full flex items-center justify-center p-2">
+                  <svg viewBox="0 -40 800 540" className="w-full h-full max-h-[520px]" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <filter id="glow">
                         <feGaussianBlur stdDeviation="4" result="coloredBlur" />
@@ -321,50 +321,55 @@ const CapacitorPage = () => {
                         <line x1="350" y1="190" x2="350" y2="170" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                         <line x1="410" y1="190" x2="410" y2="170" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
 
-                        <line x1="330" y1="410" x2="330" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        <line x1="430" y1="410" x2="430" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-
-                        {/* Capacitor */}
-                        <g transform="translate(380, 150)">
-                          <rect x="-30" y="20" width="10" height="60" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="20" y="20" width="10" height="60" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-20" y="20" width="40" height="60" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
+                        {/* Capacitor plates positioned at wire terminals */}
+                        <g transform="translate(380, 140)">
+                          {/* Left plate at x=350 (wire terminal) - relative: 350-380 = -30 */}
+                          <rect x="-37" y="20" width="14" height="80" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="2" filter="url(#glow)" />
+                          {/* Right plate at x=410 (wire terminal) - relative: 410-380 = 30 */}
+                          <rect x="23" y="20" width="14" height="80" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="2" filter="url(#glow)" />
+                          {/* Electric field in the gap between plates */}
+                          <rect x="-23" y="20" width="46" height="80" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.6}>
-                              {[0, 1, 2, 3, 4].map(i => (
-                                <line key={i} x1="-15" y1={30 + i * 10} x2="15" y2={30 + i * 10} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
+                              {[0, 1, 2, 3, 4, 5].map(i => (
+                                <line key={i} x1="-20" y1={32 + i * 12} x2="20" y2={32 + i * 12} stroke="rgba(255, 255, 255, 0.5)" strokeWidth="1" strokeDasharray="4,4" />
                               ))}
                             </g>
                           )}
-                          <text x="-35" y="55" className="text-base font-bold" fill="#3b82f6">−</text>
-                          <text x="35" y="55" className="text-base font-bold" fill="#ec4899">+</text>
-                          <text x="0" y="8" textAnchor="middle" className="text-sm font-bold" fill="#1e293b">⚡ Capacitor</text>
-                          <text x="0" y="100" textAnchor="middle" className="text-sm font-semibold" fill="#7c3aed">{capacitance}µF</text>
+                          <text x="-52" y="65" fontSize="18" fontWeight="bold" fill="#1e40af">−</text>
+                          <text x="45" y="65" fontSize="18" fontWeight="bold" fill="#be185d">+</text>
+                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#000000">⚡ Capacitor</text>
+                          <text x="0" y="120" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#000000">{capacitance}µF</text>
                         </g>
 
-                        {/* Battery - Clearly Visible */}
-                        <g transform="translate(380, 370)">
-                          <rect x="-55" y="-35" width="110" height="80" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
-                          <rect x="-60" y="-12" width="12" height="34" rx="4" fill="#ef4444" />
-                          <rect x="48" y="-12" width="12" height="34" rx="4" fill="#22c55e" />
-                          <circle cx="-25" cy="5" r="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
-                          <text x="-25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#ef4444">+</text>
-                          <circle cx="25" cy="5" r="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
-                          <text x="25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#22c55e">−</text>
-                          <text x="0" y="-45" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#1e293b">🔋 Battery</text>
-                          <text x="0" y="60" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
-                        </g>
+                        {/* Battery - Larger with better labels */}
+                        {stage !== 'discharge' && stage !== 'discharged' && (
+                          <g transform="translate(400, 420)">
+                            <rect x="-60" y="-50" width="120" height="90" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                            {/* Left terminal */}
+                            <rect x="-68" y="-20" width="14" height="40" rx="4" fill="#ef4444" />
+                            {/* Right terminal */}
+                            <rect x="54" y="-20" width="14" height="40" rx="4" fill="#22c55e" />
+                            <circle cx="-25" cy="0" r="22" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                            <text x="-25" y="10" textAnchor="middle" fontSize="32" fontWeight="bold" fill="#ef4444">+</text>
+                            <circle cx="25" cy="0" r="22" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                            <text x="25" y="10" textAnchor="middle" fontSize="32" fontWeight="bold" fill="#22c55e">−</text>
+                            <text x="0" y="-60" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#000000">🔋 Battery</text>
+                            <text x="0" y="60" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#000000">{voltage}V</text>
+                          </g>
+                        )}
 
-                        {/* Bulb */}
+                        {/* Bulb - Shows during discharge/discharged */}
                         {(stage === 'discharge' || stage === 'discharged') && (
-                          <g transform="translate(100, 300)">
+                          <g transform="translate(380, 350)">
                             <circle cx="0" cy="0" r={45 + animation.bulbGlow * 25} fill="url(#bulbRadiant)" opacity={animation.bulbGlow * 0.5} filter="url(#bulbGlow)" />
                             <circle cx="0" cy="0" r="35" fill={`rgba(255, 240, 200, ${0.1 + animation.bulbGlow * 0.4})`} stroke="rgba(251, 191, 36, 0.8)" strokeWidth="3" filter="url(#glow)" />
                             <path d="M -12 0 Q -8 -12 -4 0 Q 0 12 4 0 Q 8 -12 12 0" fill="none" stroke={`rgba(255, 200, 50, ${0.4 + animation.bulbGlow * 0.6})`} strokeWidth="3" strokeLinecap="round" />
                             <rect x="-15" y="38" width="30" height="18" rx="4" fill="rgba(113, 113, 122, 0.9)" />
-                            <line x1="-10" y1="55" x2="-10" y2="65" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
-                            <line x1="10" y1="55" x2="10" y2="65" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
-                            <text x="0" y="85" textAnchor="middle" className="text-sm font-bold" fill="rgba(251, 191, 36, 0.9)">💡 {(animation.bulbGlow * 100).toFixed(0)}%</text>
+                            <line x1="-10" y1="55" x2="-10" y2="60" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
+                            <line x1="10" y1="55" x2="10" y2="60" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
+                            <text x="0" y="-50" textAnchor="middle" className="text-sm font-bold" fill="#000000">💡 Bulb</text>
+                            <text x="0" y="95" textAnchor="middle" className="text-sm font-bold" fill="rgba(251, 191, 36, 0.9)">{(animation.bulbGlow * 100).toFixed(0)}%</text>
                           </g>
                         )}
                       </>
@@ -401,81 +406,88 @@ const CapacitorPage = () => {
                         {/* Left vertical */}
                         <line x1="100" y1="410" x2="100" y2="190" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
 
-                        {/* Battery connection lines */}
-                        <line x1="330" y1="410" x2="330" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                        <line x1="430" y1="410" x2="430" y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                        {/* Battery connection lines - only show when battery is present */}
+                        {stage !== 'discharge' && stage !== 'discharged' && (
+                          <>
+                            <line x1="330" y1="410" x2="330" y2="370" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                            <line x1="430" y1="410" x2="430" y2="370" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                          </>
+                        )}
 
                         {/* Capacitor 1 (left) */}
                         <g transform="translate(220, 150)">
-                          <rect x="-20" y="20" width="8" height="50" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="12" y="20" width="8" height="50" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-12" y="20" width="24" height="50" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
+                          <rect x="-20" y="20" width="10" height="60" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="10" y="20" width="10" height="60" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-10" y="20" width="20" height="60" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.5}>
                               {[0, 1, 2, 3].map(i => (
-                                <line key={i} x1="-10" y1={30 + i * 10} x2="10" y2={30 + i * 10} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
+                                <line key={i} x1="-8" y1={30 + i * 12} x2="8" y2={30 + i * 12} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
                               ))}
                             </g>
                           )}
-                          <text x="0" y="10" textAnchor="middle" className="text-xs font-bold" fill="white">C₁</text>
-                          <text x="0" y="85" textAnchor="middle" className="text-[10px] font-semibold" fill="rgba(147, 197, 253, 0.9)">{capacitance}µF</text>
+                          <text x="-40" y="35" textAnchor="end" fontSize="13" fontWeight="bold" fill="#000000">C₁</text>
+                          <text x="-40" y="55" textAnchor="end" fontSize="11" fontWeight="bold" fill="#000000">{capacitance}µF</text>
                         </g>
 
                         {/* Capacitor 2 (middle) */}
                         <g transform="translate(370, 150)">
-                          <rect x="-20" y="20" width="8" height="50" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="12" y="20" width="8" height="50" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-12" y="20" width="24" height="50" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
+                          <rect x="-20" y="20" width="10" height="60" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="10" y="20" width="10" height="60" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-10" y="20" width="20" height="60" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.5}>
                               {[0, 1, 2, 3].map(i => (
-                                <line key={i} x1="-10" y1={30 + i * 10} x2="10" y2={30 + i * 10} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
+                                <line key={i} x1="-8" y1={30 + i * 12} x2="8" y2={30 + i * 12} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
                               ))}
                             </g>
                           )}
-                          <text x="0" y="10" textAnchor="middle" className="text-xs font-bold" fill="white">C₂</text>
-                          <text x="0" y="85" textAnchor="middle" className="text-[10px] font-semibold" fill="rgba(147, 197, 253, 0.9)">{capacitance2}µF</text>
+                          <text x="-40" y="35" textAnchor="end" fontSize="13" fontWeight="bold" fill="#000000">C₂</text>
+                          <text x="-40" y="55" textAnchor="end" fontSize="11" fontWeight="bold" fill="#000000">{capacitance2}µF</text>
                         </g>
 
                         {/* Capacitor 3 (right) */}
                         <g transform="translate(520, 150)">
-                          <rect x="-20" y="20" width="8" height="50" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="12" y="20" width="8" height="50" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-12" y="20" width="24" height="50" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
+                          <rect x="-20" y="20" width="10" height="60" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="10" y="20" width="10" height="60" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-10" y="20" width="20" height="60" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.5}>
                               {[0, 1, 2, 3].map(i => (
-                                <line key={i} x1="-10" y1={30 + i * 10} x2="10" y2={30 + i * 10} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
+                                <line key={i} x1="-8" y1={30 + i * 12} x2="8" y2={30 + i * 12} stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="3,3" />
                               ))}
                             </g>
                           )}
-                          <text x="0" y="10" textAnchor="middle" className="text-xs font-bold" fill="white">C₃</text>
-                          <text x="0" y="85" textAnchor="middle" className="text-[10px] font-semibold" fill="rgba(147, 197, 253, 0.9)">{capacitance3}µF</text>
+                          <text x="-40" y="35" textAnchor="end" fontSize="13" fontWeight="bold" fill="#000000">C₃</text>
+                          <text x="-40" y="55" textAnchor="end" fontSize="11" fontWeight="bold" fill="#000000">{capacitance3}µF</text>
                         </g>
 
-                        {/* Battery - Clearly Visible */}
-                        <g transform="translate(380, 370)">
-                          <rect x="-55" y="-35" width="110" height="80" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
-                          <rect x="-60" y="-12" width="12" height="34" rx="4" fill="#ef4444" />
-                          <rect x="48" y="-12" width="12" height="34" rx="4" fill="#22c55e" />
-                          <circle cx="-25" cy="5" r="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
-                          <text x="-25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#ef4444">+</text>
-                          <circle cx="25" cy="5" r="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
-                          <text x="25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#22c55e">−</text>
-                          <text x="0" y="-45" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#1e293b">🔋 Battery</text>
-                          <text x="0" y="60" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
-                        </g>
+                        {/* Battery - Only show during charging phases */}
+                        {stage !== 'discharge' && stage !== 'discharged' && (
+                          <g transform="translate(380, 410)">
+                            <rect x="-55" y="-35" width="110" height="80" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                            <rect x="-60" y="-12" width="12" height="34" rx="4" fill="#ef4444" />
+                            <rect x="48" y="-12" width="12" height="34" rx="4" fill="#22c55e" />
+                            <circle cx="-25" cy="5" r="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                            <text x="-25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#ef4444">+</text>
+                            <circle cx="25" cy="5" r="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                            <text x="25" y="12" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#22c55e">−</text>
+                            <text x="0" y="-45" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#000000">🔋 Battery</text>
+                            <text x="0" y="60" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#000000">{voltage}V</text>
+                          </g>
+                        )}
 
-                        {/* Bulb */}
+                        {/* Bulb - Shows during discharge/discharged */}
                         {(stage === 'discharge' || stage === 'discharged') && (
-                          <g transform="translate(100, 300)">
+                          <g transform="translate(380, 350)">
                             <circle cx="0" cy="0" r={45 + animation.bulbGlow * 25} fill="url(#bulbRadiant)" opacity={animation.bulbGlow * 0.5} filter="url(#bulbGlow)" />
                             <circle cx="0" cy="0" r="35" fill={`rgba(255, 240, 200, ${0.1 + animation.bulbGlow * 0.4})`} stroke="rgba(251, 191, 36, 0.8)" strokeWidth="3" filter="url(#glow)" />
                             <path d="M -12 0 Q -8 -12 -4 0 Q 0 12 4 0 Q 8 -12 12 0" fill="none" stroke={`rgba(255, 200, 50, ${0.4 + animation.bulbGlow * 0.6})`} strokeWidth="3" strokeLinecap="round" />
                             <rect x="-15" y="38" width="30" height="18" rx="4" fill="rgba(113, 113, 122, 0.9)" />
-                            <line x1="-10" y1="55" x2="-10" y2="65" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
-                            <line x1="10" y1="55" x2="10" y2="65" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
-                            <text x="0" y="85" textAnchor="middle" className="text-sm font-bold" fill="rgba(251, 191, 36, 0.9)">💡 {(animation.bulbGlow * 100).toFixed(0)}%</text>
+                            <line x1="-10" y1="55" x2="-10" y2="60" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
+                            <line x1="10" y1="55" x2="10" y2="60" stroke="rgba(113, 113, 122, 0.9)" strokeWidth="3" />
+                            <text x="0" y="-50" textAnchor="middle" className="text-sm font-bold" fill="#000000">💡 Bulb</text>
+                            <text x="0" y="95" textAnchor="middle" className="text-sm font-bold" fill="rgba(251, 191, 36, 0.9)">{(animation.bulbGlow * 100).toFixed(0)}%</text>
                           </g>
                         )}
                       </>
@@ -490,85 +502,85 @@ const CapacitorPage = () => {
                         <line x1="150" y1="400" x2={(stage === 'discharge' || stage === 'discharged') ? "700" : "650"} y2="400" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
 
                         {/* Capacitor 1 (left) - Horizontal plates */}
-                        <g transform="translate(320, 300)">
+                        <g transform="translate(280, 300)">
                           <line x1="0" y1="-100" x2="0" y2="-30" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                           <line x1="0" y1="30" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                          <rect x="-40" y="-25" width="80" height="8" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="17" width="80" height="8" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="-17" width="80" height="34" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
+                          <rect x="-45" y="-25" width="90" height="10" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="17" width="90" height="10" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="-15" width="90" height="32" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.6}>
                               {[0, 1, 2, 3, 4].map(i => (
-                                <line key={i} x1={-30 + i * 15} y1="-12" x2={-30 + i * 15} y2="12" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
+                                <line key={i} x1={-35 + i * 18} y1="-10" x2={-35 + i * 18} y2="10" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
                               ))}
                             </g>
                           )}
-                          <rect x="-12" y="-43" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="-32" textAnchor="middle" className="text-lg font-bold" fill="rgba(59, 130, 246, 1)">−</text>
-                          <rect x="-12" y="31" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="43" textAnchor="middle" className="text-lg font-bold" fill="rgba(236, 72, 153, 1)">+</text>
-                          <text x="0" y="-52" textAnchor="middle" className="text-xs font-bold" fill="white">C₁</text>
-                          <text x="0" y="65" textAnchor="middle" className="text-xs font-bold" fill="rgba(147, 197, 253, 1)">{capacitance}µF</text>
+                          <rect x="-16" y="-48" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="-32" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#3b82f6">−</text>
+                          <rect x="-16" y="32" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="48" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#ec4899">+</text>
+                          <text x="-55" y="-5" textAnchor="end" fontSize="14" fontWeight="bold" fill="#000000">C₁</text>
+                          <text x="-55" y="12" textAnchor="end" fontSize="12" fontWeight="bold" fill="#000000">{capacitance}µF</text>
                         </g>
 
                         {/* Capacitor 2 (middle) - Horizontal plates */}
-                        <g transform="translate(450, 300)">
+                        <g transform="translate(430, 300)">
                           <line x1="0" y1="-100" x2="0" y2="-30" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                           <line x1="0" y1="30" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                          <rect x="-40" y="-25" width="80" height="8" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="17" width="80" height="8" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="-17" width="80" height="34" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
+                          <rect x="-45" y="-25" width="90" height="10" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="17" width="90" height="10" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="-15" width="90" height="32" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.6}>
                               {[0, 1, 2, 3, 4].map(i => (
-                                <line key={i} x1={-30 + i * 15} y1="-12" x2={-30 + i * 15} y2="12" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
+                                <line key={i} x1={-35 + i * 18} y1="-10" x2={-35 + i * 18} y2="10" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
                               ))}
                             </g>
                           )}
-                          <rect x="-12" y="-43" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="-32" textAnchor="middle" className="text-lg font-bold" fill="rgba(59, 130, 246, 1)">−</text>
-                          <rect x="-12" y="31" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="43" textAnchor="middle" className="text-lg font-bold" fill="rgba(236, 72, 153, 1)">+</text>
-                          <text x="0" y="-52" textAnchor="middle" className="text-xs font-bold" fill="white">C₂</text>
-                          <text x="0" y="65" textAnchor="middle" className="text-xs font-bold" fill="rgba(147, 197, 253, 1)">{capacitance2}µF</text>
+                          <rect x="-16" y="-48" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="-32" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#3b82f6">−</text>
+                          <rect x="-16" y="32" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="48" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#ec4899">+</text>
+                          <text x="-55" y="-5" textAnchor="end" fontSize="14" fontWeight="bold" fill="#000000">C₂</text>
+                          <text x="-55" y="12" textAnchor="end" fontSize="12" fontWeight="bold" fill="#000000">{capacitance2}µF</text>
                         </g>
 
                         {/* Capacitor 3 (right) - Horizontal plates */}
                         <g transform="translate(580, 300)">
                           <line x1="0" y1="-100" x2="0" y2="-30" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
                           <line x1="0" y1="30" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                          <rect x="-40" y="-25" width="80" height="8" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="17" width="80" height="8" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} filter="url(#glow)" />
-                          <rect x="-40" y="-17" width="80" height="34" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
+                          <rect x="-45" y="-25" width="90" height="10" rx="3" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="17" width="90" height="10" rx="3" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#000000" strokeWidth="1.5" filter="url(#glow)" />
+                          <rect x="-45" y="-15" width="90" height="32" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.9} rx="2" />
                           {animation.fieldStrength > 0.1 && (
                             <g opacity={animation.fieldStrength * 0.6}>
                               {[0, 1, 2, 3, 4].map(i => (
-                                <line key={i} x1={-30 + i * 15} y1="-12" x2={-30 + i * 15} y2="12" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
+                                <line key={i} x1={-35 + i * 18} y1="-10" x2={-35 + i * 18} y2="10" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="1" strokeDasharray="4,4" />
                               ))}
                             </g>
                           )}
-                          <rect x="-12" y="-43" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="-32" textAnchor="middle" className="text-lg font-bold" fill="rgba(59, 130, 246, 1)">−</text>
-                          <rect x="-12" y="31" width="24" height="20" rx="4" fill="rgba(15, 23, 42, 0.8)" />
-                          <text x="0" y="43" textAnchor="middle" className="text-lg font-bold" fill="rgba(236, 72, 153, 1)">+</text>
-                          <text x="0" y="-52" textAnchor="middle" className="text-xs font-bold" fill="white">C₃</text>
-                          <text x="0" y="65" textAnchor="middle" className="text-xs font-bold" fill="rgba(147, 197, 253, 1)">{capacitance3}µF</text>
+                          <rect x="-16" y="-48" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="-32" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#3b82f6">−</text>
+                          <rect x="-16" y="32" width="32" height="24" rx="5" fill="rgba(15, 23, 42, 0.85)" />
+                          <text x="0" y="48" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#ec4899">+</text>
+                          <text x="-55" y="-5" textAnchor="end" fontSize="14" fontWeight="bold" fill="#000000">C₃</text>
+                          <text x="-55" y="12" textAnchor="end" fontSize="12" fontWeight="bold" fill="#000000">{capacitance3}µF</text>
                         </g>
 
-                        {/* Battery - Clearly Visible */}
+                        {/* Battery - Clearly Visible with Battery text */}
                         {stage !== 'discharge' && stage !== 'discharged' && (
                           <g transform="translate(150, 300)">
-                            <line x1="0" y1="-100" x2="0" y2="-55" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                            <line x1="0" y1="55" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-                            <rect x="-35" y="-55" width="70" height="110" rx="12" fill="#374151" stroke="#1f2937" strokeWidth="3" />
-                            <rect x="-12" y="-60" width="24" height="12" rx="4" fill="#ef4444" />
-                            <rect x="-12" y="48" width="24" height="12" rx="4" fill="#22c55e" />
-                            <circle cx="0" cy="-22" r="16" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
-                            <text x="0" y="-15" textAnchor="middle" fontSize="22" fontWeight="bold" fill="#ef4444">+</text>
-                            <circle cx="0" cy="22" r="16" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
-                            <text x="0" y="29" textAnchor="middle" fontSize="22" fontWeight="bold" fill="#22c55e">−</text>
-                            <text x="-50" y="5" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">🔋</text>
-                            <text x="50" y="5" textAnchor="start" fontSize="14" fontWeight="bold" fill="#3b82f6">{voltage}V</text>
+                            <line x1="0" y1="-100" x2="0" y2="-65" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                            <line x1="0" y1="65" x2="0" y2="100" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                            <rect x="-40" y="-65" width="80" height="130" rx="14" fill="#374151" stroke="#1f2937" strokeWidth="3" />
+                            <rect x="-14" y="-72" width="28" height="14" rx="5" fill="#ef4444" />
+                            <rect x="-14" y="58" width="28" height="14" rx="5" fill="#22c55e" />
+                            <circle cx="0" cy="-25" r="20" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="3" />
+                            <text x="0" y="-16" textAnchor="middle" fontSize="28" fontWeight="bold" fill="#ef4444">+</text>
+                            <circle cx="0" cy="25" r="20" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="3" />
+                            <text x="0" y="34" textAnchor="middle" fontSize="28" fontWeight="bold" fill="#22c55e">−</text>
+                            <text x="-55" y="-10" textAnchor="end" fontSize="14" fontWeight="bold" fill="#000000">🔋 Battery</text>
+                            <text x="-55" y="10" textAnchor="end" fontSize="16" fontWeight="bold" fill="#000000">{voltage}V</text>
                           </g>
                         )}
 
@@ -639,7 +651,8 @@ const CapacitorPage = () => {
                       } else { // parallel
                         // Determine which branch this electron takes - evenly distributed
                         const branchIndex = Math.floor(e.id) % 3; // 0, 1, or 2 for three capacitor branches
-                        const capacitorX = branchIndex === 0 ? 320 : branchIndex === 1 ? 450 : 580;
+                        // Updated capacitor positions: 280, 430, 580
+                        const capacitorX = branchIndex === 0 ? 280 : branchIndex === 1 ? 430 : 580;
 
                         if (stage === 'discharge' || stage === 'discharged') {
                           // During discharge: one-way flow from capacitors through bulb
@@ -665,25 +678,25 @@ const CapacitorPage = () => {
                             y = 200;
                           }
                         } else {
-                          // During charging: flow through battery on left side
-                          const pathLength = 1000;
+                          // During charging: flow from battery (x=150) through top rail to capacitors, down through capacitors, back via bottom rail
+                          const pathLength = 1200;
                           const dist = totalProgress * pathLength;
 
-                          if (dist < 200) { // left vertical up from bottom to top rail
+                          if (dist < 200) { // up through battery (from bottom to top)
                             x = 150;
                             y = 400 - (400 - 200) * (dist / 200);
-                          } else if (dist < 350) { // top rail from left to capacitor
-                            const progress = (dist - 200) / 150;
+                          } else if (dist < 450) { // top rail from battery to capacitor
+                            const progress = (dist - 200) / 250;
                             x = 150 + (capacitorX - 150) * progress;
                             y = 200;
-                          } else if (dist < 550) { // down through capacitor
+                          } else if (dist < 700) { // down through capacitor
                             x = capacitorX;
-                            y = 200 + (400 - 200) * ((dist - 350) / 200);
-                          } else if (dist < 700) { // bottom rail from capacitor back to left
-                            const progress = (dist - 550) / 150;
+                            y = 200 + (400 - 200) * ((dist - 450) / 250);
+                          } else if (dist < 950) { // bottom rail from capacitor back to battery
+                            const progress = (dist - 700) / 250;
                             x = capacitorX - (capacitorX - 150) * progress;
                             y = 400;
-                          } else { // left vertical completing circuit through battery
+                          } else { // down through battery completing circuit
                             x = 150;
                             y = 400;
                           }
@@ -695,18 +708,18 @@ const CapacitorPage = () => {
                       );
                     })}
 
-                    {/* Charge level indicator */}
-                    <g transform="translate(380, 110)">
-                      <rect x="-70" y="-15" width="140" height="30" rx="15" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(148, 163, 184, 0.3)" strokeWidth="2" />
-                      <rect x="-65" y="-10" width={130 * animation.chargeLevel} height="20" rx="10" fill="url(#fieldGradient)" filter="url(#glow)" />
-                      <text x="0" y="5" textAnchor="middle" className="text-sm font-bold" fill="white">{(animation.chargeLevel * 100).toFixed(0)}%</text>
+                    {/* Charge level indicator - position varies by mode */}
+                    <g transform={`translate(${mode === 'simple' ? 280 : 320}, ${mode === 'simple' ? 70 : 130})`}>
+                      <rect x="-80" y="-20" width="160" height="40" rx="20" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(148, 163, 184, 0.4)" strokeWidth="2" />
+                      <rect x="-72" y="-12" width={144 * animation.chargeLevel} height="24" rx="12" fill="url(#fieldGradient)" filter="url(#glow)" />
+                      <text x="0" y="7" textAnchor="middle" fontSize="16" fontWeight="bold" fill="white">{(animation.chargeLevel * 100).toFixed(0)}%</text>
                     </g>
 
-                    {/* Stored Energy Display */}
-                    <g transform="translate(660, 110)">
-                      <rect x="-70" y="-25" width="140" height="50" rx="12" fill="rgba(15, 23, 42, 0.8)" stroke="rgba(139, 92, 246, 0.5)" strokeWidth="2" />
-                      <text x="0" y="-5" textAnchor="middle" className="text-xs font-semibold" fill="rgba(167, 139, 250, 0.9)">Stored Energy</text>
-                      <text x="0" y="18" textAnchor="middle" className="text-base font-bold" fill="rgba(226, 232, 240, 0.95)">{(storedEnergy * animation.chargeLevel).toFixed(2)} mJ</text>
+                    {/* Stored Energy Display - position varies by mode */}
+                    <g transform={`translate(${mode === 'simple' ? 480 : 520}, ${mode === 'simple' ? 70 : 130})`}>
+                      <rect x="-85" y="-30" width="170" height="60" rx="14" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(139, 92, 246, 0.6)" strokeWidth="2" />
+                      <text x="0" y="-5" textAnchor="middle" fontSize="13" fontWeight="600" fill="rgba(167, 139, 250, 1)">Stored Energy</text>
+                      <text x="0" y="22" textAnchor="middle" fontSize="18" fontWeight="bold" fill="rgba(226, 232, 240, 1)">{(storedEnergy * animation.chargeLevel).toFixed(2)} mJ</text>
                     </g>
                   </svg>
                 </div>
@@ -744,7 +757,7 @@ const CapacitorPage = () => {
                   {/* Settings */}
                   <div className="mt-1.5 pt-1.5 border-t border-purple-500/20 space-y-1">
                     <div>
-                      <label className="text-[10px] font-semibold text-muted-foreground mb-0.5 block">Voltage</label>
+                      <label className="text-[10px] font-bold text-slate-800 mb-0.5 block">Voltage</label>
                       <div
                         role="spinbutton"
                         tabIndex={0}
@@ -766,7 +779,7 @@ const CapacitorPage = () => {
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-semibold text-muted-foreground mb-0.5 block">Capacitance</label>
+                      <label className="text-[10px] font-bold text-slate-800 mb-0.5 block">Capacitance</label>
                       <div
                         role="spinbutton"
                         tabIndex={0}
@@ -789,19 +802,19 @@ const CapacitorPage = () => {
 
                     <div className="pt-1 border-t border-purple-500/20 space-y-0.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground font-semibold">Charge (Q):</span>
+                        <span className="text-slate-700 font-bold">Charge (Q):</span>
                         <span className="font-bold text-cyan-300 text-sm">{maxCharge.toFixed(2)}mC</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground font-semibold">Energy:</span>
+                        <span className="text-slate-700 font-bold">Energy:</span>
                         <span className="font-bold text-pink-300 text-sm">{storedEnergy.toFixed(2)}mJ</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground font-semibold">Charging Time:</span>
+                        <span className="text-slate-700 font-bold">Charging Time:</span>
                         <span className="font-bold text-cyan-300 text-sm">{animation.chargingTime.toFixed(2)}s</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground font-semibold">Discharging Time:</span>
+                        <span className="text-slate-700 font-bold">Discharging Time:</span>
                         <span className="font-bold text-amber-400 text-sm">{animation.dischargingTime.toFixed(2)}s</span>
                       </div>
                     </div>

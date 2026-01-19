@@ -105,7 +105,7 @@ function PNJunctionIntro() {
           </pattern>
 
           <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(255,255,255,0.85)" />
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4b5563" />
           </marker>
         </defs>
 
@@ -114,7 +114,7 @@ function PNJunctionIntro() {
         {/* P block - Majority: HOLES (⊕), Minority: electrons (⊖) */}
         <g>
           <rect x={pX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#pTypeGrad)" stroke="rgba(255,120,180,0.45)" strokeWidth="2" filter="url(#softGlow)" />
-          <text x={pX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-pink-300 text-sm font-semibold">P-Type Semiconductor</text>
+          <text x={pX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-[#be185d] text-sm font-bold">P-Type Semiconductor</text>
 
           {/* P-type carriers - majority HOLES (⊕) and minority electrons (⊖) */}
           {holes.map(h => {
@@ -125,8 +125,8 @@ function PNJunctionIntro() {
             const isMinority = (h.id % 6 === 3);
             return (
               <g key={`pcarrier-${h.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
-                <circle cx={cx} cy={h.y} r="11" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,160,200,0.15)'} stroke={isMinority ? 'rgba(150,200,255,0.9)' : 'rgba(255,160,200,0.9)'} strokeWidth="2" />
-                <text x={cx} y={h.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-blue-200' : 'fill-pink-200'}`}>{isMinority ? '−' : '+'}</text>
+                <circle cx={cx} cy={h.y} r="11" fill={isMinority ? 'rgba(150,200,255,0.15)' : 'rgba(255,160,200,0.15)'} stroke={isMinority ? '#1e40af' : '#be185d'} strokeWidth="2" />
+                <text x={cx} y={h.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-black' : 'fill-black'}`}>{isMinority ? '−' : '+'}</text>
               </g>
             );
           })}
@@ -135,7 +135,7 @@ function PNJunctionIntro() {
         {/* N block - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
         <g>
           <rect x={nX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#nTypeGrad)" stroke="rgba(120,180,255,0.45)" strokeWidth="2" filter="url(#softGlow)" />
-          <text x={nX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-blue-300 text-sm font-semibold">N-Type Semiconductor</text>
+          <text x={nX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-[#1e40af] text-sm font-bold">N-Type Semiconductor</text>
 
           {/* N-type carriers - majority ELECTRONS (⊖) and minority holes (⊕) */}
           {electrons.map(e => {
@@ -146,8 +146,8 @@ function PNJunctionIntro() {
             const isMinority = (e.id % 6 === 3);
             return (
               <g key={`ncarrier-${e.id}`} style={{ opacity: inside ? 0.16 : 1, transition: 'opacity .2s' }}>
-                <circle cx={cx} cy={e.y} r="11" fill={isMinority ? 'rgba(255,160,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? 'rgba(255,160,200,0.9)' : 'rgba(150,200,255,0.9)'} strokeWidth="2" />
-                <text x={cx} y={e.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-pink-200' : 'fill-blue-200'}`}>{isMinority ? '+' : '−'}</text>
+                <circle cx={cx} cy={e.y} r="11" fill={isMinority ? 'rgba(255,160,200,0.15)' : 'rgba(150,200,255,0.15)'} stroke={isMinority ? '#be185d' : '#1e40af'} strokeWidth="2" />
+                <text x={cx} y={e.y + 4} textAnchor="middle" className={`text-xs font-bold ${isMinority ? 'fill-black' : 'fill-black'}`}>{isMinority ? '+' : '−'}</text>
               </g>
             );
           })}
@@ -160,7 +160,7 @@ function PNJunctionIntro() {
         {depletionProgress > 0 ? (
           <g>
             <rect x={boundaryX - depletionHalfWidth} y={rectY + 8} width={depletionHalfWidth * 2} height={rectH - 16} rx="8"
-              fill="rgba(220,220,255,0.08)" stroke="rgba(200,200,220,0.46)" strokeWidth="1.8" strokeDasharray="6 4" />
+              fill="rgba(220,220,255,0.08)" stroke="#64748b" strokeWidth="1.8" strokeDasharray="6 4" />
 
             {/* Immobile ions inside depletion region - equal on both sides */}
             {Array.from({ length: rows }).map((_, rowIdx) => {
@@ -179,13 +179,13 @@ function PNJunctionIntro() {
                   <g key={`ion-${rowIdx}-${colIdx}`} style={{ opacity: 0.5 + depletionProgress * 0.5 }}>
                     {/* Negative ion on P-side (acceptor ion) */}
                     <g>
-                      <circle cx={leftIonX} cy={y} r="9" fill="rgba(255,150,200,0.15)" stroke="rgba(255,150,200,0.95)" strokeWidth="1.8" />
-                      <text x={leftIonX} y={y + 4} textAnchor="middle" className="fill-pink-300 text-xs font-bold">−</text>
+                      <circle cx={leftIonX} cy={y} r="9" fill="rgba(255,150,200,0.15)" stroke="#be185d" strokeWidth="1.8" />
+                      <text x={leftIonX} y={y + 4} textAnchor="middle" className="fill-[#be185d] text-xs font-bold">−</text>
                     </g>
                     {/* Positive ion on N-side (donor ion) */}
                     <g>
-                      <circle cx={rightIonX} cy={y} r="9" fill="rgba(150,200,255,0.15)" stroke="rgba(150,200,255,0.95)" strokeWidth="1.8" />
-                      <text x={rightIonX} y={y + 4} textAnchor="middle" className="fill-blue-300 text-xs font-bold">+</text>
+                      <circle cx={rightIonX} cy={y} r="9" fill="rgba(150,200,255,0.15)" stroke="#1e40af" strokeWidth="1.8" />
+                      <text x={rightIonX} y={y + 4} textAnchor="middle" className="fill-[#1e40af] text-xs font-bold">+</text>
                     </g>
                   </g>
                 );
@@ -194,9 +194,9 @@ function PNJunctionIntro() {
 
             <line x1={boundaryX + depletionHalfWidth - 8} y1={rectY + rectH + 10}
               x2={boundaryX - depletionHalfWidth + 8} y2={rectY + rectH + 10}
-              stroke="rgba(255,245,150,0.95)" strokeWidth="3" markerEnd="url(#arrowHead)" />
-            <text x={boundaryX} y={rectY + rectH + 28} textAnchor="middle" className="fill-yellow-200/90 text-[12px] font-semibold">Depletion Region</text>
-            <text x={boundaryX} y={rectY + rectH + 44} textAnchor="middle" className="fill-yellow-100/90 text-[11px]">Direction of electric field (N → P)</text>
+              stroke="#4b5563" strokeWidth="3" markerEnd="url(#arrowHead)" />
+            <text x={boundaryX} y={rectY + rectH + 28} textAnchor="middle" className="fill-slate-700 text-[12px] font-bold">Depletion Region</text>
+            <text x={boundaryX} y={rectY + rectH + 44} textAnchor="middle" className="fill-slate-600 text-[11px] font-semibold">Direction of electric field (N → P)</text>
           </g>
         ) : (
           <g>
@@ -206,11 +206,11 @@ function PNJunctionIntro() {
 
         {/* status caption */}
         <g>
-          <rect x="20" y="360" width="620" height="56" rx="10" fill="rgba(0,0,0,0.36)" />
-          <text x="34" y="378" className="fill-white/90 text-sm">
+          <rect x="20" y="360" width="620" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+          <text x="34" y="378" className="fill-black text-sm font-semibold">
             {depletionProgress > 0 ? 'Junction formed: Depletion region present between P and N' : joined ? 'Joining...' : 'Separated: P and N regions not joined'}
           </text>
-          <text x="34" y="396" className="fill-white/60 text-xs">Use the top-right button to {joined ? 'disconnect' : 'form'} the junction</text>
+          <text x="34" y="396" className="fill-black text-xs">Use the top-right button to {joined ? 'disconnect' : 'form'} the junction</text>
         </g>
       </svg>
     </div>
@@ -286,26 +286,26 @@ function ForwardBiasTab() {
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(1.5, v + 0.1))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-slate-500 mt-2">
+        <div className="flex justify-between text-sm text-slate-800 mt-2 font-bold">
           <span>Min: 0V</span>
-          <span className="text-amber-600 font-medium">Threshold: 0.7V</span>
+          <span className="text-amber-700 font-bold">Threshold: 0.7V</span>
           <span>Max: 1.5V</span>
         </div>
       </div>
 
       <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-3 shadow-lg relative">
         {/* Hint box overlay */}
-        <div className="absolute top-4 left-4 z-20 max-w-[200px]">
-          <div className="bg-white/95 backdrop-blur-md border-2 border-green-400 rounded-lg p-2 shadow-lg">
+        <div className="absolute top-4 left-4 z-20 max-w-[240px]">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-green-400 rounded-lg p-3 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-sm">💡</span>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                <span className="text-lg">💡</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-green-600 mb-0.5">
+                <h3 className="text-sm font-bold text-green-700">
                   {isAboveThreshold ? 'Conducting!' : 'Below Threshold'}
                 </h3>
-                <p className="text-[9px] text-slate-600 leading-snug">
+                <p className="text-xs text-slate-700 leading-snug font-medium">
                   {isAboveThreshold
                     ? 'Barrier overcome! Current flows freely through the diode.'
                     : 'Increase voltage to 0.7V to overcome the barrier potential.'}
@@ -320,20 +320,135 @@ function ForwardBiasTab() {
             <radialGradient id="electronGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="rgba(59,130,246,1)" /><stop offset="100%" stopColor="rgba(59,130,246,0)" /></radialGradient>
           </defs>
 
-          {/* Battery / connectors - darker for visibility */}
-          <g>
-            <rect x="20" y="100" width="60" height="80" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="3" />
-            <rect x="35" y="90" width="30" height="10" rx="2" fill="#4b5563" />
-            <text x="50" y="135" textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold">+</text>
-            <text x="50" y="165" textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold">−</text>
-            <text x="50" y="195" textAnchor="middle" fill="#1e40af" fontSize="12" fontWeight="bold">{voltage.toFixed(1)}V</text>
+          {/* Battery - vertical with wires from TOP (+) and BOTTOM (-) ends */}
+          <g transform="translate(10, 95)">
+            {/* Battery body */}
+            <rect x="0" y="0" width="50" height="90" rx="8" fill="#1f2937" stroke="#111827" strokeWidth="3" />
+            {/* Positive terminal cap (top) - where wire connects */}
+            <rect x="15" y="-12" width="20" height="14" rx="3" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
+            {/* Positive indicator circle inside battery */}
+            <circle cx="25" cy="28" r="16" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="2" />
+            <circle cx="25" cy="28" r="10" fill="#dc2626" />
+            <text x="25" y="34" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">+</text>
+            {/* Negative indicator circle inside battery */}
+            <circle cx="25" cy="65" r="16" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="2" />
+            <circle cx="25" cy="65" r="10" fill="#16a34a" />
+            <text x="25" y="71" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">−</text>
+            {/* Negative terminal base (bottom) - where wire connects */}
+            <rect x="15" y="88" width="20" height="10" rx="3" fill="#22c55e" stroke="#166534" strokeWidth="2" />
           </g>
+          {/* Voltage label - to the right of battery */}
+          <text x="70" y="150" textAnchor="start" fill="#0f172a" fontSize="16" fontWeight="bold">{voltage.toFixed(1)}V</text>
 
-          {/* wires (visual) - darker colors for visibility */}
-          <path d="M 80 120 L 140 120" stroke="#ef4444" strokeWidth="4" />
-          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="#3b82f6" strokeWidth="4" />
+          {/* Complete circuit wiring - from battery ends to middle of diode */}
+          {/* Top wire: From battery TOP (+) cap going up, right, then down to middle of P-type */}
+          <path d={`M 35 83 L 35 60 L 120 60 L 120 140 L ${pX} 140`} stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* Right wire: N-type right edge → LED left terminal */}
+          <path d={`M ${nX + boxW} 140 L 490 140`} stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* Bottom wire: LED right terminal → down → across bottom → left → up to Battery BOTTOM (-) */}
+          <path d="M 550 140 L 570 140 L 570 230 L 35 230 L 35 193" stroke="#0f172a" strokeWidth="4" fill="none" />
 
-          {/* P block - Majority: HOLES (⊕), Minority: electrons (⊖) */}
+          {/* Electron flow animation (only when current is flowing) */}
+          {/* Electrons flow from (+) terminal → top wire → P-type → N-type → LED → bottom wire → (-) terminal */}
+          {isAboveThreshold && (
+            <g>
+              {/* Electrons flowing through top wire: Battery (+) → down → right → down to P-type */}
+              {Array.from({ length: 6 }).map((_, i) => {
+                // Path: Battery top (35,83) → up (35,60) → right (120,60) → down (120,140) → to P-type (pX,140)
+                const totalPath = 23 + 85 + 80 + (pX - 120);
+                const progress = ((t * 3 + i * (totalPath / 6)) % totalPath) / totalPath;
+
+                let ex, ey;
+                const seg1 = 23 / totalPath; // up from battery
+                const seg2 = (23 + 85) / totalPath; // across top
+                const seg3 = (23 + 85 + 80) / totalPath; // down to 140
+
+                if (progress < seg1) {
+                  ex = 35;
+                  ey = 83 - progress / seg1 * 23;
+                } else if (progress < seg2) {
+                  ex = 35 + ((progress - seg1) / (seg2 - seg1)) * 85;
+                  ey = 60;
+                } else if (progress < seg3) {
+                  ex = 120;
+                  ey = 60 + ((progress - seg2) / (seg3 - seg2)) * 80;
+                } else {
+                  ex = 120 + ((progress - seg3) / (1 - seg3)) * (pX - 120);
+                  ey = 140;
+                }
+
+                return (
+                  <circle
+                    key={`electron-top-${i}`}
+                    cx={ex}
+                    cy={ey}
+                    r="5"
+                    fill="#22c55e"
+                    filter="url(#glowForward)"
+                    style={{ opacity: 0.9 }}
+                  />
+                );
+              })}
+
+              {/* Electrons flowing through bottom wire: LED → right → down → across → up to Battery (-) */}
+              {Array.from({ length: 8 }).map((_, i) => {
+                // Path: LED (550,140) → right (570,140) → down (570,230) → left (35,230) → up (35,193)
+                const pathLength = 20 + 90 + 535 + 37;
+                const progress = ((t * 3 + i * (pathLength / 8)) % pathLength) / pathLength;
+
+                let ex, ey;
+                const seg1 = 20 / pathLength;
+                const seg2 = (20 + 90) / pathLength;
+                const seg3 = (20 + 90 + 535) / pathLength;
+
+                if (progress < seg1) {
+                  ex = 550 + (progress / seg1) * 20;
+                  ey = 140;
+                } else if (progress < seg2) {
+                  ex = 570;
+                  ey = 140 + ((progress - seg1) / (seg2 - seg1)) * 90;
+                } else if (progress < seg3) {
+                  ex = 570 - ((progress - seg2) / (seg3 - seg2)) * 535;
+                  ey = 230;
+                } else {
+                  ex = 35;
+                  ey = 230 - ((progress - seg3) / (1 - seg3)) * 37;
+                }
+
+                return (
+                  <circle
+                    key={`electron-wire-${i}`}
+                    cx={ex}
+                    cy={ey}
+                    r="5"
+                    fill="#1e40af"
+                    filter="url(#glowForward)"
+                    style={{ opacity: 0.9 }}
+                  />
+                );
+              })}
+            </g>
+          )}
+
+          {/* LED with terminals */}
+          <g>
+            {/* LED terminals */}
+            <rect x="485" y="135" width="8" height="10" rx="1" fill="#64748b" />
+            <rect x="547" y="135" width="8" height="10" rx="1" fill="#64748b" />
+
+            {isAboveThreshold && (
+              <circle
+                cx="520"
+                cy="140"
+                r="40"
+                fill="rgba(250,204,21,0.3)"
+                filter="url(#glowForward)"
+              />
+            )}
+            <circle cx="520" cy="140" r="30" fill={isAboveThreshold ? `rgba(250,204,21,${Math.min(1, currentFlow / 80)})` : '#94a3b8'} stroke={isAboveThreshold ? '#eab308' : '#64748b'} strokeWidth="3" />
+            <text x="520" y="147" textAnchor="middle" fill={isAboveThreshold ? '#854d0e' : '#475569'} fontSize="14" fontWeight="bold">{isAboveThreshold ? 'ON' : 'OFF'}</text>
+            <text x="520" y="185" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="bold">LED</text>
+          </g>
           <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#ec4899" strokeWidth="2" />
           <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#be185d" fontSize="14" fontWeight="bold">P-type</text>
 
@@ -420,29 +535,15 @@ function ForwardBiasTab() {
                 const opacity = Math.abs(Math.sin(((t * 2 + i * 50) % 200) / 200 * Math.PI));
                 return <circle key={`flow-${i}`} cx={x} cy={140} r="4" fill="#22c55e" style={{ opacity: opacity * (currentFlow / 30) }} filter="url(#glowForward)" />;
               })}
-              {/* Prominent status box */}
+              {/* Prominent status box - moved down */}
               <g>
-                <rect x={boundary - 130} y={222} width="260" height="28" rx="6" fill="rgba(34,197,94,0.2)" stroke="#22c55e" strokeWidth="2" />
-                <text x={boundary} y={240} textAnchor="middle" fill="#15803d" fontSize="13" fontWeight="bold">⚡ Current flowing – Short Circuit ⚡</text>
+                <rect x={boundary - 130} y={255} width="260" height="28" rx="6" fill="rgba(34,197,94,0.2)" stroke="#22c55e" strokeWidth="2" />
+                <text x={boundary} y={273} textAnchor="middle" fill="#15803d" fontSize="13" fontWeight="bold">⚡ Current flowing – Short Circuit ⚡</text>
               </g>
             </g>
           )}
 
-          {/* LED */}
-          <g>
-            {isAboveThreshold && (
-              <circle
-                cx="520"
-                cy="140"
-                r="40"
-                fill="rgba(250,204,21,0.3)"
-                filter="url(#glowForward)"
-              />
-            )}
-            <circle cx="520" cy="140" r="30" fill={isAboveThreshold ? `rgba(250,204,21,${Math.min(1, currentFlow / 80)})` : '#94a3b8'} stroke={isAboveThreshold ? '#eab308' : '#64748b'} strokeWidth="3" />
-            <text x="520" y="147" textAnchor="middle" fill={isAboveThreshold ? '#854d0e' : '#475569'} fontSize="14" fontWeight="bold">{isAboveThreshold ? 'ON' : 'OFF'}</text>
-            <text x="520" y="185" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="bold">LED</text>
-          </g>
+
         </svg>
       </div>
     </div>
@@ -501,20 +602,20 @@ function ReverseBiasTab() {
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(10, v + 0.5))} className="h-10 w-10 p-0 text-lg font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-slate-500 mt-2"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
+        <div className="flex justify-between text-sm text-slate-800 mt-2 font-bold"><span>0V</span><span>-5V</span><span>Max: -10V</span></div>
       </div>
 
       <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-3 shadow-lg relative">
         {/* Hint box overlay */}
-        <div className="absolute top-4 left-4 z-20 max-w-[200px]">
-          <div className="bg-white/95 backdrop-blur-md border-2 border-red-400 rounded-lg p-2 shadow-lg">
+        <div className="absolute top-4 left-4 z-20 max-w-[240px]">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-red-400 rounded-lg p-3 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-                <span className="text-sm">🚫</span>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                <span className="text-lg">🚫</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-red-600 mb-0.5">Reverse Bias</h3>
-                <p className="text-[9px] text-slate-600 leading-snug">
+                <h3 className="text-sm font-bold text-red-700">Reverse Bias</h3>
+                <p className="text-xs text-slate-700 leading-snug font-medium">
                   {voltage > 5
                     ? 'High reverse voltage! Depletion zone very wide.'
                     : 'Depletion zone widens. No current flows (open circuit).'}
@@ -526,22 +627,47 @@ function ReverseBiasTab() {
         <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[60vh] rounded-lg bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 border-2 border-sky-300">
           <defs><filter id="glowReverse"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
 
-          {/* battery - dark for visibility */}
-          <g>
-            <rect x="20" y="100" width="60" height="80" rx="8" fill="#374151" stroke="#1f2937" strokeWidth="3" />
-            <rect x="35" y="90" width="30" height="10" rx="2" fill="#4b5563" />
-            <text x="50" y="135" textAnchor="middle" fill="#ef4444" fontSize="18" fontWeight="bold">−</text>
-            <text x="50" y="165" textAnchor="middle" fill="#22c55e" fontSize="18" fontWeight="bold">+</text>
-            <text x="50" y="195" textAnchor="middle" fill="#1e40af" fontSize="12" fontWeight="bold">-{voltage.toFixed(1)}V</text>
+          {/* Battery - vertical with wires from TOP (-) and BOTTOM (+) ends (reversed polarity) */}
+          <g transform="translate(10, 95)">
+            {/* Battery body */}
+            <rect x="0" y="0" width="50" height="90" rx="8" fill="#1f2937" stroke="#111827" strokeWidth="3" />
+            {/* Negative terminal cap (top) - where wire connects - reversed polarity */}
+            <rect x="15" y="-12" width="20" height="14" rx="3" fill="#22c55e" stroke="#166534" strokeWidth="2" />
+            {/* Negative indicator circle inside battery (top in reverse bias) */}
+            <circle cx="25" cy="28" r="16" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="2" />
+            <circle cx="25" cy="28" r="10" fill="#16a34a" />
+            <text x="25" y="34" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">−</text>
+            {/* Positive indicator circle inside battery (bottom in reverse bias) */}
+            <circle cx="25" cy="65" r="16" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="2" />
+            <circle cx="25" cy="65" r="10" fill="#dc2626" />
+            <text x="25" y="71" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">+</text>
+            {/* Positive terminal base (bottom) - where wire connects */}
+            <rect x="15" y="88" width="20" height="10" rx="3" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
           </g>
+          {/* Voltage label - to the right of battery */}
+          <text x="70" y="150" textAnchor="start" fill="#0f172a" fontSize="16" fontWeight="bold">-{voltage.toFixed(1)}V</text>
 
-          {/* wires - solid colors for visibility */}
-          <path d="M 80 120 L 140 120" stroke="#3b82f6" strokeWidth="4" />
-          <path d="M 80 160 L 140 160 L 140 220 L 480 220 L 480 160" stroke="#ef4444" strokeWidth="4" />
+          {/* Complete circuit wiring - from battery ends to middle of diode */}
+          {/* Top wire: From battery TOP (-) cap going up, right, then down to middle of P-type */}
+          <path d={`M 35 83 L 35 60 L 120 60 L 120 140 L ${pX} 140`} stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* Right wire: N-type right edge → LED left terminal */}
+          <path d={`M ${nX + boxW} 140 L 490 140`} stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* Bottom wire: LED right terminal → down → across bottom → left → up to Battery BOTTOM (+) */}
+          <path d="M 550 140 L 570 140 L 570 230 L 35 230 L 35 193" stroke="#0f172a" strokeWidth="4" fill="none" />
 
-          {/* P box - Majority: HOLES (⊕), Minority: electrons (⊖) */}
-          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#ec4899" strokeWidth="2" />
-          <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#be185d" fontSize="14" fontWeight="bold">P-type</text>
+          {/* LED with terminals - no current indicator */}
+          <g>
+            {/* LED terminals */}
+            <rect x="485" y="135" width="8" height="10" rx="1" fill="#64748b" />
+            <rect x="547" y="135" width="8" height="10" rx="1" fill="#64748b" />
+
+            <circle cx="520" cy="140" r="30" fill="rgba(50,50,50,0.6)" stroke="#475569" strokeWidth="3" />
+            <line x1="505" y1="125" x2="535" y2="155" stroke="#dc2626" strokeWidth="3" />
+            <line x1="535" y1="125" x2="505" y2="155" stroke="#dc2626" strokeWidth="3" />
+            <text x="520" y="185" textAnchor="middle" className="fill-red-700 text-xs font-bold">NO CURRENT</text>
+          </g>
+          <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#be185d" strokeWidth="3" />
+          <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#831843" fontSize="14" fontWeight="bold">P-type</text>
 
           {/* P-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
           {Array.from({ length: 20 }).map((_, i) => {
@@ -572,8 +698,8 @@ function ReverseBiasTab() {
           })}
 
           {/* N box - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
-          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="2" />
-          <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e40af" fontSize="14" fontWeight="bold">N-type</text>
+          <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#1e40af" strokeWidth="3" />
+          <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e3a5f" fontSize="14" fontWeight="bold">N-type</text>
 
           {/* N-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
           {Array.from({ length: 20 }).map((_, i) => {
@@ -603,8 +729,8 @@ function ReverseBiasTab() {
           })}
 
           {/* depletion region (centered) - widens in reverse bias */}
-          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="8" fill="rgba(255,100,100,0.1)" stroke="rgba(255,100,100,0.4)" strokeWidth="2" strokeDasharray="6 3" />
-          <text x={boundary} y={215} textAnchor="middle" className="fill-red-300/80 text-xs font-semibold">WIDENED DEPLETION ZONE</text>
+          <rect x={barrierX} y={85} width={barrierWidthPx} height={110} rx="8" fill="rgba(255,100,100,0.15)" stroke="#7f1d1d" strokeWidth="3" strokeDasharray="6 3" />
+          <text x={boundary} y={215} textAnchor="middle" className="fill-red-900 text-xs font-bold">WIDENED DEPLETION ZONE</text>
 
           {/* Equal columns of ions: P-side ⊖, N-side ⊕ - ions fit exactly within box */}
           <>
@@ -641,17 +767,11 @@ function ReverseBiasTab() {
           {/* small leakage */}
           {voltage > 2 && <g style={{ opacity: 0.4 }}>
             <circle cx={boundary + ((t * 0.5) % 60) - 30} cy={140} r="2" fill="rgba(255,200,100,0.8)" />
-            <text x={boundary} y={220} textAnchor="middle" className="fill-yellow-400/60 text-[10px]">Tiny leakage current (minority carriers)</text>
           </g>}
+          {voltage > 2 && <text x={boundary} y={245} textAnchor="middle" fill="#1e3a8a" fontSize="11" fontWeight="600">Tiny leakage current (minority carriers)</text>}
 
-          {/* no-current indicator */}
-          <g>
-            <circle cx="520" cy="140" r="30" fill="rgba(50,50,50,0.5)" stroke="rgba(100,100,100,0.5)" strokeWidth="3" />
-            <line x1="505" y1="125" x2="535" y2="155" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
-            <line x1="535" y1="125" x2="505" y2="155" stroke="rgba(255,100,100,0.6)" strokeWidth="3" />
-            <text x="520" y="185" textAnchor="middle" className="fill-red-400/60 text-xs">NO CURRENT</text>
-          </g>
-          <text x={boundary} y="235" textAnchor="middle" className="fill-orange-300/80 text-[10px]">Diode behaves as open circuit (no current)</text>
+
+          <text x={boundary} y="270" textAnchor="middle" className="fill-slate-900 text-[10px] font-bold">Diode behaves as open circuit (no current)</text>
         </svg>
       </div>
     </div>
@@ -727,26 +847,26 @@ function BreakdownTab() {
             <Button size="sm" variant="outline" onClick={() => setVoltage(v => Math.min(maxVoltage, v + step))} className="h-8 w-8 p-0 text-base font-bold">+</Button>
           </div>
         </div>
-        <div className="flex justify-between text-xs text-slate-500 mt-1">
+        <div className="flex justify-between text-sm text-slate-800 mt-1 font-bold">
           <span>0V</span>
-          <span className="text-red-600 font-medium">Breakdown: {breakdownVoltage}V</span>
+          <span className="text-red-600 font-bold">Breakdown: {breakdownVoltage}V</span>
           <span>Max: {maxVoltage}V</span>
         </div>
       </div>
 
       <div className="bg-white/90 backdrop-blur rounded-xl border-2 border-slate-300 p-2 shadow-lg relative">
-        {/* Hint box overlay */}
-        <div className="absolute top-3 left-3 z-20 max-w-[180px]">
-          <div className="bg-white/95 backdrop-blur-md border-2 border-purple-400 rounded-lg p-2 shadow-lg">
+        {/* Hint box overlay - enlarged */}
+        <div className="absolute top-3 left-3 z-20 max-w-[240px]">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-purple-400 rounded-lg p-3 shadow-lg">
             <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center">
-                <span className="text-sm">⚡</span>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                <span className="text-lg">⚡</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[10px] font-bold text-purple-600 mb-0.5">
+                <h3 className="text-sm font-bold text-purple-700">
                   {isBreakdown ? '⚡ BREAKDOWN!' : breakdownType === 'zener' ? 'Zener Diode' : 'Avalanche'}
                 </h3>
-                <p className="text-[9px] text-slate-600 leading-snug">
+                <p className="text-xs text-slate-700 leading-snug font-medium">
                   {isBreakdown
                     ? (breakdownType === 'zener' ? 'Quantum tunneling active! Electrons pass through barrier.' : 'Impact ionization cascade! Carriers multiply.')
                     : `Increase voltage to ${breakdownVoltage}V to trigger breakdown.`}
@@ -755,96 +875,244 @@ function BreakdownTab() {
             </div>
           </div>
         </div>
-        <svg viewBox="0 0 600 280" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[48vh] rounded-lg bg-gradient-to-br from-slate-800 via-purple-900/30 to-slate-900">
+        <svg viewBox="0 0 600 340" preserveAspectRatio="xMidYMid meet" className="w-full h-auto max-h-[55vh] rounded-lg bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border-2 border-purple-300">
           <defs>
             <filter id="intenseGlow"><feGaussianBlur stdDeviation="8" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            <filter id="breakdownGlow"><feGaussianBlur stdDeviation="4" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            <filter id="sparkGlow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
           </defs>
 
-          <rect x="100" y="30" width="400" height="180" rx="16" fill="rgba(100,50,150,0.2)" stroke="rgba(200,150,255,0.4)" strokeWidth="2" />
-          <text x="300" y="20" textAnchor="middle" className="fill-purple-300 text-sm font-semibold">Depletion Region (Zoomed View)</text>
+          {/* Battery - vertical with reversed polarity for reverse bias */}
+          <g transform="translate(10, 70)">
+            {/* Battery body */}
+            <rect x="0" y="0" width="50" height="90" rx="8" fill="#1f2937" stroke="#111827" strokeWidth="3" />
+            {/* Negative terminal cap (top) - reversed polarity */}
+            <rect x="15" y="-12" width="20" height="14" rx="3" fill="#22c55e" stroke="#166534" strokeWidth="2" />
+            {/* Negative indicator circle inside battery */}
+            <circle cx="25" cy="28" r="16" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="2" />
+            <circle cx="25" cy="28" r="10" fill="#16a34a" />
+            <text x="25" y="34" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">−</text>
+            {/* Positive indicator circle inside battery */}
+            <circle cx="25" cy="65" r="16" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="2" />
+            <circle cx="25" cy="65" r="10" fill="#dc2626" />
+            <text x="25" y="71" textAnchor="middle" fill="#ffffff" fontSize="16" fontWeight="bold">+</text>
+            {/* Positive terminal base (bottom) */}
+            <rect x="15" y="88" width="20" height="10" rx="3" fill="#ef4444" stroke="#b91c1c" strokeWidth="2" />
+          </g>
+          {/* Voltage label */}
+          <text x="70" y="125" textAnchor="start" fill="#0f172a" fontSize="14" fontWeight="bold">-{voltage.toFixed(1)}V</text>
 
-          {/* field lines */}
-          {Array.from({ length: 7 }).map((_, i) => {
-            const intensity = isBreakdown ? 1 : Math.min(1, voltage / breakdownVoltage);
-            return <line key={i} x1="120" y1={45 + i * 24} x2="480" y2={45 + i * 24}
-              stroke={`rgba(255,255,100,${0.1 + intensity * 0.3})`} strokeWidth={1 + intensity * 2}
-              strokeDasharray={isBreakdown ? 'none' : '8 4'} />;
+          {/* P-type block */}
+          <rect x="140" y="60" width="80" height="100" rx="10" fill="rgba(244,114,182,0.25)" stroke="#be185d" strokeWidth="3" />
+          <text x="180" y="50" textAnchor="middle" fill="#831843" fontSize="12" fontWeight="bold">P-type</text>
+
+          {/* P-type carriers */}
+          {Array.from({ length: 6 }).map((_, i) => {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const x = 155 + col * 30;
+            const y = 80 + row * 28;
+            return (
+              <g key={`p-carrier-${i}`}>
+                <circle cx={x} cy={y} r="8" fill="rgba(236,72,153,0.3)" stroke="#ec4899" strokeWidth="2" />
+                <text x={x} y={y + 4} textAnchor="middle" fill="#be185d" fontSize="12" fontWeight="bold">+</text>
+              </g>
+            );
           })}
 
-          {/* fixed ions */}
-          {Array.from({ length: 4 }).map((_, i) => (
-            <g key={i}>
-              <circle cx={150} cy={55 + i * 40} r="9" fill="none" stroke="rgba(255,150,200,0.8)" strokeWidth="2" />
-              <text x={150} y={60 + i * 40} textAnchor="middle" className="fill-pink-300 text-sm font-bold">−</text>
-              <circle cx={450} cy={55 + i * 40} r="9" fill="none" stroke="rgba(150,200,255,0.8)" strokeWidth="2" />
-              <text x={450} y={60 + i * 40} textAnchor="middle" className="fill-blue-300 text-sm font-bold">+</text>
+          {/* Depletion Region (zoomed view in center) */}
+          <rect x="220" y="60" width="160" height="100" rx="8" fill="rgba(100,50,150,0.1)" stroke="#6b21a8" strokeWidth="2" strokeDasharray={isBreakdown ? "none" : "6 4"} />
+          <text x="300" y="50" textAnchor="middle" fill="#6b21a8" fontSize="10" fontWeight="bold">Depletion Zone</text>
+
+          {/* Electric field lines in depletion region */}
+          {Array.from({ length: 4 }).map((_, i) => {
+            const intensity = isBreakdown ? 1 : Math.min(1, voltage / breakdownVoltage);
+            return <line key={i} x1="230" y1={75 + i * 22} x2="370" y2={75 + i * 22}
+              stroke={`rgba(180,140,0,${0.4 + intensity * 0.6})`} strokeWidth={1 + intensity * 2}
+              strokeDasharray={isBreakdown ? 'none' : '6 3'} />;
+          })}
+
+          {/* Fixed ions in depletion region */}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <g key={`ion-${i}`}>
+              <circle cx={240} cy={80 + i * 28} r="7" fill="none" stroke="#be185d" strokeWidth="2" />
+              <text x={240} y={84 + i * 28} textAnchor="middle" fill="#be185d" fontSize="10" fontWeight="bold">−</text>
+              <circle cx={360} cy={80 + i * 28} r="7" fill="none" stroke="#1e40af" strokeWidth="2" />
+              <text x={360} y={84 + i * 28} textAnchor="middle" fill="#1e40af" fontSize="10" fontWeight="bold">+</text>
             </g>
           ))}
 
-          {/* depletion rect centered */}
-          <rect x={centerBoundary - halfWidth} y={45} width={halfWidth * 2} height={140} rx="8"
-            fill="rgba(220,220,255,0.04)" stroke="rgba(200,200,220,0.36)" strokeDasharray="6 4" />
+          {/* N-type block */}
+          <rect x="380" y="60" width="80" height="100" rx="10" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="3" />
+          <text x="420" y="50" textAnchor="middle" fill="#1e3a5f" fontSize="12" fontWeight="bold">N-type</text>
 
-          {/* breakdown electrons - covering all 4 rows from top to bottom (y: 50 to 175) */}
-          {isBreakdown && (breakdownType === 'zener' ? (
-            Array.from({ length: 16 }).map((_, i) => {
-              const progress = ((t * 3 + i * 20) % 300) / 300;
-              const x = 120 + progress * 360; // Full width from edge to edge
-              const row = i % 4; // 4 rows to cover full height
-              const y = 55 + row * 40; // From row 0 at y=55 to row 3 at y=175
-              return <circle key={`zener-e-${i}`} cx={x} cy={y} r="4" fill="rgba(100,255,255,1)" filter="url(#intenseGlow)" />;
-            })
-          ) : (
-            Array.from({ length: 20 }).map((_, i) => {
-              const wave = Math.floor(i / 5);
-              const progress = ((t * 4 + i * 20 + wave * 40) % 400) / 400;
-              const x = 120 + progress * 360; // Full width from edge to edge
-              const row = i % 4; // 4 rows to cover full height
-              const y = 55 + row * 40; // From row 0 at y=55 to row 3 at y=175
-              const size = 3 + wave * 0.5;
-              return <circle key={`aval-e-${i}`} cx={x} cy={y} r={size} fill={`rgba(255,${200 - wave * 30},100,1)`} filter="url(#intenseGlow)" />;
-            })
-          ))}
+          {/* N-type carriers */}
+          {Array.from({ length: 6 }).map((_, i) => {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const x = 400 + col * 30;
+            const y = 80 + row * 28;
+            return (
+              <g key={`n-carrier-${i}`}>
+                <circle cx={x} cy={y} r="8" fill="rgba(59,130,246,0.3)" stroke="#3b82f6" strokeWidth="2" />
+                <text x={x} y={y + 4} textAnchor="middle" fill="#1e40af" fontSize="12" fontWeight="bold">−</text>
+              </g>
+            );
+          })}
 
-          {/* Multiple small lightning-style sparks across the breakdown region */}
+          {/* LED - circular design like Forward/Reverse bias */}
+          <g transform="translate(490, 80)">
+            {/* Left terminal line */}
+            <line x1="-10" y1="30" x2="5" y2="30" stroke="#475569" strokeWidth="4" />
+            {/* Right terminal line */}
+            <line x1="55" y1="30" x2="70" y2="30" stroke="#475569" strokeWidth="4" />
+            {/* LED circle body */}
+            <circle cx="30" cy="30" r="28" fill={isBreakdown ? "rgba(255,200,50,0.6)" : "rgba(180,190,200,0.8)"} stroke={isBreakdown ? "#fbbf24" : "#94a3b8"} strokeWidth="3" />
+            {/* Inner highlight */}
+            <circle cx="30" cy="30" r="20" fill={isBreakdown ? "rgba(255,255,150,0.5)" : "rgba(200,210,220,0.6)"} />
+            {/* OFF/ON text */}
+            <text x="30" y="36" textAnchor="middle" fill={isBreakdown ? "#92400e" : "#64748b"} fontSize="14" fontWeight="bold">
+              {isBreakdown ? "ON" : "OFF"}
+            </text>
+            {/* LED label below */}
+            <text x="30" y="75" textAnchor="middle" fill="#475569" fontSize="12" fontWeight="bold">LED</text>
+            {/* Glow effect when on */}
+            {isBreakdown && (
+              <circle cx="30" cy="30" r="35" fill="rgba(255,255,100,0.2)">
+                <animate attributeName="opacity" values="0.6;0.2;0.6" dur="0.3s" repeatCount="indefinite" />
+              </circle>
+            )}
+          </g>
+
+          {/* Circuit wiring */}
+          {/* Top wire: Battery (-) → P-type */}
+          <path d={`M 35 58 L 35 35 L 100 35 L 100 110 L 140 110`} stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* P-type to N-type through depletion (connection at middle) */}
+          <path d="M 220 110 L 220 110" stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* N-type → LED left terminal */}
+          <path d="M 460 110 L 480 110" stroke="#0f172a" strokeWidth="4" fill="none" />
+          {/* Bottom wire: LED right terminal → Battery (+) */}
+          <path d="M 560 110 L 580 110 L 580 220 L 35 220 L 35 168" stroke="#0f172a" strokeWidth="4" fill="none" />
+
+          {/* Breakdown electrons flowing through circuit */}
+          {isBreakdown && (
+            <g>
+              {/* Electrons in depletion region - Zener tunneling or Avalanche cascade */}
+              {(breakdownType === 'zener' ?
+                Array.from({ length: 12 }).map((_, i) => {
+                  const progress = ((t * 4 + i * 25) % 200) / 200;
+                  const x = 230 + progress * 140;
+                  const row = i % 3;
+                  const y = 80 + row * 28;
+                  return <circle key={`zener-e-${i}`} cx={x} cy={y} r="4" fill="rgba(100,255,255,1)" filter="url(#intenseGlow)" />;
+                })
+                :
+                Array.from({ length: 16 }).map((_, i) => {
+                  const wave = Math.floor(i / 4);
+                  const progress = ((t * 5 + i * 20 + wave * 30) % 200) / 200;
+                  const x = 230 + progress * 140;
+                  const row = i % 3;
+                  const y = 80 + row * 28;
+                  const size = 3 + wave * 0.5;
+                  return <circle key={`aval-e-${i}`} cx={x} cy={y} r={size} fill={`rgba(255,${200 - wave * 30},100,1)`} filter="url(#intenseGlow)" />;
+                })
+              )}
+
+              {/* Electrons flowing through circuit wires */}
+              {Array.from({ length: 6 }).map((_, i) => {
+                // Flow around the circuit: Battery → P-type → Depletion → N-type → Load → back to Battery
+                const pathLength = 800;
+                const progress = ((t * 3 + i * (pathLength / 6)) % pathLength) / pathLength;
+                let ex, ey;
+
+                if (progress < 0.15) {
+                  // Top wire segment
+                  ex = 35 + (progress / 0.15) * 65;
+                  ey = 35;
+                } else if (progress < 0.25) {
+                  // Down to P-type
+                  ex = 100;
+                  ey = 35 + ((progress - 0.15) / 0.10) * 75;
+                } else if (progress < 0.45) {
+                  // Through P-type and depletion
+                  ex = 140 + ((progress - 0.25) / 0.20) * 320;
+                  ey = 110;
+                } else if (progress < 0.55) {
+                  // Through N-type to Load
+                  ex = 460 + ((progress - 0.45) / 0.10) * 80;
+                  ey = 110;
+                } else if (progress < 0.65) {
+                  // Down the right side
+                  ex = 560;
+                  ey = 135 + ((progress - 0.55) / 0.10) * 85;
+                } else if (progress < 0.90) {
+                  // Across the bottom
+                  ex = 560 - ((progress - 0.65) / 0.25) * 525;
+                  ey = 220;
+                } else {
+                  // Up to battery
+                  ex = 35;
+                  ey = 220 - ((progress - 0.90) / 0.10) * 52;
+                }
+
+                return (
+                  <circle key={`flow-${i}`} cx={ex} cy={ey} r="5" fill="#60a5fa" filter="url(#breakdownGlow)">
+                    <animate attributeName="opacity" values="1;0.6;1" dur="0.5s" repeatCount="indefinite" />
+                  </circle>
+                );
+              })}
+            </g>
+          )}
+
+          {/* Lightning sparks during breakdown - simple yellow bolts */}
           {isBreakdown && (
             <>
               {[
-                { x: 160, y: 50, scale: 0.6, delay: 0 },
-                { x: 220, y: 70, scale: 0.7, delay: 50 },
-                { x: 280, y: 55, scale: 0.5, delay: 100 },
-                { x: 340, y: 65, scale: 0.65, delay: 75 },
-                { x: 400, y: 50, scale: 0.55, delay: 25 },
-                { x: 180, y: 120, scale: 0.6, delay: 60 },
-                { x: 250, y: 130, scale: 0.7, delay: 90 },
-                { x: 320, y: 115, scale: 0.5, delay: 40 },
-                { x: 380, y: 125, scale: 0.65, delay: 110 },
-                { x: 440, y: 110, scale: 0.55, delay: 80 },
+                { x: 245, y: 68, scale: 0.7 },
+                { x: 280, y: 80, scale: 0.8 },
+                { x: 315, y: 70, scale: 0.75 },
+                { x: 350, y: 82, scale: 0.65 },
+                { x: 262, y: 110, scale: 0.6 },
+                { x: 298, y: 118, scale: 0.7 },
+                { x: 335, y: 105, scale: 0.65 },
               ].map((spark, i) => {
-                const flicker = Math.sin((t + spark.delay) * 0.2) > 0.5;
+                const flicker = Math.sin((t + i * 20) * 0.3) > 0.2;
                 if (!flicker) return null;
-                const wobble = Math.sin(t * 0.15 + i) * 3;
                 const s = spark.scale;
                 return (
                   <path
                     key={`spark-${i}`}
-                    d={`M ${spark.x + wobble} ${spark.y} L ${spark.x + 15 * s + wobble} ${spark.y + 20 * s} L ${spark.x + 8 * s + wobble} ${spark.y + 20 * s} L ${spark.x + 25 * s + wobble} ${spark.y + 45 * s} L ${spark.x + 15 * s + wobble} ${spark.y + 45 * s} L ${spark.x + 30 * s + wobble} ${spark.y + 70 * s}`}
-                    stroke="rgba(255,255,200,0.9)"
-                    strokeWidth={1.5}
+                    d={`M ${spark.x} ${spark.y} L ${spark.x + 8 * s} ${spark.y + 10 * s} L ${spark.x + 4 * s} ${spark.y + 10 * s} L ${spark.x + 12 * s} ${spark.y + 22 * s} L ${spark.x + 7 * s} ${spark.y + 22 * s} L ${spark.x + 16 * s} ${spark.y + 35 * s}`}
+                    stroke="#fbbf24"
+                    strokeWidth={2.5}
                     fill="none"
-                    filter="url(#intenseGlow)"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 );
               })}
             </>
           )}
 
-
-          <text x="300" y="240" textAnchor="middle" className={`text-lg font-bold ${isBreakdown ? 'fill-red-400' : 'fill-orange-300'}`}>
-            {isBreakdown ? '⚡ BREAKDOWN ⚡' : `Approaching (${Math.round((voltage / breakdownVoltage) * 100)}%)`}
+          {/* Status text */}
+          <text x="300" y="190" textAnchor="middle" className={`text-sm font-bold ${isBreakdown ? 'fill-red-600' : 'fill-orange-500'}`}>
+            {isBreakdown ? '⚡ BREAKDOWN - HIGH CURRENT FLOW ⚡' : `Approaching Breakdown (${Math.round((voltage / breakdownVoltage) * 100)}%)`}
           </text>
-          <text x="300" y="265" textAnchor="middle" className="fill-white/60 text-xs">
-            {breakdownType === 'zener' ? 'Zener: electron tunneling in heavily doped junction' : 'Avalanche: impact ionization in lightly doped junction'}
+
+          {/* Current indicator when breakdown occurs */}
+          {isBreakdown && (
+            <g>
+              <rect x="200" y="250" width="200" height="30" rx="6" fill="rgba(239,68,68,0.2)" stroke="#dc2626" strokeWidth="2">
+                <animate attributeName="stroke-opacity" values="1;0.5;1" dur="0.3s" repeatCount="indefinite" />
+              </rect>
+              <text x="300" y="270" textAnchor="middle" fill="#dc2626" fontSize="14" fontWeight="bold">
+                Current: {breakdownCurrent.toFixed(1)} mA
+              </text>
+            </g>
+          )}
+
+          <text x="300" y="310" textAnchor="middle" fill="#1e293b" fontSize="13" fontWeight="bold">
+            {breakdownType === 'zener' ? 'Zener: Quantum tunneling in heavily doped junction' : 'Avalanche: Impact ionization cascade in lightly doped junction'}
           </text>
         </svg>
       </div>

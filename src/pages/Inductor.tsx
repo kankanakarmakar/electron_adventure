@@ -132,6 +132,21 @@ const InductorPage = () => {
               {/* Left: Circuit Display (60%) - Larger circuit */}
               <div className="flex-[60] relative rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-50/80 to-blue-50/90 backdrop-blur-md overflow-hidden shadow-lg">
 
+                {/* Instruction Box */}
+                <div className="absolute top-2 left-2 z-20 max-w-xs">
+                  <div className="bg-white/95 backdrop-blur-md border-2 border-sky-300 rounded-lg p-2 shadow-lg">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                        <span className="text-xl">💡</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xs font-bold text-indigo-600 mb-0.5">{info.title}</h3>
+                        <p className="text-[10px] text-slate-600 leading-snug">{info.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Inductor Circuit Canvas */}
                 <InductorCircuitCanvas
                   mode={mode}
@@ -237,7 +252,7 @@ function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, in
     <div className="space-y-1">
       {/* Voltage Control */}
       <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-muted-foreground w-16">Voltage</span>
+        <span className="text-xs font-bold text-slate-800 w-16">Voltage</span>
         <div
           role="spinbutton"
           tabIndex={0}
@@ -270,7 +285,7 @@ function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, in
 
       {/* L1 Control */}
       <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-muted-foreground w-16">L1</span>
+        <span className="text-xs font-bold text-slate-800 w-16">L1</span>
         <div
           role="spinbutton"
           tabIndex={0}
@@ -304,7 +319,7 @@ function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, in
       {/* L2 Control */}
       {mode !== 'simple' && (
         <div className="flex items-center justify-between gap-1.5">
-          <span className="text-xs font-bold text-muted-foreground w-16">L2</span>
+          <span className="text-xs font-bold text-slate-800 w-16">L2</span>
           <div
             role="spinbutton"
             tabIndex={0}
@@ -338,7 +353,7 @@ function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, in
 
       {/* Current Rate Control */}
       <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-muted-foreground w-16">dI/dt</span>
+        <span className="text-xs font-bold text-slate-800 w-16">dI/dt</span>
         <div
           role="spinbutton"
           tabIndex={0}
@@ -398,6 +413,18 @@ interface InductorCircuitCanvasProps {
   currentDirection: 'forward' | 'reverse';
 }
 
+// Get instruction text for each mode
+const getModeInstruction = (mode: CircuitMode): string => {
+  switch (mode) {
+    case 'simple':
+      return '💡 Simple: Single inductor stores energy in magnetic field (V = L × dI/dt)';
+    case 'series':
+      return '🔗 Series: Inductors add up (L_total = L1 + L2)';
+    case 'parallel':
+      return '⚡ Parallel: Current splits, 1/L_total = 1/L1 + 1/L2';
+  }
+};
+
 function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: InductorCircuitCanvasProps) {
   const [fieldStrength, setFieldStrength] = useState(0);
 
@@ -426,7 +453,7 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
         }
       `}</style>
 
-      <svg viewBox="0 0 550 350" className="w-full h-full max-h-[500px]" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 -80 520 450" className="w-full h-full max-h-[500px]" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -442,22 +469,115 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
           </linearGradient>
         </defs>
 
-        {/* Magnetic field rings - ANIMATED */}
-        {currentOn && (
+        {/* Magnetic field rings - ANIMATED - Density based on inductance value */}
+        {currentOn && mode === 'simple' && (
           <>
-            {[1, 2, 3, 4].map((ring) => (
+            {/* Number of rings based on inductance - more L = more rings */}
+            {Array.from({ length: Math.min(Math.ceil(values.l1 / 15), 6) + 2 }, (_, i) => i + 1).map((ring) => (
               <ellipse
                 key={ring}
-                cx="300"
-                cy="200"
-                rx={60 + ring * 30 * (fieldStrength / 100)}
-                ry={40 + ring * 20 * (fieldStrength / 100)}
+                cx="260"
+                cy="70"
+                rx={40 + ring * (20 + values.l1 / 10) * (fieldStrength / 100)}
+                ry={25 + ring * (14 + values.l1 / 15) * (fieldStrength / 100)}
                 fill="none"
                 stroke="url(#inductorGradient)"
-                strokeWidth="2"
-                opacity={fieldStrength / 150}
+                strokeWidth={1.5 + values.l1 / 50}
+                opacity={(fieldStrength / 120) * (0.5 + values.l1 / 100)}
                 style={{
-                  transformOrigin: '300px 200px',
+                  transformOrigin: '260px 70px',
+                  animation: currentDirection === 'reverse'
+                    ? `spin-reverse ${3 + ring}s linear infinite`
+                    : `spin-forward ${3 + ring}s linear infinite`
+                }}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Magnetic field rings for SERIES mode - L1 at (182, 70) and L2 at (312, 70) */}
+        {currentOn && mode === 'series' && (
+          <>
+            {/* L1 Magnetic field */}
+            {[1, 2, 3].map((ring) => (
+              <ellipse
+                key={`l1-${ring}`}
+                cx="182"
+                cy="70"
+                rx={35 + ring * 18 * (fieldStrength / 100)}
+                ry={22 + ring * 12 * (fieldStrength / 100)}
+                fill="none"
+                stroke="url(#inductorGradient)"
+                strokeWidth="1.5"
+                opacity={fieldStrength / 160}
+                style={{
+                  transformOrigin: '182px 70px',
+                  animation: currentDirection === 'reverse'
+                    ? `spin-reverse ${3 + ring}s linear infinite`
+                    : `spin-forward ${3 + ring}s linear infinite`
+                }}
+              />
+            ))}
+            {/* L2 Magnetic field */}
+            {[1, 2, 3].map((ring) => (
+              <ellipse
+                key={`l2-${ring}`}
+                cx="312"
+                cy="70"
+                rx={35 + ring * 18 * (fieldStrength / 100)}
+                ry={22 + ring * 12 * (fieldStrength / 100)}
+                fill="none"
+                stroke="url(#inductorGradient)"
+                strokeWidth="1.5"
+                opacity={fieldStrength / 160}
+                style={{
+                  transformOrigin: '312px 70px',
+                  animation: currentDirection === 'reverse'
+                    ? `spin-reverse ${3 + ring}s linear infinite`
+                    : `spin-forward ${3 + ring}s linear infinite`
+                }}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Magnetic field rings for PARALLEL mode - L1 at (252, 40) and L2 at (252, 120) */}
+        {currentOn && mode === 'parallel' && (
+          <>
+            {/* L1 Magnetic field (upper branch) */}
+            {[1, 2, 3].map((ring) => (
+              <ellipse
+                key={`l1-${ring}`}
+                cx="252"
+                cy="40"
+                rx={35 + ring * 18 * (fieldStrength / 100)}
+                ry={20 + ring * 10 * (fieldStrength / 100)}
+                fill="none"
+                stroke="url(#inductorGradient)"
+                strokeWidth="1.5"
+                opacity={fieldStrength / 160}
+                style={{
+                  transformOrigin: '252px 40px',
+                  animation: currentDirection === 'reverse'
+                    ? `spin-reverse ${3 + ring}s linear infinite`
+                    : `spin-forward ${3 + ring}s linear infinite`
+                }}
+              />
+            ))}
+            {/* L2 Magnetic field (lower branch) */}
+            {[1, 2, 3].map((ring) => (
+              <ellipse
+                key={`l2-${ring}`}
+                cx="252"
+                cy="120"
+                rx={35 + ring * 18 * (fieldStrength / 100)}
+                ry={20 + ring * 10 * (fieldStrength / 100)}
+                fill="none"
+                stroke="url(#inductorGradient)"
+                strokeWidth="1.5"
+                opacity={fieldStrength / 160}
+                style={{
+                  transformOrigin: '252px 120px',
                   animation: currentDirection === 'reverse'
                     ? `spin-reverse ${3 + ring}s linear infinite`
                     : `spin-forward ${3 + ring}s linear infinite`
@@ -475,17 +595,17 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
           <rect x="17" y="-8" width="16" height="10" rx="3" fill="#4b5563" stroke="#374151" strokeWidth="2" />
           {/* Positive terminal area (top) */}
           <circle cx="25" cy="25" r="14" fill="rgba(34, 197, 94, 0.2)" stroke="#22c55e" strokeWidth="2" />
-          <text x="25" y="32" textAnchor="middle" fill="#22c55e" fontSize="24" fontWeight="bold">
+          <text x="25" y="32" textAnchor="middle" fill="#000000" fontSize="24" fontWeight="bold">
             {currentDirection === 'forward' ? '+' : '−'}
           </text>
           {/* Negative terminal area (bottom) */}
           <circle cx="25" cy="75" r="14" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" strokeWidth="2" />
-          <text x="25" y="82" textAnchor="middle" fill="#ef4444" fontSize="24" fontWeight="bold">
+          <text x="25" y="82" textAnchor="middle" fill="#000000" fontSize="24" fontWeight="bold">
             {currentDirection === 'forward' ? '−' : '+'}
           </text>
-          {/* Voltage label - larger and more visible */}
-          <rect x="-5" y="108" width="60" height="22" rx="4" fill="white" stroke="#3b82f6" strokeWidth="2" />
-          <text x="25" y="124" textAnchor="middle" fill="#1e40af" fontSize="16" fontWeight="bold">{values.voltage}V</text>
+          {/* Voltage label - moved to LEFT of battery */}
+          <rect x="-75" y="35" width="60" height="28" rx="4" fill="white" stroke="#1e40af" strokeWidth="2" />
+          <text x="-45" y="55" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">{values.voltage}V</text>
         </g>
 
         {/* SIMPLE MODE - Rectangular circuit layout like Resistor */}
@@ -539,8 +659,8 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 />
               ))}
               <rect x="0" y="10" width="80" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
-              <text x="40" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="40" y="55" textAnchor="middle" fill="#475569" fontSize="12">{values.l1}mH</text>
+              <text x="40" y="-8" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">L1</text>
+              <text x="40" y="58" textAnchor="middle" fill="#000000" fontSize="16" fontWeight="bold">{values.l1}mH</text>
             </g>
 
             {/* Top horizontal rail - right section (after inductor) */}
@@ -555,39 +675,39 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
             {/* Wire from bottom rail up to battery - (bottom) */}
             <line x1="65" y1="280" x2="65" y2="200" stroke={currentOn ? '#3b82f6' : '#94a3b8'} strokeWidth="4" />
 
-            {/* Electron animations */}
+            {/* Electron animations - Speed based on voltage */}
             {currentOn && (
               <>
-                {/* Electron from battery up */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="65;65" dur="0.3s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="100;70" dur="0.3s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron on top rail left */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="65;220" dur="1s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="70;70" dur="1s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron through inductor */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="220;300" dur="0.6s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="70;70" dur="0.6s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron on top rail right */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="300;480" dur="1s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="70;70" dur="1s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron going down right side */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="480;480" dur="1s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="70;280" dur="1s" repeatCount="indefinite" />
-                </circle>
-                {/* Electron on bottom rail */}
-                <circle r="4" fill="#60a5fa">
-                  <animate attributeName="cx" values="480;65" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="cy" values="280;280" dur="2s" repeatCount="indefinite" />
-                </circle>
+                {/* Multiple electrons flowing around the circuit - speed inversely proportional to voltage */}
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                  // Higher voltage = faster electrons (shorter duration)
+                  const baseDuration = 6 - (values.voltage / 24) * 4; // 2s at max voltage, 6s at min
+                  const duration = Math.max(1.5, baseDuration);
+                  return (
+                    <g key={i}>
+                      {/* Outer glow */}
+                      <circle cx="65" cy="200" r="8" fill="rgba(96, 165, 250, 0.3)">
+                        <animate attributeName="cx" values="65;65;220;300;480;480;65;65" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values="200;70;70;70;70;280;280;200" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                      </circle>
+                      {/* Inner glow */}
+                      <circle cx="65" cy="200" r="5" fill="rgba(147, 197, 253, 0.6)">
+                        <animate attributeName="cx" values="65;65;220;300;480;480;65;65" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values="200;70;70;70;70;280;280;200" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                      </circle>
+                      {/* Core electron */}
+                      <circle cx="65" cy="200" r="3" fill="#3b82f6">
+                        <animate attributeName="cx" values="65;65;220;300;480;480;65;65" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values="200;70;70;70;70;280;280;200" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                      </circle>
+                      {/* Bright center */}
+                      <circle cx="65" cy="200" r="1.5" fill="#e0f2fe">
+                        <animate attributeName="cx" values="65;65;220;300;480;480;65;65" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                        <animate attributeName="cy" values="200;70;70;70;70;280;280;200" dur={`${duration}s`} begin={`${i * duration / 8}s`} repeatCount="indefinite" />
+                      </circle>
+                    </g>
+                  );
+                })}
               </>
             )}
           </>
@@ -617,8 +737,8 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 />
               ))}
               <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
-              <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l1}mH</text>
+              <text x="32" y="-8" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">L1</text>
+              <text x="32" y="58" textAnchor="middle" fill="#000000" fontSize="15" fontWeight="bold">{values.l1}mH</text>
             </g>
 
             {/* Wire between L1 and L2 */}
@@ -640,8 +760,8 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 />
               ))}
               <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
-              <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L2</text>
-              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l2}mH</text>
+              <text x="32" y="-8" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">L2</text>
+              <text x="32" y="58" textAnchor="middle" fill="#000000" fontSize="15" fontWeight="bold">{values.l2}mH</text>
             </g>
 
             {/* Top horizontal rail - right section (after L2) */}
@@ -659,15 +779,15 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
             {/* Electron animations */}
             {currentOn && (
               <>
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" repeatCount="indefinite" />
                 </circle>
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" begin="1s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" begin="1s" repeatCount="indefinite" />
                 </circle>
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;214;280;344;480;480;65" dur="4s" begin="2s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;70;70;70;70;280;280" dur="4s" begin="2s" repeatCount="indefinite" />
                 </circle>
@@ -709,8 +829,8 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 />
               ))}
               <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
-              <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L1</text>
-              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l1}mH</text>
+              <text x="32" y="-8" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">L1</text>
+              <text x="32" y="58" textAnchor="middle" fill="#000000" fontSize="15" fontWeight="bold">{values.l1}mH</text>
             </g>
 
             {/* L2 Inductor - lower branch */}
@@ -729,8 +849,8 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 />
               ))}
               <rect x="0" y="10" width="64" height="20" rx="4" fill="rgba(99,102,241,0.1)" stroke="#6366f1" strokeWidth="1" />
-              <text x="32" y="-5" textAnchor="middle" fill="#f59e0b" fontSize="14" fontWeight="bold">L2</text>
-              <text x="32" y="55" textAnchor="middle" fill="#475569" fontSize="11">{values.l2}mH</text>
+              <text x="32" y="-8" textAnchor="middle" fill="#000000" fontSize="18" fontWeight="bold">L2</text>
+              <text x="32" y="58" textAnchor="middle" fill="#000000" fontSize="15" fontWeight="bold">{values.l2}mH</text>
             </g>
 
             {/* Horizontal wire from L1 to join point */}
@@ -758,17 +878,17 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
             {currentOn && (
               <>
                 {/* Electron on L1 branch */}
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;40;40;40;40;70;70;280;280" dur="5s" repeatCount="indefinite" />
                 </circle>
                 {/* Electron on L2 branch */}
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" begin="1s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;120;120;120;120;70;70;280;280" dur="5s" begin="1s" repeatCount="indefinite" />
                 </circle>
                 {/* Extra electron for visual density */}
-                <circle r="4" fill="#60a5fa">
+                <circle cx="65" cy="100" r="4" fill="#60a5fa">
                   <animate attributeName="cx" values="65;65;150;150;220;284;350;350;480;480;65" dur="5s" begin="2.5s" repeatCount="indefinite" />
                   <animate attributeName="cy" values="100;70;70;40;40;40;40;70;70;280;280" dur="5s" begin="2.5s" repeatCount="indefinite" />
                 </circle>
@@ -777,9 +897,12 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
           </>
         )}
 
-        {/* Current direction indicator */}
+        {/* Instruction box at top-left */}
+        {/* Instruction box removed */}
+
+
         {currentOn && (
-          <text x="300" y="320" textAnchor="middle" fill="url(#inductorGradient)" fontSize="16" fontWeight="bold" className="animate-pulse">
+          <text x="300" y="350" textAnchor="middle" fill="#1e3a5f" fontSize="16" fontWeight="bold">
             ⚡ {currentDirection === 'forward' ? '→' : '←'} Magnetic Field Active ⚡
           </text>
         )}

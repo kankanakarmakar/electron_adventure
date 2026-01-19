@@ -263,48 +263,38 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Outer glow
+    // Black outer border for wire visibility
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
-    ctx.strokeStyle = `rgba(59, 130, 246, ${0.15 + pulseIntensity * 0.2})`;
-    ctx.lineWidth = 12;
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 8;
     ctx.stroke();
 
-    // Mid glow
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-      ctx.lineTo(points[i].x, points[i].y);
-    }
-    ctx.strokeStyle = `rgba(100, 150, 200, ${0.3 + pulseIntensity * 0.2})`;
-    ctx.lineWidth = 6;
-    ctx.stroke();
-
-    // Main copper wire
+    // Main copper wire - darker, richer copper
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
     const gradient = ctx.createLinearGradient(points[0].x, points[0].y, points[points.length - 1].x, points[points.length - 1].y);
-    gradient.addColorStop(0, '#b87333');
-    gradient.addColorStop(0.5, '#d4956a');
-    gradient.addColorStop(1, '#b87333');
+    gradient.addColorStop(0, '#8B5A2B');
+    gradient.addColorStop(0.5, '#CD853F');
+    gradient.addColorStop(1, '#8B5A2B');
     ctx.strokeStyle = gradient;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Wire highlight
+    // Wire highlight - brighter for contrast
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
       ctx.lineTo(points[i].x, points[i].y);
     }
-    ctx.strokeStyle = 'rgba(255, 220, 180, 0.4)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 235, 200, 0.5)';
+    ctx.lineWidth = 2;
     ctx.stroke();
   }, []);
 
@@ -382,14 +372,14 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.font = `600 ${Math.max(8, width * 0.18)}px Inter`;
     ctx.fillText('DC', centerX, y + height * 0.85);
 
-    // Battery label BESIDE the battery (to the left)
-    ctx.fillStyle = '#6d28d9';
+    // Battery label BESIDE the battery (to the left) - BLACK
+    ctx.fillStyle = '#000000';
     ctx.font = `800 ${Math.max(12, width * 0.35)}px Inter`;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
     ctx.shadowBlur = 3;
-    ctx.shadowOffsetY = 2;
+    ctx.shadowOffsetY = 1;
     ctx.fillText('Battery', x - 10, y + height * 0.15);
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
@@ -446,30 +436,26 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
       ctx.fillRect(bodyX + bodyWidth * pos, centerY - bodyHeight / 2 + 2, bandWidth, bodyHeight - 4);
     });
 
-    // Label above with DARKER PURPLE color - More prominent
-    const labelGradient = ctx.createLinearGradient(x, y - 12, x + width, y - 12);
-    labelGradient.addColorStop(0, '#7c3aed');
-    labelGradient.addColorStop(0.5, '#6d28d9');
-    labelGradient.addColorStop(1, '#5b21b6');
-    ctx.fillStyle = labelGradient;
+    // Label above with BLACK color - More prominent
+    ctx.fillStyle = '#000000';
     ctx.font = `800 ${Math.max(14, height * 0.6)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
 
-    // Enhanced text shadow for depth and prominence
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    // White shadow for visibility on light background
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
     ctx.shadowBlur = 3;
-    ctx.shadowOffsetY = 2;
+    ctx.shadowOffsetY = 1;
     ctx.fillText(label, x + width / 2, y - 5);
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
-    // Value below - LARGER AND MORE VISIBLE
-    ctx.fillStyle = '#9ca3af';
-    ctx.font = `600 ${Math.max(11, height * 0.45)}px Inter`;
+    // Value below - BLACK for maximum visibility
+    ctx.fillStyle = '#000000';
+    ctx.font = `bold ${Math.max(12, height * 0.5)}px Inter`;
     ctx.textBaseline = 'top';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 1;
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowBlur = 2;
     ctx.fillText(`${value}Ω`, x + width / 2, y + height + 5);
     ctx.shadowBlur = 0;
   }, []);
@@ -491,15 +477,16 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     const baseTop = baseBottom - baseHeight;
     const bulbCenterY = baseTop - bulbRadius + 5;
 
-    // Glow effect when lit
+    // Glow effect when lit - MUCH BRIGHTER
     if (brightness > 0.1) {
-      const glowLayers = 4;
+      const glowLayers = 5;
       for (let i = glowLayers; i >= 0; i--) {
-        const radius = bulbRadius * (1.5 + i * 0.8);
-        const alpha = brightness * 0.18 * (1 - i / glowLayers);
+        const radius = bulbRadius * (2.0 + i * 1.0);
+        const alpha = brightness * 0.35 * (1 - i / glowLayers);
         const gradient = ctx.createRadialGradient(centerX, bulbCenterY, 0, centerX, bulbCenterY, radius);
-        gradient.addColorStop(0, `rgba(255, 230, 120, ${alpha})`);
-        gradient.addColorStop(1, 'rgba(255, 200, 50, 0)');
+        gradient.addColorStop(0, `rgba(255, 240, 100, ${alpha})`);
+        gradient.addColorStop(0.5, `rgba(255, 200, 50, ${alpha * 0.6})`);
+        gradient.addColorStop(1, 'rgba(255, 180, 30, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(centerX, bulbCenterY, radius, 0, Math.PI * 2);
@@ -513,25 +500,26 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
       centerX, bulbCenterY, bulbRadius
     );
 
-    const glowColor = brightness > 0.3
-      ? `rgba(255, 245, 200, ${0.85 + brightness * 0.15})`
-      : 'rgba(255, 253, 240, 0.95)';
-    const innerGlow = brightness > 0.3
-      ? `rgba(255, 220, 100, ${brightness * 0.7})`
-      : 'rgba(250, 248, 235, 0.8)';
+    // Much more distinct on/off colors
+    const glowColor = brightness > 0.2
+      ? `rgba(255, 255, 180, ${0.9 + brightness * 0.1})`  // Bright yellow-white when on
+      : 'rgba(200, 200, 195, 0.9)';  // Gray when off
+    const innerGlow = brightness > 0.2
+      ? `rgba(255, 230, 80, ${0.8 + brightness * 0.2})`   // Intense yellow core
+      : 'rgba(180, 180, 175, 0.7)';  // Dull gray when off
 
     glassGradient.addColorStop(0, glowColor);
     glassGradient.addColorStop(0.6, innerGlow);
-    glassGradient.addColorStop(1, 'rgba(220, 218, 210, 0.7)');
+    glassGradient.addColorStop(1, brightness > 0.2 ? 'rgba(255, 200, 100, 0.8)' : 'rgba(150, 150, 145, 0.6)');
 
     ctx.fillStyle = glassGradient;
     ctx.beginPath();
     ctx.arc(centerX, bulbCenterY, bulbRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glass outline
-    ctx.strokeStyle = 'rgba(80, 80, 90, 0.4)';
-    ctx.lineWidth = 1.5;
+    // Glass outline - SOLID BLACK for clear visibility
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     // Glass highlight (reflection)
@@ -547,10 +535,10 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     ctx.quadraticCurveTo(centerX - bulbRadius * 0.15, filamentY - bulbRadius * 0.4, centerX, filamentY + 3);
     ctx.quadraticCurveTo(centerX + bulbRadius * 0.15, filamentY - bulbRadius * 0.4, centerX + bulbRadius * 0.35, filamentY + 3);
 
-    if (brightness > 0.3) {
-      ctx.strokeStyle = `rgba(255, 210, 100, ${0.8 + brightness * 0.2})`;
-      ctx.shadowColor = 'rgba(255, 200, 50, 0.9)';
-      ctx.shadowBlur = 8;
+    if (brightness > 0.2) {
+      ctx.strokeStyle = `rgba(255, 220, 50, ${0.9 + brightness * 0.1})`;
+      ctx.shadowColor = 'rgba(255, 200, 0, 1)';
+      ctx.shadowBlur = 15;
     } else {
       ctx.strokeStyle = '#777';
       ctx.shadowBlur = 0;
@@ -716,37 +704,61 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
     const animate = () => {
       const rect = canvas.getBoundingClientRect();
 
-      // Light blue gradient background for improved visibility
+      // Clear and draw lighter blue background
       ctx.clearRect(0, 0, rect.width, rect.height);
 
-      // Create radial gradient from center - LIGHTEST BLUE shades
+      // Create radial gradient from center - LIGHTER blue shades
       const bgGradient = ctx.createRadialGradient(
         rect.width / 2, rect.height / 2, 0,
         rect.width / 2, rect.height / 2, Math.max(rect.width, rect.height) * 0.8
       );
-      bgGradient.addColorStop(0, '#f0f9ff');    // Lightest sky blue
-      bgGradient.addColorStop(0.3, '#e0f2fe');  // Very light cyan-blue
+      bgGradient.addColorStop(0, '#f0f9ff');    // Very light blue center
+      bgGradient.addColorStop(0.3, '#e0f2fe');  // Light cyan-blue
       bgGradient.addColorStop(0.6, '#bae6fd');  // Soft light blue
-      bgGradient.addColorStop(1, '#7dd3fc');    // Light blue edge
+      bgGradient.addColorStop(1, '#93c5fd');    // Light blue edge
       ctx.fillStyle = bgGradient;
       ctx.fillRect(0, 0, rect.width, rect.height);
 
-      // Add subtle grid pattern for depth - lighter blue
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.12)';
-      ctx.lineWidth = 1;
-      const gridSize = 30;
-      for (let x = 0; x < rect.width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, rect.height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < rect.height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(rect.width, y);
-        ctx.stroke();
-      }
+      // Draw concept explanation dialog box at top-left corner
+      const conceptTexts: Record<CircuitMode, string> = {
+        'combination': '💡 Simple: One resistor limits current flow (I = V/R)',
+        'series': '🔗 Series: Resistors add up (R_total = R1 + R2)',
+        'parallel': '⚡ Parallel: Current splits between paths (1/R = 1/R1 + 1/R2)'
+      };
+
+      const conceptText = conceptTexts[mode];
+      const boxPadding = 10;
+      const boxMargin = 15;
+
+      // Measure text
+      ctx.font = 'bold 13px Inter';
+      const textMetrics = ctx.measureText(conceptText);
+      const boxWidth = textMetrics.width + boxPadding * 2;
+      const boxHeight = 32;
+
+      // Draw dialog box background with shadow
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+
+      // Box with rounded corners
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.roundRect(boxMargin, boxMargin, boxWidth, boxHeight, 8);
+      ctx.fill();
+
+      // Border
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Draw text
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 13px Inter';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(conceptText, boxMargin + boxPadding, boxMargin + boxHeight / 2);
 
       const paths = getCircuitPaths(rect.width, rect.height);
       const { components } = paths;
