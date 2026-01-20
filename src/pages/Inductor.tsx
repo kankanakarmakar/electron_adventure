@@ -1,81 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Zap, Info } from 'lucide-react';
-
-type CircuitMode = 'simple' | 'series' | 'parallel';
-
-interface InductorValues {
-  voltage: number;
-  l1: number; // mH
-  l2: number; // mH
-  currentRate: number; // A/s (dI/dt)
-}
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Monitor, SlidersHorizontal, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const InductorPage = () => {
-  const [mode, setMode] = useState<CircuitMode>('simple');
-  const [values, setValues] = useState<InductorValues>({
-    voltage: 12,
-    l1: 10,
-    l2: 20,
-    currentRate: 5,
-  });
-  const currentOn = true; // Always on
-  const [currentDirection, setCurrentDirection] = useState<'forward' | 'reverse'>('forward');
-
-  // Calculate total inductance based on mode
-  const getTotalInductance = () => {
-    switch (mode) {
-      case 'simple':
-        return values.l1;
-      case 'series':
-        return values.l1 + values.l2;
-      case 'parallel':
-        return (values.l1 * values.l2) / (values.l1 + values.l2);
-    }
-  };
-
-  // Calculate induced voltage: V = L × dI/dt
-  const getInducedVoltage = () => {
-    const L = getTotalInductance() / 1000; // Convert mH to H
-    return (L * values.currentRate).toFixed(2);
-  };
-
-  // Calculate current (simplified)
-  const getCurrent = () => {
-    return currentOn ? (values.voltage / 10).toFixed(2) : '0.00';
-  };
-
-  const getModeInfo = () => {
-    switch (mode) {
-      case 'simple':
-        return {
-          title: 'Simple Circuit',
-          description: 'A basic circuit with one inductor that stores energy in a magnetic field.',
-          formula: '<span style="font-style: italic;">V</span><sub>L</sub> = <span style="font-style: italic;">L</span> × <sup>d<span style="font-style: italic;">I</span></sup>/<sub>d<span style="font-style: italic;">t</span></sub>',
-          tip: 'Inductors oppose changes in current flow by generating a back EMF voltage.',
-        };
-      case 'series':
-        return {
-          title: 'Series Circuit',
-          description: 'Inductors connected end-to-end. Total inductance adds up.',
-          formula: '<span style="font-style: italic;">L</span><sub>total</sub> = <span style="font-style: italic;">L</span><sub>1</sub> + <span style="font-style: italic;">L</span><sub>2</sub>',
-          tip: 'More inductance means stronger opposition to current changes.',
-        };
-      case 'parallel':
-        return {
-          title: 'Parallel Circuit',
-          description: 'Inductors connected side-by-side. Magnetic fields combine differently.',
-          formula: '<sup>1</sup>/<sub><span style="font-style: italic;">L</span><sub>total</sub></sub> = <sup>1</sup>/<sub><span style="font-style: italic;">L</span><sub>1</sub></sub> + <sup>1</sup>/<sub><span style="font-style: italic;">L</span><sub>2</sub></sub>',
-          tip: 'Parallel inductors result in lower total inductance.',
-        };
-    }
-  };
-
-  const info = getModeInfo();
+  const navigate = useNavigate();
 
   return (
-    <div className="relative h-screen overflow-hidden" style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 30%, #7dd3fc 70%, #38bdf8 100%)' }}>
-      {/* Light blue background */}
+    <div className="h-screen w-full bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#1e1b4b_0%,_#020617_100%)]"></div>
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
 
+<<<<<<< HEAD
       {/* Main content */}
       <div className="relative z-10 h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-[95vw] h-[92vh] flex flex-col">
@@ -213,218 +150,73 @@ const InductorPage = () => {
               </div>
             </div>
           </div>
+=======
+      <div className="relative z-10 text-center space-y-12 max-w-4xl px-6">
+        <div className="space-y-4">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white mb-2">
+            Inductor
+            <span className="text-blue-500">.io</span>
+          </h1>
+          <p className="text-xl text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
+            Dual-screen interactive simulation. Launch the <span className="text-blue-400">Circuit View</span> on your main display and control it remotely via the <span className="text-emerald-400">Control Panel</span>.
+          </p>
+>>>>>>> 6227f02fab69f00512fe8f19d6abfc2c92e2b545
         </div>
-      </div>
-    </div>
-  );
-};
 
-// Inductor Values Panel Component
-interface InductorValuesPanelProps {
-  mode: CircuitMode;
-  values: InductorValues;
-  onValuesChange: (values: InductorValues) => void;
-  totalInductance: number;
-  inducedVoltage: string;
-  current: string;
-}
-
-function InductorValuesPanel({ mode, values, onValuesChange, totalInductance, inducedVoltage, current }: InductorValuesPanelProps) {
-  const makeKeyHandler = (value: number, min: number, max: number, step: number, apply: (v: number) => void) => (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const key = e.key || '';
-    const code = (e as any).code || '';
-    const keyCode = (e as any).keyCode || 0;
-
-    const increase = key === 'PageUp' || code === 'PageUp' || key === 'ArrowUp' || keyCode === 33 || keyCode === 38;
-    const decrease = key === 'PageDown' || code === 'PageDown' || key === 'ArrowDown' || keyCode === 34 || keyCode === 40;
-    const toMin = key === 'Home' || code === 'Home';
-    const toMax = key === 'End' || code === 'End';
-
-    if (increase || decrease || toMin || toMax) {
-      e.preventDefault();
-      if (toMin) return apply(min);
-      if (toMax) return apply(max);
-      if (increase) return apply(Math.min(max, value + step));
-      if (decrease) return apply(Math.max(min, value - step));
-    }
-  };
-  return (
-    <div className="space-y-1">
-      {/* Voltage Control */}
-      <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-slate-800 w-16">Voltage</span>
-        <div
-          role="spinbutton"
-          tabIndex={0}
-          aria-valuemin={1}
-          aria-valuemax={24}
-          aria-valuenow={values.voltage}
-          aria-label="Voltage"
-          onKeyDown={makeKeyHandler(values.voltage, 1, 24, 1, (v) => onValuesChange({ ...values, voltage: v }))}
-          className="flex items-center gap-0.5 rounded-lg border px-0.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-1"
-        >
-          <button
-            onClick={() => onValuesChange({ ...values, voltage: Math.max(1, values.voltage - 1) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-100 active:bg-blue-200 text-blue-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">−</span>
-          </button>
-          <span className="text-sm font-bold w-14 text-center tabular-nums">
-            {values.voltage}V
-          </span>
-          <button
-            onClick={() => onValuesChange({ ...values, voltage: Math.min(24, values.voltage + 1) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-blue-100 active:bg-blue-200 text-blue-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">+</span>
-          </button>
-        </div>
-      </div>
-
-      {/* L1 Control */}
-      <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-slate-800 w-16">L1</span>
-        <div
-          role="spinbutton"
-          tabIndex={0}
-          aria-valuemin={1}
-          aria-valuemax={100}
-          aria-valuenow={values.l1}
-          aria-label="L1"
-          onKeyDown={makeKeyHandler(values.l1, 1, 100, 5, (v) => onValuesChange({ ...values, l1: v }))}
-          className="flex items-center gap-0.5 rounded-lg border px-0.5 py-0.5 bg-indigo-50 text-indigo-600 border-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1"
-        >
-          <button
-            onClick={() => onValuesChange({ ...values, l1: Math.max(1, values.l1 - 5) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-indigo-100 active:bg-indigo-200 text-indigo-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">−</span>
-          </button>
-          <span className="text-sm font-bold w-14 text-center tabular-nums">
-            {values.l1}mH
-          </span>
-          <button
-            onClick={() => onValuesChange({ ...values, l1: Math.min(100, values.l1 + 5) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-indigo-100 active:bg-indigo-200 text-indigo-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">+</span>
-          </button>
-        </div>
-      </div>
-
-      {/* L2 Control */}
-      {mode !== 'simple' && (
-        <div className="flex items-center justify-between gap-1.5">
-          <span className="text-xs font-bold text-slate-800 w-16">L2</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl mx-auto">
+          {/* Circuit View Card */}
           <div
-            role="spinbutton"
-            tabIndex={0}
-            aria-valuemin={1}
-            aria-valuemax={100}
-            aria-valuenow={values.l2}
-            aria-label="L2"
-            onKeyDown={makeKeyHandler(values.l2, 1, 100, 5, (v) => onValuesChange({ ...values, l2: v }))}
-            className="flex items-center gap-0.5 rounded-lg border px-0.5 py-0.5 bg-indigo-50 text-indigo-600 border-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1"
+            onClick={() => navigate('/inductor/circuit')}
+            className="group relative bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-slate-800/80 transition-all cursor-pointer hover:border-blue-500/50 hover:scale-105 active:scale-95 duration-300 shadow-2xl"
           >
-            <button
-              onClick={() => onValuesChange({ ...values, l2: Math.max(1, values.l2 - 5) })}
-              className="w-6 h-6 rounded flex items-center justify-center hover:bg-indigo-100 active:bg-indigo-200 text-indigo-600 transition-colors"
-              type="button"
-            >
-              <span className="text-sm">−</span>
-            </button>
-            <span className="text-sm font-bold w-14 text-center tabular-nums">
-              {values.l2}mH
-            </span>
-            <button
-              onClick={() => onValuesChange({ ...values, l2: Math.min(100, values.l2 + 5) })}
-              className="w-6 h-6 rounded flex items-center justify-center hover:bg-indigo-100 active:bg-indigo-200 text-indigo-600 transition-colors"
-              type="button"
-            >
-              <span className="text-sm">+</span>
-            </button>
+            <div className="absolute inset-0 bg-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative flex flex-col items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:rotate-12 transition-transform">
+                <Monitor className="w-10 h-10 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">Circuit View</h2>
+                <p className="text-slate-400 text-sm">Launch the full-screen circuit visualization with real-time field animations.</p>
+              </div>
+              <Button className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl py-6">
+                Launch Display
+              </Button>
+            </div>
+          </div>
+
+          {/* Controls Card */}
+          <div
+            onClick={() => navigate('/inductor/controls')}
+            className="group relative bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-slate-800/80 transition-all cursor-pointer hover:border-emerald-500/50 hover:scale-105 active:scale-95 duration-300 shadow-2xl"
+          >
+            <div className="absolute inset-0 bg-emerald-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative flex flex-col items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:-rotate-12 transition-transform">
+                <SlidersHorizontal className="w-10 h-10 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-white">Controls</h2>
+                <p className="text-slate-400 text-sm">Open the control panel to manipulate voltage, inductance, and more.</p>
+              </div>
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl py-6">
+                Launch Controls
+              </Button>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Current Rate Control */}
-      <div className="flex items-center justify-between gap-1.5">
-        <span className="text-xs font-bold text-slate-800 w-16">dI/dt</span>
-        <div
-          role="spinbutton"
-          tabIndex={0}
-          aria-valuemin={1}
-          aria-valuemax={20}
-          aria-valuenow={values.currentRate}
-          aria-label="dI/dt"
-          onKeyDown={makeKeyHandler(values.currentRate, 1, 20, 1, (v) => onValuesChange({ ...values, currentRate: v }))}
-          className="flex items-center gap-0.5 rounded-lg border px-0.5 py-0.5 bg-purple-50 text-purple-600 border-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-1"
+        <button
+          onClick={() => navigate('/')}
+          className="text-slate-500 hover:text-white flex items-center gap-2 mx-auto font-bold transition-colors"
         >
-          <button
-            onClick={() => onValuesChange({ ...values, currentRate: Math.max(1, values.currentRate - 1) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-purple-100 active:bg-purple-200 text-purple-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">−</span>
-          </button>
-          <span className="text-sm font-bold w-14 text-center tabular-nums">
-            {values.currentRate}A/s
-          </span>
-          <button
-            onClick={() => onValuesChange({ ...values, currentRate: Math.min(20, values.currentRate + 1) })}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-purple-100 active:bg-purple-200 text-purple-600 transition-colors"
-            type="button"
-          >
-            <span className="text-sm">+</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Computed Values - Light Theme Box */}
-      <div className="pt-1.5 mt-1.5 border-t border-slate-200">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-1.5 border-2 border-blue-200 shadow space-y-0.5">
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-600 font-semibold">Total L:</span>
-            <span className="font-bold text-indigo-600 text-sm">{totalInductance.toFixed(2)}mH</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-600 font-semibold">Voltage:</span>
-            <span className="font-bold text-blue-600 text-sm">{inducedVoltage}V</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-600 font-semibold">Current:</span>
-            <span className="font-bold text-cyan-600 text-sm">{current}A</span>
-          </div>
-        </div>
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </button>
       </div>
     </div>
   );
-}
-
-// Inductor Circuit Canvas Component - WITH FULL ANIMATION
-interface InductorCircuitCanvasProps {
-  mode: CircuitMode;
-  values: InductorValues;
-  currentOn: boolean;
-  currentDirection: 'forward' | 'reverse';
-}
-
-// Get instruction text for each mode
-const getModeInstruction = (mode: CircuitMode): string => {
-  switch (mode) {
-    case 'simple':
-      return '💡 Simple: Single inductor stores energy in magnetic field (V = L × dI/dt)';
-    case 'series':
-      return '🔗 Series: Inductors add up (L_total = L1 + L2)';
-    case 'parallel':
-      return '⚡ Parallel: Current splits, 1/L_total = 1/L1 + 1/L2';
-  }
 };
 
+<<<<<<< HEAD
 function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: InductorCircuitCanvasProps) {
   const [fieldStrength, setFieldStrength] = useState(0);
 
@@ -913,4 +705,6 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
   );
 }
 
+=======
+>>>>>>> 6227f02fab69f00512fe8f19d6abfc2c92e2b545
 export default InductorPage;
