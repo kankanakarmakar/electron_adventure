@@ -800,6 +800,56 @@ const CapacitorPage = () => {
                       </div>
                     </div>
 
+                    {/* C2 Control - only for series/parallel modes */}
+                    {mode !== 'simple' && (
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-800 mb-0.5 block">C₂</label>
+                        <div
+                          role="spinbutton"
+                          tabIndex={0}
+                          aria-valuemin={10}
+                          aria-valuemax={500}
+                          aria-valuenow={capacitance2}
+                          aria-label="C2"
+                          onKeyDown={makeKeyHandler(capacitance2, 10, 500, 10, (v) => setCapacitance2(v), stage !== 'initial')}
+                          className="flex items-center justify-between gap-1.5 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-1"
+                        >
+                          <button onClick={() => setCapacitance2(c => Math.max(10, c - 10))} disabled={stage !== 'initial'} className="w-6 h-6 rounded flex items-center justify-center bg-pink-50 text-pink-600 hover:bg-pink-100 disabled:opacity-50" type="button">
+                            <span className="text-sm">−</span>
+                          </button>
+                          <span className="text-sm font-bold text-pink-400 min-w-[40px] text-center">{capacitance2}µF</span>
+                          <button onClick={() => setCapacitance2(c => Math.min(500, c + 10))} disabled={stage !== 'initial'} className="w-6 h-6 rounded flex items-center justify-center bg-pink-50 text-pink-600 hover:bg-pink-100 disabled:opacity-50" type="button">
+                            <span className="text-sm">+</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* C3 Control - only for series/parallel modes */}
+                    {mode !== 'simple' && (
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-800 mb-0.5 block">C₃</label>
+                        <div
+                          role="spinbutton"
+                          tabIndex={0}
+                          aria-valuemin={10}
+                          aria-valuemax={500}
+                          aria-valuenow={capacitance3}
+                          aria-label="C3"
+                          onKeyDown={makeKeyHandler(capacitance3, 10, 500, 10, (v) => setCapacitance3(v), stage !== 'initial')}
+                          className="flex items-center justify-between gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1"
+                        >
+                          <button onClick={() => setCapacitance3(c => Math.max(10, c - 10))} disabled={stage !== 'initial'} className="w-6 h-6 rounded flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-100 disabled:opacity-50" type="button">
+                            <span className="text-sm">−</span>
+                          </button>
+                          <span className="text-sm font-bold text-amber-400 min-w-[40px] text-center">{capacitance3}µF</span>
+                          <button onClick={() => setCapacitance3(c => Math.min(500, c + 10))} disabled={stage !== 'initial'} className="w-6 h-6 rounded flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-100 disabled:opacity-50" type="button">
+                            <span className="text-sm">+</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="pt-1 border-t border-purple-500/20 space-y-0.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-700 font-bold">Charge (Q):</span>

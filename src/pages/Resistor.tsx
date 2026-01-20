@@ -151,15 +151,17 @@ const ResistorPage = () => {
                         <div className="flex gap-4 h-full">
                             {/* Left: Circuit Display (60%) */}
                             <div className="flex-[60] relative rounded-2xl border-2 border-sky-300 bg-gradient-to-br from-sky-100/80 to-blue-100/90 backdrop-blur-md overflow-hidden shadow-lg">
-                                {/* Info box in top-left corner */}
-                                <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-md border border-slate-200 max-w-[280px] z-10">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center">
-                                            <Zap className="w-3 h-3 text-white" />
+                                {/* Info box in top-left corner - eye-catching */}
+                                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border-2 border-orange-400 max-w-[220px] z-10">
+                                    <div className="flex items-start gap-2">
+                                        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                                            <Zap className="w-4 h-4 text-white" />
                                         </div>
-                                        <span className="text-sm font-bold text-red-500">{info.title}</span>
+                                        <div className="flex-1">
+                                            <h3 className="text-xs font-bold text-orange-600 mb-0.5">{info.title}</h3>
+                                            <p className="text-[10px] text-slate-700 leading-snug font-medium">{info.description}</p>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-slate-600 leading-relaxed">{info.description}</p>
                                 </div>
 
                                 {/* Resistor Circuit Canvas */}
@@ -231,12 +233,42 @@ interface ResistorValuesPanelProps {
 }
 
 function ResistorValuesPanel({ mode, values, onValuesChange, totalResistance, current, power }: ResistorValuesPanelProps) {
+    // Keyboard handler for hardware mapping - ArrowUp/ArrowDown, PageUp/PageDown, Home/End
+    const makeKeyHandler = (value: number, min: number, max: number, step: number, apply: (v: number) => void, disabled = false) => (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (disabled) return;
+        const key = e.key || '';
+        const code = (e as any).code || '';
+        const keyCode = (e as any).keyCode || 0;
+
+        const increase = key === 'PageUp' || code === 'PageUp' || key === 'ArrowUp' || keyCode === 33 || keyCode === 38;
+        const decrease = key === 'PageDown' || code === 'PageDown' || key === 'ArrowDown' || keyCode === 34 || keyCode === 40;
+        const toMin = key === 'Home' || code === 'Home';
+        const toMax = key === 'End' || code === 'End';
+
+        if (increase || decrease || toMin || toMax) {
+            e.preventDefault();
+            if (toMin) return apply(min);
+            if (toMax) return apply(max);
+            if (increase) return apply(Math.min(max, value + step));
+            if (decrease) return apply(Math.max(min, value - step));
+        }
+    };
+
     return (
         <div className="space-y-2">
             {/* Voltage Control */}
             <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-600">Voltage</span>
-                <div className="flex items-center gap-1 rounded-lg border-2 px-2 py-1 bg-purple-50 border-purple-200">
+                <div
+                    role="spinbutton"
+                    tabIndex={0}
+                    aria-valuemin={1}
+                    aria-valuemax={24}
+                    aria-valuenow={values.voltage}
+                    aria-label="Voltage"
+                    onKeyDown={makeKeyHandler(values.voltage, 1, 24, 1, (v) => onValuesChange({ ...values, voltage: v }))}
+                    className="flex items-center gap-1 rounded-lg border-2 px-2 py-1 bg-purple-50 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1"
+                >
                     <button
                         onClick={() => onValuesChange({ ...values, voltage: Math.max(1, values.voltage - 1) })}
                         className="w-6 h-6 rounded flex items-center justify-center hover:bg-purple-100 text-purple-600 transition-colors font-bold"
@@ -254,7 +286,16 @@ function ResistorValuesPanel({ mode, values, onValuesChange, totalResistance, cu
             {/* R1 Control */}
             <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-600">R1</span>
-                <div className="flex items-center gap-1 rounded-lg border-2 px-2 py-1 bg-red-50 border-red-200">
+                <div
+                    role="spinbutton"
+                    tabIndex={0}
+                    aria-valuemin={1}
+                    aria-valuemax={100}
+                    aria-valuenow={values.r1}
+                    aria-label="R1"
+                    onKeyDown={makeKeyHandler(values.r1, 1, 100, 1, (v) => onValuesChange({ ...values, r1: v }))}
+                    className="flex items-center gap-1 rounded-lg border-2 px-2 py-1 bg-red-50 border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
+                >
                     <button
                         onClick={() => onValuesChange({ ...values, r1: Math.max(1, values.r1 - 1) })}
                         className="w-6 h-6 rounded flex items-center justify-center hover:bg-red-100 text-red-600 transition-colors font-bold"
@@ -272,7 +313,17 @@ function ResistorValuesPanel({ mode, values, onValuesChange, totalResistance, cu
             {/* R2 Control */}
             <div className="flex items-center justify-between">
                 <span className={`text-sm font-medium ${mode === 'simple' ? 'text-slate-300' : 'text-slate-600'}`}>R2</span>
-                <div className={`flex items-center gap-1 rounded-lg border-2 px-2 py-1 ${mode === 'simple' ? 'bg-slate-50 border-slate-200 opacity-50' : 'bg-orange-50 border-orange-200'}`}>
+                <div
+                    role="spinbutton"
+                    tabIndex={mode === 'simple' ? -1 : 0}
+                    aria-valuemin={1}
+                    aria-valuemax={100}
+                    aria-valuenow={values.r2}
+                    aria-label="R2"
+                    aria-disabled={mode === 'simple'}
+                    onKeyDown={makeKeyHandler(values.r2, 1, 100, 1, (v) => onValuesChange({ ...values, r2: v }), mode === 'simple')}
+                    className={`flex items-center gap-1 rounded-lg border-2 px-2 py-1 ${mode === 'simple' ? 'bg-slate-50 border-slate-200 opacity-50' : 'bg-orange-50 border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1'}`}
+                >
                     <button
                         onClick={() => onValuesChange({ ...values, r2: Math.max(1, values.r2 - 1) })}
                         className={`w-6 h-6 rounded flex items-center justify-center transition-colors font-bold ${mode === 'simple' ? 'text-slate-300 cursor-not-allowed' : 'hover:bg-orange-100 text-orange-600'}`}
@@ -447,7 +498,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
 
     return (
         <div className="w-full h-full flex items-center justify-center p-4">
-            <svg viewBox="0 0 520 350" className="w-full h-full max-h-[400px]" preserveAspectRatio="xMidYMid meet">
+            <svg viewBox="0 0 540 350" className="w-full h-full max-h-[400px]" preserveAspectRatio="xMidYMid meet">
                 <defs>
                     {/* Glow filter for electrons */}
                     <filter id="electronGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -459,8 +510,8 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                     </filter>
                 </defs>
 
-                {/* Battery - Left side vertical */}
-                <g transform="translate(60, 110)">
+                {/* Battery - Left side vertical - shifted right to avoid hint box */}
+                <g transform="translate(100, 110)">
                     {/* Battery body */}
                     <rect x="0" y="0" width="40" height="80" rx="6" fill="#1f2937" stroke="#111827" strokeWidth="2" />
                     {/* Battery cap (top terminal) */}
@@ -484,28 +535,28 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                 {mode === 'simple' && (
                     <>
                         {/* Top wire: Battery + to resistor */}
-                        <line x1="80" y1="104" x2="80" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="70" x2="200" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="104" x2="120" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="70" x2="220" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Resistor R1 */}
-                        {renderResistor(200, 70, 'R1', values.r1)}
+                        {renderResistor(220, 70, 'R1', values.r1)}
 
-                        {/* Wire from resistor to bulb */}
-                        <line x1="264" y1="70" x2="380" y2="70" stroke={wireColor} strokeWidth="4" />
+                        {/* Wire from resistor to bulb - FIXED: extended to x=400 */}
+                        <line x1="284" y1="70" x2="400" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Bulb */}
                         {renderBulb(420, 70, bulbBrightness, bulbOn)}
 
                         {/* Wire from bulb down and back */}
-                        <line x1="440" y1="70" x2="460" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="70" x2="460" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="250" x2="80" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="250" x2="80" y2="190" stroke={wireColor} strokeWidth="4" />
+                        <line x1="440" y1="70" x2="480" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="70" x2="480" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="250" x2="120" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="250" x2="120" y2="190" stroke={wireColor} strokeWidth="4" />
 
                         {/* Animated electrons - flowing around the circuit */}
                         {renderElectrons(
                             [
-                                "80;80;200;264;380;440;460;460;80;80",
+                                "120;120;220;284;400;440;480;480;120;120",
                                 "190;70;70;70;70;70;70;250;250;190"
                             ],
                             6,
@@ -518,34 +569,34 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                 {mode === 'series' && (
                     <>
                         {/* Top wire: Battery + going up and right */}
-                        <line x1="80" y1="104" x2="80" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="70" x2="140" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="104" x2="120" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="70" x2="170" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* R1 */}
-                        {renderResistor(140, 70, 'R1', values.r1)}
+                        {renderResistor(170, 70, 'R1', values.r1)}
 
                         {/* Wire between R1 and R2 */}
-                        <line x1="204" y1="70" x2="250" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="234" y1="70" x2="280" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* R2 */}
-                        {renderResistor(250, 70, 'R2', values.r2)}
+                        {renderResistor(280, 70, 'R2', values.r2)}
 
-                        {/* Wire to bulb */}
-                        <line x1="314" y1="70" x2="380" y2="70" stroke={wireColor} strokeWidth="4" />
+                        {/* Wire to bulb - FIXED: extended to connect to bulb at x=400 */}
+                        <line x1="344" y1="70" x2="400" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Bulb */}
                         {renderBulb(420, 70, bulbBrightness, bulbOn)}
 
                         {/* Wire back to battery */}
-                        <line x1="440" y1="70" x2="460" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="70" x2="460" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="250" x2="80" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="250" x2="80" y2="190" stroke={wireColor} strokeWidth="4" />
+                        <line x1="440" y1="70" x2="480" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="70" x2="480" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="250" x2="120" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="250" x2="120" y2="190" stroke={wireColor} strokeWidth="4" />
 
                         {/* Animated electrons */}
                         {renderElectrons(
                             [
-                                "80;80;140;204;250;314;380;440;460;460;80;80",
+                                "120;120;170;234;280;344;400;440;480;480;120;120",
                                 "190;70;70;70;70;70;70;70;70;250;250;190"
                             ],
                             5,
@@ -558,40 +609,40 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                 {mode === 'parallel' && (
                     <>
                         {/* Wire from battery + going up */}
-                        <line x1="80" y1="104" x2="80" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="70" x2="160" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="104" x2="120" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="70" x2="190" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Split point */}
-                        <circle cx="160" cy="70" r="4" fill={wireColor} />
+                        <circle cx="190" cy="70" r="4" fill={wireColor} />
 
                         {/* Upper branch - R1 */}
-                        <line x1="160" y1="70" x2="160" y2="40" stroke={wireColor} strokeWidth="4" />
-                        <line x1="160" y1="40" x2="180" y2="40" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(180, 40, 'R1', values.r1)}
-                        <line x1="244" y1="40" x2="280" y2="40" stroke={wireColor} strokeWidth="4" />
-                        <line x1="280" y1="40" x2="280" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="190" y1="70" x2="190" y2="40" stroke={wireColor} strokeWidth="4" />
+                        <line x1="190" y1="40" x2="210" y2="40" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(210, 40, 'R1', values.r1)}
+                        <line x1="274" y1="40" x2="310" y2="40" stroke={wireColor} strokeWidth="4" />
+                        <line x1="310" y1="40" x2="310" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Lower branch - R2 */}
-                        <line x1="160" y1="70" x2="160" y2="120" stroke={wireColor} strokeWidth="4" />
-                        <line x1="160" y1="120" x2="180" y2="120" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(180, 120, 'R2', values.r2)}
-                        <line x1="244" y1="120" x2="280" y2="120" stroke={wireColor} strokeWidth="4" />
-                        <line x1="280" y1="120" x2="280" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="190" y1="70" x2="190" y2="120" stroke={wireColor} strokeWidth="4" />
+                        <line x1="190" y1="120" x2="210" y2="120" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(210, 120, 'R2', values.r2)}
+                        <line x1="274" y1="120" x2="310" y2="120" stroke={wireColor} strokeWidth="4" />
+                        <line x1="310" y1="120" x2="310" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Merge point */}
-                        <circle cx="280" cy="70" r="4" fill={wireColor} />
+                        <circle cx="310" cy="70" r="4" fill={wireColor} />
 
-                        {/* Wire to bulb */}
-                        <line x1="280" y1="70" x2="360" y2="70" stroke={wireColor} strokeWidth="4" />
+                        {/* Wire to bulb - FIXED: extended to connect to bulb at x=400 */}
+                        <line x1="310" y1="70" x2="400" y2="70" stroke={wireColor} strokeWidth="4" />
 
                         {/* Bulb */}
-                        {renderBulb(400, 70, bulbBrightness, bulbOn)}
+                        {renderBulb(420, 70, bulbBrightness, bulbOn)}
 
                         {/* Wire back to battery */}
-                        <line x1="420" y1="70" x2="460" y2="70" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="70" x2="460" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="460" y1="250" x2="80" y2="250" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="250" x2="80" y2="190" stroke={wireColor} strokeWidth="4" />
+                        <line x1="440" y1="70" x2="480" y2="70" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="70" x2="480" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="480" y1="250" x2="120" y2="250" stroke={wireColor} strokeWidth="4" />
+                        <line x1="120" y1="250" x2="120" y2="190" stroke={wireColor} strokeWidth="4" />
 
                         {/* Animated electrons - upper branch */}
                         {bulbOn && (
@@ -601,7 +652,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="5" fill="#60a5fa">
                                             <animate
                                                 attributeName="cx"
-                                                values="160;160;180;244;280;280"
+                                                values="190;190;210;274;310;310"
                                                 dur={`${electronSpeed * 0.8}s`}
                                                 begin={`${i * electronSpeed * 0.4}s`}
                                                 repeatCount="indefinite"
@@ -617,7 +668,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="2" fill="#dbeafe">
                                             <animate
                                                 attributeName="cx"
-                                                values="160;160;180;244;280;280"
+                                                values="190;190;210;274;310;310"
                                                 dur={`${electronSpeed * 0.8}s`}
                                                 begin={`${i * electronSpeed * 0.4}s`}
                                                 repeatCount="indefinite"
@@ -638,7 +689,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="5" fill="#60a5fa">
                                             <animate
                                                 attributeName="cx"
-                                                values="160;160;180;244;280;280"
+                                                values="190;190;210;274;310;310"
                                                 dur={`${electronSpeed * 0.8}s`}
                                                 begin={`${i * electronSpeed * 0.4 + 0.3}s`}
                                                 repeatCount="indefinite"
@@ -654,7 +705,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="2" fill="#dbeafe">
                                             <animate
                                                 attributeName="cx"
-                                                values="160;160;180;244;280;280"
+                                                values="190;190;210;274;310;310"
                                                 dur={`${electronSpeed * 0.8}s`}
                                                 begin={`${i * electronSpeed * 0.4 + 0.3}s`}
                                                 repeatCount="indefinite"
@@ -675,7 +726,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="5" fill="#60a5fa">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;280;360;420;460;460;80;80"
+                                                values="120;120;190;310;400;440;480;480;120;120"
                                                 dur={`${electronSpeed}s`}
                                                 begin={`${i * electronSpeed / 3}s`}
                                                 repeatCount="indefinite"
@@ -691,7 +742,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="2" fill="#dbeafe">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;280;360;420;460;460;80;80"
+                                                values="120;120;190;310;400;440;480;480;120;120"
                                                 dur={`${electronSpeed}s`}
                                                 begin={`${i * electronSpeed / 3}s`}
                                                 repeatCount="indefinite"
