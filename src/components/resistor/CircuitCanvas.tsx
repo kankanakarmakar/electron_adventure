@@ -43,9 +43,9 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const batteryPosTerminal = batteryY;
         const batteryNegTerminal = batteryY + batteryHeight;
 
-        // Top wire level - where components sit ON TOP of
-        const simpleTopWireY = top + componentSize * 2.5;
-        const bottomWireY = bottom - componentSize * 1.2;
+        // Top wire level - where components sit ON TOP of (moved down to avoid instruction box overlap)
+        const simpleTopWireY = top + componentSize * 3.5;
+        const bottomWireY = bottom - componentSize * 1.0;
 
         // Resistor on top wire
         const r1Width = componentSize * 2.0;
@@ -59,7 +59,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const bulbWidth = componentSize * 1.8;
         const bulbHeight = componentSize * 2.2;
         const bulbX = right - componentSize * 3.0;
-        const bulbY = simpleTopWireY; // Bulb base sits ON the wire
+        const bulbY = simpleTopWireY; // Wire level - drawBulb places bulb above this
         const bulbCenterX = bulbX + bulbWidth / 2;
 
         const rightWireX = right - componentSize * 1.0;
@@ -101,9 +101,9 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const seriesBatteryTop = seriesBatteryY;
         const seriesBatteryBottom = seriesBatteryY + seriesBatteryHeight;
 
-        // Top wire where components sit on top of
-        const seriesTopRailY = top + componentSize * 2.5;
-        const seriesBottomRailY = bottom - componentSize * 1.2;
+        // Top wire where components sit on top of (moved down to avoid instruction box overlap)
+        const seriesTopRailY = top + componentSize * 3.5;
+        const seriesBottomRailY = bottom - componentSize * 1.0;
 
         // R1 on top wire
         const seriesR1Width = componentSize * 1.7;
@@ -125,7 +125,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const seriesBulbWidth = componentSize * 1.8;
         const seriesBulbHeight = componentSize * 2.2;
         const seriesBulbX = right - componentSize * 3.0;
-        const seriesBulbY = seriesTopRailY; // Bulb base ON the wire
+        const seriesBulbY = seriesTopRailY; // Wire level - drawBulb places bulb above this
         const seriesBulbCenterX = seriesBulbX + seriesBulbWidth / 2;
 
         const seriesRightWireX = right - componentSize * 1.0;
@@ -174,12 +174,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
 
         // Branch levels aligned with battery center (horizontal alignment)
         const batteryCenter = parallelBatteryY + parallelBatteryHeight / 2;
-        const topBranchY = batteryCenter - componentSize * 3.5;
-        const bottomBranchY = batteryCenter - componentSize * 1.5;
+        const topBranchY = batteryCenter - componentSize * 2.5; // Moved down to avoid instruction box overlap
+        const bottomBranchY = batteryCenter - componentSize * 0.5; // Moved down
 
-        // Wire levels
-        const topWireY = top + componentSize * 1.8; // Top wire
-        const bottomReturnY = bottom - componentSize * 1.5; // Bottom return wire
+        // Wire levels - moved down to avoid instruction box overlap
+        const topWireY = top + componentSize * 3.5; // Top wire (moved down)
+        const bottomReturnY = bottom - componentSize * 1.0; // Bottom return wire
 
         // Left vertical line (splits current) and right vertical line (joins current)
         const leftVerticalX = left + componentSize * 3.2;
@@ -205,7 +205,7 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const parallelBulbWidth = componentSize * 1.6;
         const parallelBulbHeight = componentSize * 2.0;
         const parallelBulbX = right - componentSize * 2.8;
-        const parallelBulbY = topWireY; // Bulb on top wire for visibility
+        const parallelBulbY = topWireY; // Wire level - drawBulb places bulb above this
         const parallelBulbCenterX = parallelBulbX + parallelBulbWidth / 2;
 
         const parallelRightWireX = right - componentSize * 1.0;
