@@ -55,12 +55,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const r1LeftLead = r1X;
         const r1RightLead = r1X + r1Width;
 
-        // Bulb on top wire - positioned to the right
+        // Bulb on top wire - positioned to the right, sitting OVER the wire terminal
         const bulbWidth = componentSize * 1.8;
         const bulbHeight = componentSize * 2.2;
         const bulbX = right - componentSize * 3.0;
-        const bulbY = simpleTopWireY; // Bulb base sits ON the wire
         const bulbCenterX = bulbX + bulbWidth / 2;
+        const bulbY = simpleTopWireY; // Wire terminal Y where the bulb base connects
 
         const rightWireX = right - componentSize * 1.0;
 
@@ -121,12 +121,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const seriesR2Left = seriesR2X;
         const seriesR2Right = seriesR2X + seriesR2Width;
 
-        // Bulb on top wire
+        // Bulb on top wire - sitting OVER the wire terminal
         const seriesBulbWidth = componentSize * 1.8;
         const seriesBulbHeight = componentSize * 2.2;
         const seriesBulbX = right - componentSize * 3.0;
-        const seriesBulbY = seriesTopRailY; // Bulb base ON the wire
         const seriesBulbCenterX = seriesBulbX + seriesBulbWidth / 2;
+        const seriesBulbY = seriesTopRailY; // Wire terminal Y where the bulb base connects
 
         const seriesRightWireX = right - componentSize * 1.0;
 
@@ -201,12 +201,12 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const parallelR2Left = parallelR2X;
         const parallelR2Right = parallelR2X + parallelR2Width;
 
-        // Bulb on top wire AFTER the parallel junction
+        // Bulb on top wire AFTER the parallel junction - sitting OVER the wire terminal
         const parallelBulbWidth = componentSize * 1.6;
         const parallelBulbHeight = componentSize * 2.0;
         const parallelBulbX = right - componentSize * 2.8;
-        const parallelBulbY = topWireY; // Bulb on top wire for visibility
         const parallelBulbCenterX = parallelBulbX + parallelBulbWidth / 2;
+        const parallelBulbY = topWireY; // Wire terminal Y where the bulb base connects
 
         const parallelRightWireX = right - componentSize * 1.0;
 

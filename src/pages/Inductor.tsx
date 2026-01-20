@@ -453,7 +453,7 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
         }
       `}</style>
 
-      <svg viewBox="0 -80 520 450" className="w-full h-full max-h-[500px]" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 -60 600 420" className="w-full h-full max-h-[480px]" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
