@@ -44,10 +44,20 @@ const states = {
         stage: 'initial' // 'initial', 'connecting', 'charging', 'charged', 'disconnecting', 'discharge', 'discharged'
     },
     diode: {
-        voltage: 12,
-        resistance: 10,
-        forwardBias: true,
-        threshold: 0.7
+        tab: 'intro', // 'intro', 'forward', 'reverse', 'breakdown'
+        intro: {
+            joined: false
+        },
+        forward: {
+            voltage: 0
+        },
+        reverse: {
+            voltage: 0
+        },
+        breakdown: {
+            voltage: 0,
+            type: 'zener' // 'zener', 'avalanche'
+        }
     }
 };
 

@@ -79,29 +79,58 @@ const InductorCircuit: React.FC = () => {
     const info = getModeInfo();
 
     return (
-        <div className="h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
-            {/* Info overlay - Floating Light Glassmorphism */}
-            <div className="absolute top-6 left-6 z-30 bg-white/80 backdrop-blur-xl p-6 rounded-2xl shadow-2xl border border-slate-200/50 max-w-md hover:shadow-blue-500/20 transition-all duration-300 group">
-                <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                        <Zap className="w-6 h-6 text-white" />
+        <div className="h-screen w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-100 via-blue-50 to-slate-100 relative overflow-hidden flex items-center justify-center p-8">
+            {/* Main Card Container */}
+            <div className="w-full max-w-5xl h-[90vh] bg-white/70 backdrop-blur-sm rounded-[2.5rem] shadow-2xl border border-white/50 relative overflow-hidden">
+
+                {/* Info overlay - Inside Card */}
+                {/* Dynamic Info Overlay - Standardized Style */}
+                <div className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-xl border border-cyan-200/50 max-w-md transition-all duration-300">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-colors duration-500 ${currentOn ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-indigo-500/30' : 'bg-slate-200'}`}>
+                            <Zap className={`w-6 h-6 ${currentOn ? 'text-white' : 'text-slate-400'}`} />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800">{info.title}</h2>
+                            <div className={`text-xs font-bold uppercase tracking-wider ${currentOn ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                {currentOn ? 'Field Building / Active' : 'Circuit Open / Inactive'}
+                            </div>
+                        </div>
                     </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">{info.title}</h2>
+                    <p className="text-sm text-slate-600 leading-relaxed min-h-[40px]">
+                        {currentOn
+                            ? "Current is flowing through the coil, generating a magnetic field. The inductor opposes this change, storing energy in the field."
+                            : "No current flows. The magnetic field has collapsed. Close the switch (if available) or wait for simulation cycle."}
+                    </p>
+
+                    {/* Live Stats Row */}
+                    <div className="mt-4 flex items-center gap-3">
+                        <div className="flex-1 bg-slate-100 rounded-lg p-2 flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${currentOn ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
+                            <span className="text-xs font-bold text-slate-600">{currentOn ? 'MAGNETIZED' : 'DEMAGNETIZED'}</span>
+                        </div>
+                        <div className="bg-slate-800 rounded-lg px-3 py-2 text-center min-w-[100px]">
+                            <div className="text-[10px] text-cyan-400 font-semibold uppercase">Est. Energy</div>
+                            <div className="text-sm font-bold text-white">
+                                {/* Simple proportional energy display based on L and State */}
+                                {currentOn ? (0.5 * (mode === 'simple' ? values.l1 : values.l1 + values.l2) * 0.1).toFixed(2) : '0.00'} mJ
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <p className="text-lg text-slate-600 leading-relaxed font-medium">{info.description}</p>
-            </div>
 
-            {/* Main Circuit Canvas - Full Screen No Borders */}
-            <div className="absolute inset-0 z-10">
-                {/* Background Grid - Dark Dots for Light Mode */}
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#64748b33_1px,transparent_1px)] [background-size:24px_24px] opacity-50"></div>
+                {/* Main Circuit Canvas - Positioned Lower - No Borders */}
+                <div className="absolute inset-0 z-10 flex items-end justify-center pb-8 pt-20">
+                    {/* Background Grid - Dark Dots for Light Mode */}
+                    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(#64748b33_1px,transparent_1px)] [background-size:24px_24px] opacity-20"></div>
 
-                <InductorCircuitCanvas
-                    mode={mode}
-                    values={values}
-                    currentOn={currentOn}
-                    currentDirection={currentDirection}
-                />
+                    <InductorCircuitCanvas
+                        mode={mode}
+                        values={values}
+                        currentOn={currentOn}
+                        currentDirection={currentDirection}
+                    />
+                </div>
             </div>
         </div>
     );
