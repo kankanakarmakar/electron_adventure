@@ -77,7 +77,8 @@ const CapacitorCircuit: React.FC = () => {
                     // Disconnect sequence
                     socket.emit('updateState', { stage: 'disconnecting' });
                     setTimeout(() => socket.emit('updateState', { stage: 'discharge' }), 800);
-                    setTimeout(() => socket.emit('updateState', { stage: 'discharged' }), 5500);
+                    // Slower discharge: 0.0015 per 45ms = ~30s
+                    setTimeout(() => socket.emit('updateState', { stage: 'discharged' }), 30000);
                 }
             }
         };
@@ -116,16 +117,16 @@ const CapacitorCircuit: React.FC = () => {
                     }
                 }
 
-                // Discharging animation
+                // Discharging animation - Much slower for realistic discharge
                 if (state.stage === 'discharge') {
-                    // Much slower discharge (0.003 decrement)
-                    newState.chargeLevel = Math.max(0, prev.chargeLevel - 0.003);
+                    // Very slow discharge (0.0015 decrement) for realistic gradual dimming
+                    newState.chargeLevel = Math.max(0, prev.chargeLevel - 0.0015);
                     newState.fieldStrength = newState.chargeLevel;
-                    // Bulb brightness tracks charge level (Bright -> Dim)
-                    newState.bulbGlow = newState.chargeLevel;
+                    // Bulb brightness tracks charge level with exponential decay feel (Bright -> Dim)
+                    newState.bulbGlow = Math.pow(newState.chargeLevel, 0.7);
                     newState.dischargingTime += 0.045;
-                    // Slow down electrons during discharge
-                    newState.electronPhase = (prev.electronPhase - 0.08) % (Math.PI * 2);
+                    // Much slower electrons during discharge for realistic effect
+                    newState.electronPhase = (prev.electronPhase - 0.04) % (Math.PI * 2);
                 }
 
                 if (state.stage === 'initial') {
@@ -213,40 +214,73 @@ const CapacitorCircuit: React.FC = () => {
 
     const phaseInfo = getPhaseInfo();
     const chargePercent = Math.round(animation.chargeLevel * 100);
+    const renderBulb = (cx: number, cy: number, brightness: number, isOn: boolean) => {
+        const brightnessPercent = Math.round(brightness * 100);
+        return (
+            <g transform={`translate(${cx}, ${cy})`}>
+                {/* Large outer glow effect - multiple layers */}
+                {isOn && brightness > 0 && (
+                    <>
+                        {/* Outermost glow */}
+                        <circle cx="0" cy="0" r="70" fill={`rgba(253, 224, 71, ${brightness * 0.1})`}>
+                            <animate attributeName="r" values="70;75;70" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                        {/* Middle glow */}
+                        <circle cx="0" cy="0" r="55" fill={`rgba(253, 224, 71, ${brightness * 0.25})`}>
+                            <animate attributeName="r" values="55;58;55" dur="1.8s" repeatCount="indefinite" />
+                        </circle>
+                        {/* Inner glow */}
+                        <circle cx="0" cy="0" r="42" fill={`rgba(253, 224, 71, ${brightness * 0.4})`}>
+                            <animate attributeName="r" values="42;45;42" dur="1.5s" repeatCount="indefinite" />
+                        </circle>
+                    </>
+                )}
 
-    const renderBulb = (cx: number, cy: number, brightness: number, isOn: boolean) => (
-        // Scaled up by 2.0x (requested "much larger")
-        <g transform={`translate(${cx}, ${cy}) scale(2.0)`}>
-            {/* Glow effect */}
-            {isOn && brightness > 0 && (
-                <>
-                    <circle cx="0" cy="0" r="40" fill={`rgba(253, 224, 71, ${brightness * 0.2})`} />
-                    <circle cx="0" cy="0" r="32" fill={`rgba(253, 224, 71, ${brightness * 0.4})`} />
-                    <circle cx="0" cy="0" r="25" fill={`rgba(253, 224, 71, ${brightness * 0.6})`} />
-                </>
-            )}
-            {/* Bulb glass */}
-            <circle
-                cx="0"
-                cy="0"
-                r="20"
-                fill={isOn ? `rgba(253, 224, 71, ${0.6 + brightness * 0.4})` : '#e5e7eb'}
-                stroke="#94a3b8"
-                strokeWidth="2"
-            />
-            {/* Filament */}
-            <path
-                d="M-6 5 Q-3 -5 0 5 Q3 -5 6 5"
-                fill="none"
-                stroke={isOn ? '#f59e0b' : '#9ca3af'}
-                strokeWidth="2"
-            />
-            {/* Base (Terminal) - Top at y=+18, Bottom at y=+30 */}
-            <rect x="-10" y="18" width="20" height="12" rx="2" fill="#6b7280" stroke="#4b5563" strokeWidth="1" />
-            {/* Label */}
-            <text x="0" y="50" textAnchor="middle" fill="#1e293b" fontSize="14" fontWeight="bold">Bulb</text>
-        </g>
-    );
+                {/* Bulb glass - large yellow circle */}
+                <circle
+                    cx="0"
+                    cy="0"
+                    r="32"
+                    fill={isOn ? `rgba(253, 224, 71, ${0.6 + brightness * 0.4})` : '#f3f4f6'}
+                    stroke={isOn ? '#fbbf24' : '#9ca3af'}
+                    strokeWidth="3"
+                />
+
+                {/* Wavy filament symbol (~) */}
+                <text
+                    x="0"
+                    y="8"
+                    textAnchor="middle"
+                    fontSize="32"
+                    fontWeight="bold"
+                    fill={isOn ? `rgba(234, 179, 8, ${0.7 + brightness * 0.3})` : '#9ca3af'}
+                >
+                    ~
+                </text>
+
+                {/* Bottom Terminal (Base) - gray rectangle */}
+                <rect x="-14" y="30" width="28" height="18" rx="4" fill="#6b7280" stroke="#4b5563" strokeWidth="2" />
+
+                {/* Wire connection points on terminal */}
+                <circle cx="-7" cy="48" r="4" fill="#4b5563" />
+                <circle cx="7" cy="48" r="4" fill="#4b5563" />
+
+                {/* Percentage indicator */}
+                {isOn && (
+                    <text
+                        x="55"
+                        y="5"
+                        textAnchor="start"
+                        fontSize="16"
+                        fontWeight="bold"
+                        fill="#eab308"
+                    >
+                        ⚡{brightnessPercent}%
+                    </text>
+                )}
+            </g>
+        );
+    };
 
     return (
         <div className="h-screen w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-100 via-blue-50 to-slate-100 relative overflow-hidden flex items-center justify-center p-8">
@@ -309,32 +343,40 @@ const CapacitorCircuit: React.FC = () => {
                         </defs>
 
 
-                        {/* Simple Circuit - Reverted to Previous Format (Battery Bottom) */}
+                        {/* Simple Circuit - Battery Left, Capacitor Top, Bulb Right */}
                         {state.mode === 'simple' && (
                             <>
-                                {/* Top wire */}
+                                {/* Top wire - from left to capacitor */}
                                 <line x1="60" y1="80" x2="300" y2="80" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                {/* Top wire - from capacitor to right */}
                                 <line x1="400" y1="80" x2="640" y2="80" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
 
-                                {/* Right vertical wire */}
-                                <line x1="640" y1="80" x2="640" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                {/* Right vertical wire - different based on whether bulb is shown */}
+                                {(state.stage === 'discharge' || state.stage === 'discharged') ? (
+                                    <>
+                                        {/* Wire to bulb top (glass edge at y=168) */}
+                                        <line x1="640" y1="80" x2="640" y2="168" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                        {/* Bulb - Only visible during discharge */}
+                                        {renderBulb(640, 200, animation.bulbGlow, true)}
+                                        {/* Wire from bulb bottom terminal (ends at y=248) */}
+                                        <line x1="640" y1="248" x2="640" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                    </>
+                                ) : (
+                                    /* Full vertical wire when no bulb */
+                                    <line x1="640" y1="80" x2="640" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                )}
 
-                                {/* Bottom wire - Connecting to Battery Terminals */}
+                                {/* Bottom wire */}
                                 {state.stage !== 'discharge' && state.stage !== 'discharged' ? (
                                     <>
-                                        {/* Right Wire to Battery Positive (Green/Right in this view?) No, verify Battery render */}
-                                        {/* Battery Logic: Green is (+) x=51. Red is (-) x=-63. Wait. Simple Battery: Red(-), Green(+). */}
-                                        {/* Let's Check Battery Render below. Red x=-63. Green x=51. */}
-                                        {/* Left Wire to Red(-). Right Wire to Green(+). */}
+                                        {/* Bottom wire to Battery */}
                                         <line x1="640" y1="320" x2="410" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                         <line x1="290" y1="320" x2="60" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                     </>
                                 ) : (
                                     <>
-                                        {/* Split wire for Bulb Connection - Adjusted to touch Base Sides */}
-                                        {/* Base Left x=340. Base Right x=360. */}
-                                        <line x1="640" y1="320" x2="360" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
-                                        <line x1="340" y1="320" x2="60" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                        {/* Complete bottom wire when battery is disconnected */}
+                                        <line x1="640" y1="320" x2="60" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                     </>
                                 )}
 
@@ -347,9 +389,10 @@ const CapacitorCircuit: React.FC = () => {
 
                                 {/* Capacitor - Top */}
                                 <g transform="translate(350, 20)">
-                                    <text x="0" y="-5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#7c3aed">⚡ Capacitor</text>
+                                    {/* Left plate */}
                                     <rect x="-35" y="30" width="14" height="80" rx="3" fill={`rgba(59, 130, 246, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#3b82f6" strokeWidth="2" />
-                                    <text x="-28" y="75" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#1e40af">−</text>
+                                    <text x="-50" y="75" textAnchor="end" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
+                                    {/* Field */}
                                     <rect x="-21" y="30" width="42" height="80" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                                     {animation.fieldStrength > 0 && (
                                         <>
@@ -361,12 +404,15 @@ const CapacitorCircuit: React.FC = () => {
                                             </circle>
                                         </>
                                     )}
+                                    {/* Right plate */}
                                     <rect x="21" y="30" width="14" height="80" rx="3" fill={`rgba(236, 72, 153, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#ec4899" strokeWidth="2" />
-                                    <text x="28" y="75" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#be185d">+</text>
-                                    <text x="0" y="130" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#1e293b">{state.capacitance}µF</text>
+                                    <text x="50" y="75" textAnchor="start" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Labels - Left side (consistent with series/parallel) */}
+                                    <text x="-55" y="50" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₁</text>
+                                    <text x="-55" y="70" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance}µF</text>
                                 </g>
 
-                                {/* Battery - Bottom */}
+                                {/* Battery - Bottom (only during charging phases) */}
                                 {state.stage !== 'discharge' && state.stage !== 'discharged' && (
                                     <g transform="translate(350, 260)">
                                         <text x="0" y="-5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#475569">Battery</text>
@@ -385,24 +431,7 @@ const CapacitorCircuit: React.FC = () => {
                                     </g>
                                 )}
 
-                                {/* Bulb (during discharge) - Scaled 1.5x */}
-                                {(state.stage === 'discharge' || state.stage === 'discharged') && (
-                                    <>
-                                        {/* 
-                                            Scale 1.5x changes geometry.
-                                            Center (0,0) -> Visual Center.
-                                            Base is at (0, 18..30) in local.
-                                            Scaled Base is at (0, 27..45) in global relative to cx,cy.
-                                            We need Scaled Base Center (y=36) to align with Wire (y=320).
-                                            So cy + 36 = 320 => cy = 284.
-                                            Scale 2.0x: Base Center Y = 24 * 2 = 48.
-                                            cy = 320 - 48 = 272.
-                                         */}
-                                        {renderBulb(350, 272, animation.bulbGlow, true)}
-                                    </>
-                                )}
-
-                                {/* Animated electrons - CCW Loop */}
+                                {/* Animated electrons - CCW Loop (charging) */}
                                 {state.stage === 'charging' && (
                                     <>
                                         {[0, 1, 2, 3, 4, 5].map(i => (
@@ -419,6 +448,30 @@ const CapacitorCircuit: React.FC = () => {
                                                     values="320;320;80;80;320;320"
                                                     dur="3s"
                                                     begin={`${i * 0.5}s`}
+                                                    repeatCount="indefinite"
+                                                />
+                                            </circle>
+                                        ))}
+                                    </>
+                                )}
+
+                                {/* Animated electrons - Discharge through bulb (slower) */}
+                                {state.stage === 'discharge' && (
+                                    <>
+                                        {[0, 1, 2, 3].map(i => (
+                                            <circle key={i} r="5" fill="#fbbf24" filter="url(#glow)">
+                                                <animate
+                                                    attributeName="cx"
+                                                    values="350;60;60;640;640;350"
+                                                    dur="5s"
+                                                    begin={`${i * 1.25}s`}
+                                                    repeatCount="indefinite"
+                                                />
+                                                <animate
+                                                    attributeName="cy"
+                                                    values="80;80;320;320;80;80"
+                                                    dur="5s"
+                                                    begin={`${i * 1.25}s`}
                                                     repeatCount="indefinite"
                                                 />
                                             </circle>
@@ -442,10 +495,9 @@ const CapacitorCircuit: React.FC = () => {
 
                                 {/* Capacitor 1 */}
                                 <g transform="translate(220, 80)">
-                                    <text x="0" y="-50" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#7c3aed">C₁ ({state.capacitance}µF)</text>
                                     {/* Left plate */}
                                     <rect x="-25" y="-35" width="12" height="70" rx="3" fill={`rgba(59, 130, 246, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#3b82f6" strokeWidth="2" />
-                                    <text x="-19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#1e40af">−</text>
+                                    <text x="-40" y="5" textAnchor="end" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
                                     {/* Field */}
                                     <rect x="-13" y="-35" width="26" height="70" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                                     {/* Dots */}
@@ -461,14 +513,17 @@ const CapacitorCircuit: React.FC = () => {
                                     )}
                                     {/* Right plate */}
                                     <rect x="13" y="-35" width="12" height="70" rx="3" fill={`rgba(236, 72, 153, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#ec4899" strokeWidth="2" />
-                                    <text x="19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#be185d">+</text>
+                                    <text x="40" y="5" textAnchor="start" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Labels - Left side */}
+                                    <text x="-40" y="-25" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₁</text>
+                                    <text x="-40" y="25" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance}µF</text>
                                 </g>
 
                                 {/* Capacitor 2 */}
                                 <g transform="translate(350, 80)">
-                                    <text x="0" y="-50" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#7c3aed">C₂ ({state.capacitance2}µF)</text>
+                                    {/* Left plate */}
                                     <rect x="-25" y="-35" width="12" height="70" rx="3" fill={`rgba(59, 130, 246, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#3b82f6" strokeWidth="2" />
-                                    <text x="-19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#1e40af">−</text>
+                                    <text x="-40" y="5" textAnchor="end" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
                                     <rect x="-13" y="-35" width="26" height="70" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                                     {animation.fieldStrength > 0 && (
                                         <>
@@ -481,14 +536,17 @@ const CapacitorCircuit: React.FC = () => {
                                         </>
                                     )}
                                     <rect x="13" y="-35" width="12" height="70" rx="3" fill={`rgba(236, 72, 153, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#ec4899" strokeWidth="2" />
-                                    <text x="19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#be185d">+</text>
+                                    <text x="40" y="5" textAnchor="start" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Labels - Left side */}
+                                    <text x="-40" y="-25" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₂</text>
+                                    <text x="-40" y="25" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance2}µF</text>
                                 </g>
 
                                 {/* Capacitor 3 */}
                                 <g transform="translate(480, 80)">
-                                    <text x="0" y="-50" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#7c3aed">C₃ ({state.capacitance3}µF)</text>
+                                    {/* Left plate */}
                                     <rect x="-25" y="-35" width="12" height="70" rx="3" fill={`rgba(59, 130, 246, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#3b82f6" strokeWidth="2" />
-                                    <text x="-19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#1e40af">−</text>
+                                    <text x="-40" y="5" textAnchor="end" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
                                     <rect x="-13" y="-35" width="26" height="70" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.7} rx="2" />
                                     {animation.fieldStrength > 0 && (
                                         <>
@@ -501,50 +559,57 @@ const CapacitorCircuit: React.FC = () => {
                                         </>
                                     )}
                                     <rect x="13" y="-35" width="12" height="70" rx="3" fill={`rgba(236, 72, 153, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#ec4899" strokeWidth="2" />
-                                    <text x="19" y="5" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#be185d">+</text>
+                                    <text x="40" y="5" textAnchor="start" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Labels - Left side */}
+                                    <text x="-40" y="-25" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₃</text>
+                                    <text x="-40" y="25" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance3}µF</text>
                                 </g>
 
                                 {/* Battery - Left Side */}
                                 {(state.stage !== 'discharge' && state.stage !== 'discharged') && (
-                                    <g transform="translate(100, 200)">
-                                        <line x1="0" y1="-120" x2="0" y2="-50" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
-                                        <line x1="0" y1="50" x2="0" y2="120" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                    <>
+                                        {/* Wire from top rail (y=80) to battery top terminal (y=145) */}
+                                        <line x1="100" y1="80" x2="100" y2="145" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                        {/* Wire from battery bottom terminal (y=255) to bottom rail (y=320) */}
+                                        <line x1="100" y1="255" x2="100" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
 
-                                        <rect x="-30" y="-50" width="60" height="100" rx="10" fill="#475569" stroke="#1e293b" strokeWidth="2" />
-                                        <rect x="-10" y="-55" width="20" height="10" rx="3" fill="#dc2626" />
-                                        <rect x="-10" y="45" width="20" height="10" rx="3" fill="#16a34a" />
+                                        {/* Battery body - rendered after wires so it's on top */}
+                                        <g transform="translate(100, 200)">
+                                            <rect x="-30" y="-50" width="60" height="100" rx="10" fill="#475569" stroke="#1e293b" strokeWidth="2" />
+                                            {/* Red Terminal (Top) */}
+                                            <rect x="-10" y="-55" width="20" height="10" rx="3" fill="#dc2626" />
+                                            {/* Green Terminal (Bottom) */}
+                                            <rect x="-10" y="45" width="20" height="10" rx="3" fill="#16a34a" />
 
-                                        <circle cx="0" cy="-20" r="15" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="2" />
-                                        <text x="0" y="-14" textAnchor="middle" fontSize="20" fontWeight="bold" fill="white">+</text>
+                                            <circle cx="0" cy="-20" r="15" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" strokeWidth="2" />
+                                            <text x="0" y="-14" textAnchor="middle" fontSize="20" fontWeight="bold" fill="white">+</text>
 
-                                        <circle cx="0" cy="20" r="15" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="2" />
-                                        <text x="0" y="26" textAnchor="middle" fontSize="20" fontWeight="bold" fill="white">−</text>
+                                            <circle cx="0" cy="20" r="15" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" strokeWidth="2" />
+                                            <text x="0" y="26" textAnchor="middle" fontSize="20" fontWeight="bold" fill="white">−</text>
 
-                                        <text x="-45" y="-5" textAnchor="end" fontSize="11" fontWeight="bold" fill="#1e293b">Battery</text>
-                                        <text x="-45" y="12" textAnchor="end" fontSize="13" fontWeight="bold" fill="#1e293b">{state.voltage}V</text>
-                                    </g>
+                                            <text x="-45" y="-5" textAnchor="end" fontSize="11" fontWeight="bold" fill="#1e293b">Battery</text>
+                                            <text x="-45" y="12" textAnchor="end" fontSize="13" fontWeight="bold" fill="#1e293b">{state.voltage}V</text>
+                                        </g>
+                                    </>
                                 )}
 
-                                {/* Bulb - Right Side on Bottom Wire (Series Component) */}
+                                {/* Right vertical wire - conditional based on discharge stage */}
                                 {(state.stage === 'discharge' || state.stage === 'discharged') ? (
                                     <>
-                                        {/* Wire breaks for Bulb at x=500. 
-                                            Scale 1.5x: Base Width = 20 * 1.5 = 30.
-                                            Base Left = 500 - 15 = 485. Right = 500 + 15 = 515.
-                                            We need to clear wire between 485 and 515.
-                                            Actually, series wire is continuous. We just place bulb ON TOP.
-                                            Base Y Alignment: cy = 272 (Same as Simple).
-                                        */}
-                                        {renderBulb(500, 272, animation.bulbGlow, true)}
+                                        {/* Wire to bulb top (glass edge at y=168) */}
+                                        <line x1="600" y1="80" x2="600" y2="168" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                        {/* Bulb - Only visible during discharge */}
+                                        {renderBulb(600, 200, animation.bulbGlow, true)}
+                                        {/* Wire from bulb bottom terminal (ends at y=248) */}
+                                        <line x1="600" y1="248" x2="600" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                     </>
                                 ) : (
-                                    <line x1="600" y1="320" x2="100" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                    /* Full vertical wire when no bulb */
+                                    <line x1="600" y1="80" x2="600" y2="320" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                 )}
 
-                                {/* Left vertical wire (to Battery Top) */}
-                                {state.stage !== 'discharge' && state.stage !== 'discharged' ? (
-                                    <line x1="100" y1="200" x2="100" y2="80" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
-                                ) : (
+                                {/* Left vertical wire - only during discharge when no battery */}
+                                {(state.stage === 'discharge' || state.stage === 'discharged') && (
                                     <line x1="100" y1="320" x2="100" y2="80" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                 )}
 
@@ -573,6 +638,30 @@ const CapacitorCircuit: React.FC = () => {
                                         ))}
                                     </>
                                 )}
+
+                                {/* Animated electrons - Discharge through bulb (slower) */}
+                                {state.stage === 'discharge' && (
+                                    <>
+                                        {[0, 1, 2, 3].map(i => (
+                                            <circle key={i} r="5" fill="#fbbf24" filter="url(#glow)">
+                                                <animate
+                                                    attributeName="cx"
+                                                    values="480;220;100;100;600;600;480"
+                                                    dur="6s"
+                                                    begin={`${i * 1.5}s`}
+                                                    repeatCount="indefinite"
+                                                />
+                                                <animate
+                                                    attributeName="cy"
+                                                    values="80;80;80;320;320;80;80"
+                                                    dur="6s"
+                                                    begin={`${i * 1.5}s`}
+                                                    repeatCount="indefinite"
+                                                />
+                                            </circle>
+                                        ))}
+                                    </>
+                                )}
                             </>
                         )}
 
@@ -591,9 +680,12 @@ const CapacitorCircuit: React.FC = () => {
                                     <rect x="-35" y="-20" width="70" height="8" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#3b82f6" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="12" width="70" height="8" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#ec4899" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="-12" width="70" height="24" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.8} rx="2" />
-                                    <text x="-12" y="-35" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">−</text>
-                                    <text x="-12" y="42" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#ec4899">+</text>
-                                    <text x="50" y="5" textAnchor="start" fontSize="12" fontWeight="bold" fill="#64748b">C₁</text>
+                                    {/* +/- on the plates */}
+                                    <text x="-50" y="-12" textAnchor="middle" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
+                                    <text x="-50" y="20" textAnchor="middle" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Capacitor Label - Left side */}
+                                    <text x="-55" y="-35" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₁</text>
+                                    <text x="-55" y="-18" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance}µF</text>
                                 </g>
 
                                 {/* Capacitor 2 (Middle) - Shifted to 400 */}
@@ -603,9 +695,12 @@ const CapacitorCircuit: React.FC = () => {
                                     <rect x="-35" y="-20" width="70" height="8" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#3b82f6" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="12" width="70" height="8" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#ec4899" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="-12" width="70" height="24" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.8} rx="2" />
-                                    <text x="-12" y="-35" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">−</text>
-                                    <text x="-12" y="42" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#ec4899">+</text>
-                                    <text x="50" y="5" textAnchor="start" fontSize="12" fontWeight="bold" fill="#64748b">C₂</text>
+                                    {/* +/- on the plates */}
+                                    <text x="-50" y="-12" textAnchor="middle" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
+                                    <text x="-50" y="20" textAnchor="middle" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Capacitor Label - Left side */}
+                                    <text x="-55" y="-35" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₂</text>
+                                    <text x="-55" y="-18" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance2}µF</text>
                                 </g>
 
                                 {/* Capacitor 3 (Right) - Shifted to 550 */}
@@ -615,9 +710,12 @@ const CapacitorCircuit: React.FC = () => {
                                     <rect x="-35" y="-20" width="70" height="8" rx="2" fill={`rgba(59, 130, 246, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#3b82f6" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="12" width="70" height="8" rx="2" fill={`rgba(236, 72, 153, ${0.4 + animation.chargeLevel * 0.6})`} stroke="#ec4899" strokeWidth="1.5" filter="url(#glow)" />
                                     <rect x="-35" y="-12" width="70" height="24" fill="url(#fieldGradient)" opacity={animation.fieldStrength * 0.8} rx="2" />
-                                    <text x="-12" y="-35" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#3b82f6">−</text>
-                                    <text x="-12" y="42" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#ec4899">+</text>
-                                    <text x="50" y="5" textAnchor="start" fontSize="12" fontWeight="bold" fill="#64748b">C₃</text>
+                                    {/* +/- on the plates */}
+                                    <text x="-50" y="-12" textAnchor="middle" fontSize="16" fontWeight="900" fill="#1e40af">−</text>
+                                    <text x="-50" y="20" textAnchor="middle" fontSize="16" fontWeight="900" fill="#be185d">+</text>
+                                    {/* Capacitor Label - Left side */}
+                                    <text x="-55" y="-35" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₃</text>
+                                    <text x="-55" y="-18" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance3}µF</text>
                                 </g>
 
                                 {/* Battery - Left Side - Cleaned up */}
@@ -643,25 +741,18 @@ const CapacitorCircuit: React.FC = () => {
                                     <line x1="100" y1="60" x2="100" y2="340" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                 )}
 
-                                {/* Bulb - Right Side - Shifted to 700 */
-                                    /* Actually moved to Bottom Wire (x=550) for realistic connection */
-                                }
+                                {/* Right side vertical wire - conditional based on discharge stage */}
                                 {(state.stage === 'discharge' || state.stage === 'discharged') ? (
                                     <>
-                                        {/* Vertical wire at x=700 connects Top Rail to Bottom Rail end */}
-                                        <line x1="700" y1="60" x2="700" y2="340" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
-
-                                        {/* Bulb at x=550 on Bottom Wire (y=340).
-                                            Scaled 1.5x. Base Y center needed at 340.
-                                            Local Base Y = 18..30 -> Center ~24.
-                                            Scaled Base Center = 24 * 1.5 = 36.
-                                            cy = 340 - 36 = 304.
-                                            Scale 2.0x: Base Center = 48.
-                                            cy = 340 - 48 = 292.
-                                        */}
-                                        {renderBulb(550, 292, animation.bulbGlow, true)}
+                                        {/* Wire to bulb top (glass edge at y=168) */}
+                                        <line x1="700" y1="60" x2="700" y2="168" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
+                                        {/* Bulb - Only visible during discharge */}
+                                        {renderBulb(700, 200, animation.bulbGlow, true)}
+                                        {/* Wire from bulb bottom terminal (ends at y=248) */}
+                                        <line x1="700" y1="248" x2="700" y2="340" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                     </>
                                 ) : (
+                                    /* Full vertical wire when no bulb */
                                     <line x1="700" y1="60" x2="700" y2="340" stroke={wireColor} strokeWidth="4" strokeLinecap="round" />
                                 )}
 
@@ -685,6 +776,34 @@ const CapacitorCircuit: React.FC = () => {
                                                             values={`340;340;60;60;340`}
                                                             dur="4s"
                                                             begin={`${i * 2 + branchIdx * 0.5}s`}
+                                                            repeatCount="indefinite"
+                                                        />
+                                                    </circle>
+                                                ))}
+                                            </g>
+                                        ))}
+                                    </>
+                                )}
+
+                                {/* Animated electrons - Discharge through bulb (slower) */}
+                                {state.stage === 'discharge' && (
+                                    <>
+                                        {[250, 400, 550].map((x, branchIdx) => (
+                                            <g key={branchIdx}>
+                                                {[0, 1].map(i => (
+                                                    <circle key={i} r="5" fill="#fbbf24" filter="url(#glow)">
+                                                        <animate
+                                                            attributeName="cx"
+                                                            values={`${x};${x};700;700;100;100;${x}`}
+                                                            dur="6s"
+                                                            begin={`${i * 3 + branchIdx * 0.7}s`}
+                                                            repeatCount="indefinite"
+                                                        />
+                                                        <animate
+                                                            attributeName="cy"
+                                                            values={`60;340;340;60;60;340;340`}
+                                                            dur="6s"
+                                                            begin={`${i * 3 + branchIdx * 0.7}s`}
                                                             repeatCount="indefinite"
                                                         />
                                                     </circle>

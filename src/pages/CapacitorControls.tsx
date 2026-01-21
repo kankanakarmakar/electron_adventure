@@ -64,8 +64,9 @@ const CapacitorControls: React.FC = () => {
     const handleDisconnect = () => {
         updateState({ stage: 'disconnecting' });
         setTimeout(() => updateState({ stage: 'discharge' }), 800);
-        // Discharge lasts until level 0. Level -= 0.01 per 45ms. 100 steps * 45ms = 4.5s.
-        setTimeout(() => updateState({ stage: 'discharged' }), 5500);
+        // Discharge lasts until level 0. Level -= 0.0015 per 45ms (slower).
+        // 1 / 0.0015 = ~667 steps * 45ms = ~30s
+        setTimeout(() => updateState({ stage: 'discharged' }), 30000);
     };
 
     const handleReset = () => {
