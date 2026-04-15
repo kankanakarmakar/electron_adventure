@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import { ArrowLeft, ArrowRight, Zap, Play, Power, RotateCcw } from 'lucide-react';
 
 const socket = io('http://localhost:3002/diode');
 
 const DiodeControls = () => {
     const [state, setState] = useState({
-        tab: 'intro', // 'intro', 'forward', 'reverse', 'breakdown'
+        tab: 'intro',
         intro: { joined: false },
         forward: { voltage: 0 },
         reverse: { voltage: 0 },
@@ -27,7 +26,6 @@ const DiodeControls = () => {
         };
     }, []);
 
-    // Safety Check for Stale Server
     if (!state.intro || !state.forward) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -40,31 +38,8 @@ const DiodeControls = () => {
     }
 
     const updateState = (updates) => {
-        // optimistically update local state?
-        // Actually better to just emit diff. But for Deep Merge logic in server we send full structure or partial.
-        // Server creates deep merge for specific keys?
-        // Server code: if (newState.values && ...) else shallow.
-        // My Diode state has nested keys 'intro', 'forward'. The server logic for Capacitor/Inductor handles 'values'.
-        // For Diode, I customized the state. I might need to send FULL state for a sub-object to be safe,
-        // or ensure Server creates deep merge.
-        // Given I updated 'server.js' to:
-        // socket.on('updateState', (newState) => { ... if(newState.values ...)... else shallow ... });
-        // The server shallow merges the top level.
-        // So if I send { forward: { voltage: 1 } }, it REPLACES `state.diode.forward` object!
-        // This is dangerous if `forward` has other props. Currently it only has `voltage`.
-        // But `intro` has `joined`.
-        // `breakdown` has `voltage` AND `type`.
-        // If I update `breakdown: { voltage: 5 }`, I LOSE `type`!
-        // FIX: Start by sending the CURRENT helper state merged.
-        // Or update Server to deep merge.
-        // Since I cannot update server again easily (I could but costly), 
-        // I will handle merge on CLIENT side and emit FULL sub-object.
-
-        const merged = { ...state, ...updates };
-        // Wait, updates might be deep.
-        // Helper to merge deep:
-        // Actually, let's just emit the specific sub-object fully constructed.
         socket.emit('updateState', updates);
+        setState(prev => ({ ...prev, ...updates }));
     };
 
     const updateSubState = (key, subUpdates) => {
@@ -75,46 +50,44 @@ const DiodeControls = () => {
         setState(prev => ({ ...prev, ...newState }));
     };
 
-    // Hardware Keys
+    // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (!state.intro) return; // server check
+            if (!state.intro) return;
             const { key } = e;
             const { tab } = state;
 
-            // Global Tab Switching? Maybe PageUp/Down for tabs if not used for voltage?
-            // User requested PageUp/Down map to Voltage in Diode.tsx.
-            // But usually PageUp is fast scroll.
-            // Let's stick to Arrow Keys/Page Keys for Voltage as per previous Diode.tsx logic.
+            // Tab switching: 1=intro, 2=forward, 3=reverse, 4=breakdown
+            if (key === '1') { updateState({ tab: 'intro' });     return; }
+            if (key === '2') { updateState({ tab: 'forward' });   return; }
+            if (key === '3') { updateState({ tab: 'reverse' });   return; }
+            if (key === '4') { updateState({ tab: 'breakdown' }); return; }
 
+            // Breakdown type: Z=zener, A=avalanche
+            if (tab === 'breakdown') {
+                if (key.toLowerCase() === 'z') { updateSubState('breakdown', { type: 'zener',     voltage: 0 }); return; }
+                if (key.toLowerCase() === 'a') { updateSubState('breakdown', { type: 'avalanche', voltage: 0 }); return; }
+            }
 
-            if (tab === 'intro') {
-                if (key === 'Enter') {
-                    updateSubState('intro', { joined: !state.intro.joined });
-                }
-            } else if (tab === 'forward') {
-                const step = 0.1;
-                const max = 1.5;
-                if (key === 'ArrowUp' || key === 'PageUp') {
-                    updateSubState('forward', { voltage: Math.min(max, state.forward.voltage + step) });
-                } else if (key === 'ArrowDown' || key === 'PageDown') {
-                    updateSubState('forward', { voltage: Math.max(0, state.forward.voltage - step) });
-                }
-            } else if (tab === 'reverse') {
-                const step = 0.5;
-                const max = 10;
-                if (key === 'ArrowUp' || key === 'PageUp') {
-                    updateSubState('reverse', { voltage: Math.min(max, state.reverse.voltage + step) });
-                } else if (key === 'ArrowDown' || key === 'PageDown') {
-                    updateSubState('reverse', { voltage: Math.max(0, state.reverse.voltage - step) });
-                }
-            } else if (tab === 'breakdown') {
-                const step = state.breakdown.type === 'zener' ? 0.5 : 2;
-                const max = state.breakdown.type === 'zener' ? 10 : 80;
-                if (key === 'ArrowUp' || key === 'PageUp') {
-                    updateSubState('breakdown', { voltage: Math.min(max, state.breakdown.voltage + step) });
-                } else if (key === 'ArrowDown' || key === 'PageDown') {
-                    updateSubState('breakdown', { voltage: Math.max(0, state.breakdown.voltage - step) });
+            // Enter to toggle intro junction
+            if (tab === 'intro' && key === 'Enter') {
+                updateSubState('intro', { joined: !state.intro.joined });
+                return;
+            }
+
+            // Arrow keys to adjust voltage
+            if (key === 'ArrowUp' || key === 'ArrowDown' || key === 'PageUp' || key === 'PageDown') {
+                e.preventDefault();
+                const up = key === 'ArrowUp' || key === 'PageUp';
+
+                if (tab === 'forward') {
+                    updateSubState('forward', { voltage: Math.max(0, Math.min(1.5, +(state.forward.voltage + (up ? 0.1 : -0.1)).toFixed(2))) });
+                } else if (tab === 'reverse') {
+                    updateSubState('reverse', { voltage: Math.max(0, Math.min(10, +(state.reverse.voltage + (up ? 0.5 : -0.5)).toFixed(1))) });
+                } else if (tab === 'breakdown') {
+                    const step = state.breakdown.type === 'zener' ? 0.5 : 2;
+                    const max  = state.breakdown.type === 'zener' ? 10  : 80;
+                    updateSubState('breakdown', { voltage: Math.max(0, Math.min(max, +(state.breakdown.voltage + (up ? step : -step)).toFixed(1))) });
                 }
             }
         };
@@ -123,135 +96,176 @@ const DiodeControls = () => {
     }, [state]);
 
     return (
-        <div className="min-h-screen bg-slate-50 p-8 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
-                    <div className="flex justify-between items-center mb-2">
+        <div className="h-screen w-full bg-slate-50 p-4 flex flex-col overflow-hidden">
+            <div className="flex-1 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
+                {/* Card Header */}
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 text-white flex-shrink-0">
+                    <div className="flex justify-between items-center">
                         <h2 className="text-2xl font-black tracking-tight">Diode Controls</h2>
                         <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-red-400'}`}></div>
                     </div>
+                    {/* Keyboard hint in header */}
+                    <div className="flex gap-3 mt-2 text-[11px] text-blue-100 font-mono flex-wrap">
+                        <span><kbd className="px-1 bg-white/20 rounded">1</kbd>–<kbd className="px-1 bg-white/20 rounded">4</kbd> tabs</span>
+                        <span><kbd className="px-1 bg-white/20 rounded">↑</kbd><kbd className="px-1 bg-white/20 rounded">↓</kbd> voltage</span>
+                        {state.tab === 'breakdown' && <><span><kbd className="px-1 bg-white/20 rounded">Z</kbd> Zener</span><span><kbd className="px-1 bg-white/20 rounded">A</kbd> Avalanche</span></>}
+                        {state.tab === 'intro' && <span><kbd className="px-1 bg-white/20 rounded">Enter</kbd> toggle</span>}
+                    </div>
                 </div>
 
-                {!state.intro ? (
-                    <div className="p-8 text-center bg-red-50 text-red-600 font-bold">
-                        ⚠️ Restart Server (node server.js) to enable controls.
+                {/* Card Body */}
+                <div className="flex-1 p-6 flex flex-col gap-4 overflow-hidden">
+                    {/* Tab Selection - 2x2 grid */}
+                    <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl flex-shrink-0">
+                        {['intro', 'forward', 'reverse', 'breakdown'].map((t, i) => (
+                            <button
+                                key={t}
+                                onClick={() => updateState({ tab: t })}
+                                className={`py-3 px-1 rounded-lg text-sm font-bold uppercase tracking-wider transition-all relative
+                                    ${state.tab === t ? 'bg-white text-blue-600 shadow-md scale-105' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {t}
+                                <span className={`absolute top-1 right-1 text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold
+                                    ${state.tab === t ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                                    {i + 1}
+                                </span>
+                            </button>
+                        ))}
                     </div>
-                ) : (
-                    <div className="p-6 space-y-6">
-                        {/* Tab Selection */}
-                        <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl">
-                            {['intro', 'forward', 'reverse', 'breakdown'].map((t) => (
-                                <button
-                                    key={t}
-                                    onClick={() => updateState({ tab: t })}
-                                    className={`py-2 px-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${state.tab === t ? 'bg-white text-blue-600 shadow-md transform scale-105' : 'text-slate-500 hover:text-slate-700'}`}
-                                >
-                                    {t}
-                                </button>
-                            ))}
-                        </div>
 
-                        <div className="border-t border-slate-100 my-4"></div>
+                    <div className="border-t border-slate-100" />
 
-                        {/* Controls specific to Tab */}
+                    {/* Tab Content - fills remaining space */}
+                    <div className="flex-1 overflow-hidden flex flex-col">
+
+                        {/* INTRO */}
                         {state.tab === 'intro' && (
-                            <div className="space-y-4">
-                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
-                                    <h3 className="font-bold text-blue-800 mb-2">PN Junction Formation</h3>
-                                    <p className="text-xs text-blue-600 mb-4">State: {state.intro.joined ? 'Joined' : 'Separated'}</p>
+                            <div className="flex-1 flex flex-col gap-4">
+                                <div className="flex-1 bg-blue-50 rounded-xl border border-blue-100 flex flex-col items-center justify-center p-6 gap-4">
+                                    <h3 className="font-bold text-blue-800 text-lg">PN Junction Formation</h3>
+                                    <p className="text-sm text-blue-600">State: <strong>{state.intro.joined ? 'Joined' : 'Separated'}</strong></p>
                                     <button
                                         onClick={() => updateSubState('intro', { joined: !state.intro.joined })}
-                                        className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all ${state.intro.joined ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
+                                        className={`w-full max-w-xs py-5 rounded-xl font-bold text-white text-lg shadow-lg transition-all
+                                            ${state.intro.joined ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
                                     >
                                         {state.intro.joined ? 'Disconnect Junction' : 'Form Junction'}
                                     </button>
-                                    <p className="text-[10px] text-slate-400 mt-2 font-mono">Press ENTER to toggle</p>
+                                    <p className="text-[11px] text-slate-400 font-mono">Press <kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200">Enter</kbd> to toggle</p>
                                 </div>
                             </div>
                         )}
 
+                        {/* FORWARD */}
                         {state.tab === 'forward' && (
-                            <div className="space-y-4">
+                            <div className="flex-1 flex flex-col gap-5 justify-center">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="font-bold text-slate-700">Forward Voltage</h3>
-                                    <span className="text-2xl font-mono font-bold text-green-600">{state.forward.voltage.toFixed(2)}V</span>
+                                    <h3 className="font-bold text-slate-700 text-lg">Forward Voltage</h3>
+                                    <span className="text-4xl font-mono font-black text-green-600">{state.forward.voltage.toFixed(2)}V</span>
                                 </div>
                                 <input
-                                    type="range"
-                                    min="0" max="1.5" step="0.1"
+                                    type="range" min="0" max="1.5" step="0.1"
                                     value={state.forward.voltage}
                                     onChange={(e) => updateSubState('forward', { voltage: parseFloat(e.target.value) })}
-                                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                                    className="w-full h-4 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
                                 />
-                                <div className="flex justify-between text-xs text-slate-500 font-bold">
+                                <div className="flex justify-between text-sm text-slate-500 font-bold">
                                     <span>0V</span>
                                     <span className="text-amber-600">Threshold: 0.7V</span>
                                     <span>1.5V</span>
                                 </div>
+                                <div className={`mt-2 p-4 rounded-xl text-center text-sm font-bold transition-all
+                                    ${state.forward.voltage >= 0.7 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
+                                    {state.forward.voltage >= 0.7 ? '✓ Diode conducting — current flowing' : '○ Below threshold — diode OFF'}
+                                </div>
+                                <p className="text-center text-[11px] text-slate-400 font-mono">
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> to adjust
+                                </p>
                             </div>
                         )}
 
+                        {/* REVERSE */}
                         {state.tab === 'reverse' && (
-                            <div className="space-y-4">
+                            <div className="flex-1 flex flex-col gap-5 justify-center">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="font-bold text-slate-700">Reverse Voltage</h3>
-                                    <span className="text-2xl font-mono font-bold text-red-600">-{state.reverse.voltage.toFixed(1)}V</span>
+                                    <h3 className="font-bold text-slate-700 text-lg">Reverse Voltage</h3>
+                                    <span className="text-4xl font-mono font-black text-red-600">-{state.reverse.voltage.toFixed(1)}V</span>
                                 </div>
                                 <input
-                                    type="range"
-                                    min="0" max="10" step="0.5"
+                                    type="range" min="0" max="10" step="0.5"
                                     value={state.reverse.voltage}
                                     onChange={(e) => updateSubState('reverse', { voltage: parseFloat(e.target.value) })}
-                                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+                                    className="w-full h-4 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600"
                                 />
-                                <div className="flex justify-between text-xs text-slate-500 font-bold">
+                                <div className="flex justify-between text-sm text-slate-500 font-bold">
                                     <span>0V</span>
                                     <span>Max: -10V</span>
                                 </div>
+                                <div className="mt-2 p-4 rounded-xl text-center text-sm font-bold bg-red-50 text-red-600 border border-red-200">
+                                    Diode is blocking — only tiny leakage current (~µA)
+                                </div>
+                                <p className="text-center text-[11px] text-slate-400 font-mono">
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> to adjust
+                                </p>
                             </div>
                         )}
 
+                        {/* BREAKDOWN */}
                         {state.tab === 'breakdown' && (
-                            <div className="space-y-6">
+                            <div className="flex-1 flex flex-col gap-4 justify-center">
+                                {/* Zener / Avalanche selector */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={() => updateSubState('breakdown', { type: 'zener', voltage: 0 })}
-                                        className={`p-3 rounded-xl border-2 font-bold text-sm transition-all ${state.breakdown.type === 'zener' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400'}`}
+                                        className={`p-4 rounded-xl border-2 font-bold transition-all relative
+                                            ${state.breakdown.type === 'zener' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}
                                     >
                                         Zener (~5V)
+                                        <span className={`absolute top-1 right-1 text-[9px] px-1 rounded font-mono
+                                            ${state.breakdown.type === 'zener' ? 'bg-purple-200 text-purple-700' : 'bg-slate-100 text-slate-400'}`}>Z</span>
                                     </button>
                                     <button
                                         onClick={() => updateSubState('breakdown', { type: 'avalanche', voltage: 0 })}
-                                        className={`p-3 rounded-xl border-2 font-bold text-sm transition-all ${state.breakdown.type === 'avalanche' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400'}`}
+                                        className={`p-4 rounded-xl border-2 font-bold transition-all relative
+                                            ${state.breakdown.type === 'avalanche' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}
                                     >
-                                        Avalanche ({'>'}50V)
+                                        Avalanche (&gt;50V)
+                                        <span className={`absolute top-1 right-1 text-[9px] px-1 rounded font-mono
+                                            ${state.breakdown.type === 'avalanche' ? 'bg-purple-200 text-purple-700' : 'bg-slate-100 text-slate-400'}`}>A</span>
                                     </button>
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="flex flex-col gap-3">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-slate-700">Voltage</h3>
-                                        <span className="text-2xl font-mono font-bold text-purple-600">-{state.breakdown.voltage.toFixed(1)}V</span>
+                                        <h3 className="font-bold text-slate-700 text-lg">Voltage</h3>
+                                        <span className="text-4xl font-mono font-black text-purple-600">-{state.breakdown.voltage.toFixed(1)}V</span>
                                     </div>
                                     <input
-                                        type="range"
-                                        min="0"
+                                        type="range" min="0"
                                         max={state.breakdown.type === 'zener' ? 10 : 80}
                                         step={state.breakdown.type === 'zener' ? 0.5 : 2}
                                         value={state.breakdown.voltage}
                                         onChange={(e) => updateSubState('breakdown', { voltage: parseFloat(e.target.value) })}
-                                        className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                                        className="w-full h-4 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
                                     />
-                                    <div className="flex justify-between text-xs text-slate-500 font-bold">
+                                    <div className="flex justify-between text-sm text-slate-500 font-bold">
                                         <span>0V</span>
                                         <span className="text-red-500">Breakdown: {state.breakdown.type === 'zener' ? '5.1V' : '50V'}</span>
                                         <span>Max</span>
                                     </div>
                                 </div>
+                                <p className="text-center text-[11px] text-slate-400 font-mono">
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> adjust &bull;
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">Z</kbd> Zener &bull;
+                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">A</kbd> Avalanche
+                                </p>
                             </div>
                         )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

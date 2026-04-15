@@ -1,252 +1,212 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { Zap, Play, Lightbulb, RotateCcw } from 'lucide-react';
 
 const socket = io('http://localhost:3002/capacitor');
-
 type CircuitMode = 'simple' | 'series' | 'parallel';
 type Stage = 'initial' | 'connecting' | 'charging' | 'charged' | 'disconnecting' | 'discharge' | 'discharged';
+interface CapState { mode: CircuitMode; voltage: number; capacitance: number; capacitance2: number; capacitance3: number; stage: Stage; }
+type FC = 'voltage' | 'c1' | 'c2' | 'c3';
 
-interface CapacitorState {
-    mode: CircuitMode;
-    voltage: number;
-    capacitance: number;
-    capacitance2: number;
-    capacitance3: number;
-    stage: Stage;
-}
+const CTRL = [
+    { key: 'voltage' as FC, label: 'Voltage',       kbd: 'A', unit: 'V',  color: 'text-pink-600',   accent: 'accent-pink-600',   min: 3,  max: 24,  step: 1,  lo: '3V',   hi: '24V'   },
+    { key: 'c1'      as FC, label: 'Capacitance C₁', kbd: 'B', unit: 'µF', color: 'text-blue-600',   accent: 'accent-blue-600',   min: 10, max: 500, step: 10, lo: '10µF', hi: '500µF' },
+    { key: 'c2'      as FC, label: 'Capacitance C₂', kbd: 'C', unit: 'µF', color: 'text-purple-600', accent: 'accent-purple-600', min: 10, max: 500, step: 10, lo: '10µF', hi: '500µF' },
+    { key: 'c3'      as FC, label: 'Capacitance C₃', kbd: 'D', unit: 'µF', color: 'text-pink-600',   accent: 'accent-pink-600',   min: 10, max: 500, step: 10, lo: '10µF', hi: '500µF' },
+];
 
-const CapacitorControls: React.FC = () => {
-    const [state, setState] = useState<CapacitorState>({
-        mode: 'simple',
-        voltage: 9,
-        capacitance: 100,
-        capacitance2: 200,
-        capacitance3: 150,
-        stage: 'initial',
-    });
-    const [connected, setConnected] = useState(false);
+export default function CapacitorControls() {
+    const [st, setSt]       = useState<CapState>({ mode:'simple', voltage:9, capacitance:100, capacitance2:200, capacitance3:150, stage:'initial' });
+    const [con, setCon]     = useState(false);
+    const [focus, setFocus] = useState<FC>('voltage');
 
     useEffect(() => {
-        socket.on('connect', () => setConnected(true));
-        socket.on('disconnect', () => setConnected(false));
-        socket.on('initialState', (s: CapacitorState) => s && setState(s));
-        socket.on('stateUpdated', (s: CapacitorState) => s && setState(s));
-        return () => {
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('initialState');
-            socket.off('stateUpdated');
-        };
+        socket.on('connect', () => setCon(true));
+        socket.on('disconnect', () => setCon(false));
+        socket.on('initialState', (s: CapState) => s && setSt(s));
+        socket.on('stateUpdated', (s: CapState) => s && setSt(s));
+        return () => { socket.off('connect'); socket.off('disconnect'); socket.off('initialState'); socket.off('stateUpdated'); };
     }, []);
 
-    const updateState = (updates: Partial<CapacitorState>) => {
-        socket.emit('updateState', updates);
-        setState(prev => ({ ...prev, ...updates }));
+    const emit = useCallback((u: Partial<CapState>) => {
+        socket.emit('updateState', u);
+        setSt(p => ({ ...p, ...u }));
+    }, []);
+
+    const connect = () => {
+        emit({ stage: 'connecting' });
+        setTimeout(() => emit({ stage: 'charging' }), 500);
+        setTimeout(() => emit({ stage: 'charged' }), 6000);
+    };
+    const discharge = () => {
+        emit({ stage: 'disconnecting' });
+        setTimeout(() => emit({ stage: 'discharge' }), 800);
+        setTimeout(() => emit({ stage: 'discharged' }), 30000);
+    };
+    const reset = () => emit({ stage: 'initial' });
+
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => {
+            if (e.key === '1') { emit({ mode: 'simple' });   reset(); }
+            else if (e.key === '2') { emit({ mode: 'series' });   reset(); }
+            else if (e.key === '3') { emit({ mode: 'parallel' }); reset(); }
+            const k = e.key.toLowerCase();
+            if (k === 'a') { setFocus('voltage'); return; }
+            if (k === 'b') { setFocus('c1');      return; }
+            if (k === 'c') { if (st.mode !== 'simple') setFocus('c2'); return; }
+            if (k === 'd') { if (st.mode !== 'simple') setFocus('c3'); return; }
+            if (st.stage === 'initial' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                e.preventDefault();
+                const d = e.key === 'ArrowUp' ? 1 : -1;
+                if (focus === 'voltage') emit({ voltage: Math.max(3, Math.min(24, st.voltage + d)) });
+                else if (focus === 'c1') emit({ capacitance:  Math.max(10, Math.min(500, st.capacitance  + d*10)) });
+                else if (focus === 'c2' && st.mode !== 'simple') emit({ capacitance2: Math.max(10, Math.min(500, st.capacitance2 + d*10)) });
+                else if (focus === 'c3' && st.mode !== 'simple') emit({ capacitance3: Math.max(10, Math.min(500, st.capacitance3 + d*10)) });
+            }
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                if (st.stage === 'initial') connect();
+                else if (st.stage === 'charged') discharge();
+                else if (st.stage === 'discharged') reset();
+            }
+        };
+        window.addEventListener('keydown', h);
+        return () => window.removeEventListener('keydown', h);
+    }, [emit, st, focus]);
+
+    const totalC = st.mode === 'simple' ? st.capacitance
+        : st.mode === 'series' ? 1/(1/st.capacitance + 1/st.capacitance2 + 1/st.capacitance3)
+        : st.capacitance + st.capacitance2 + st.capacitance3;
+    const energy = 0.5 * totalC * st.voltage * st.voltage / 1000;
+
+    const getV = (k: FC) => k === 'voltage' ? st.voltage : k === 'c1' ? st.capacitance : k === 'c2' ? st.capacitance2 : st.capacitance3;
+    const onChange = (k: FC, v: number) => {
+        if (k === 'voltage') emit({ voltage: v });
+        else if (k === 'c1') emit({ capacitance: v });
+        else if (k === 'c2') emit({ capacitance2: v });
+        else emit({ capacitance3: v });
     };
 
-    // Control Handlers
-    const handleConnect = () => {
-        updateState({ stage: 'connecting' });
-        setTimeout(() => updateState({ stage: 'charging' }), 500); // Controller manages transition
-        // Controller also needs to know when charging finishes? 
-        // In the original, the animation loop triggered 'charged' after chargeLevel >= 1.
-        // We can mimic this by setting a timeout based on known charge duration, OR
-        // allow the User to decide when it's charged (by removing 'charged' auto-transition),
-        // OR rely on the Circuit to emit 'finishedCharging' which we listen to?
-        // Since Circuit has the animation loop, Circuit knows best.
-        // But for split architecture, we usually avoid circular logic if possible.
-        // Let's just set a fixed timeout for 'charged' here to keep logic in Controller.
-        // Original loop roughly: chargeLevel += 0.008 per 45ms. 1 / 0.008 = 125 steps * 45ms = ~5.6s.
-        setTimeout(() => updateState({ stage: 'charged' }), 6000);
-    };
-
-    const handleDisconnect = () => {
-        updateState({ stage: 'disconnecting' });
-        setTimeout(() => updateState({ stage: 'discharge' }), 800);
-        // Discharge lasts until level 0. Level -= 0.0015 per 45ms (slower).
-        // 1 / 0.0015 = ~667 steps * 45ms = ~30s
-        setTimeout(() => updateState({ stage: 'discharged' }), 30000);
-    };
-
-    const handleReset = () => {
-        updateState({ stage: 'initial' });
-    };
-
-    const getTotalCapacitance = () => {
-        switch (state.mode) {
-            case 'simple': return state.capacitance;
-            case 'series': return 1 / (1 / state.capacitance + 1 / state.capacitance2 + 1 / state.capacitance3);
-            case 'parallel': return state.capacitance + state.capacitance2 + state.capacitance3;
-        }
-    };
-
-    const totalCapacitance = getTotalCapacitance();
-    const storedEnergy = 0.5 * totalCapacitance * state.voltage * state.voltage / 1000;
+    const stageInfo = {
+        initial:      { text: '⬤ Ready',               cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+        connecting:   { text: '⚡ Connecting...',       cls: 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' },
+        charging:     { text: '⚡ Charging...',         cls: 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse' },
+        charged:      { text: '✓ Fully Charged',        cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        disconnecting:{ text: '↯ Disconnecting...',     cls: 'bg-orange-50 text-orange-700 border-orange-200 animate-pulse' },
+        discharge:    { text: '💡 Discharging...',      cls: 'bg-orange-50 text-orange-700 border-orange-200 animate-pulse' },
+        discharged:   { text: '○ Discharged',           cls: 'bg-slate-50 text-slate-500 border-slate-200' },
+    }[st.stage];
 
     return (
-        <div className="min-h-screen bg-slate-50 p-8 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-                <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-6 text-white">
-                    <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-2xl font-black tracking-tight">Capacitor Controls</h2>
-                        <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-red-400'}`}></div>
+        <div className="h-screen w-full bg-slate-100 flex flex-col overflow-hidden">
+            {/* ── Header ── */}
+            <header className="bg-gradient-to-r from-pink-500 to-purple-600 px-4 py-2 text-white flex items-center justify-between shadow flex-shrink-0">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                        <Zap className="w-4 h-4" fill="currentColor" />
                     </div>
-                    <p className="text-pink-100 font-medium">Remote Control Panel</p>
+                    <div>
+                        <p className="text-base font-black leading-none">Capacitor Controls</p>
+                        <p className="text-pink-100 text-[10px]">Remote Control Panel</p>
+                    </div>
                 </div>
 
-                <div className="p-6 space-y-8">
-                    {/* Mode Selection */}
-                    <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-xl">
-                        {(['simple', 'series', 'parallel'] as CircuitMode[]).map((m) => (
-                            <button
-                                key={m}
-                                onClick={() => {
-                                    updateState({ mode: m });
-                                    handleReset();
-                                }}
-                                className={`py-2 rounded-lg text-sm font-bold transition-all ${state.mode === m ? 'bg-white text-pink-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                {m.charAt(0).toUpperCase() + m.slice(1)}
-                            </button>
+                <div className="flex items-center gap-1.5 bg-white/10 p-1 rounded-lg">
+                    {(['simple','series','parallel'] as CircuitMode[]).map((m, i) => (
+                        <button key={m} onClick={() => { emit({ mode: m }); reset(); }}
+                            className={`relative px-3 py-1 rounded-md text-xs font-bold transition-all ${st.mode === m ? 'bg-white text-pink-600 shadow scale-105' : 'text-white/80 hover:bg-white/10'}`}>
+                            {m[0].toUpperCase()+m.slice(1)}
+                            <span className="absolute -top-1 -right-1 text-[8px] bg-pink-900 text-white w-3.5 h-3.5 rounded-full flex items-center justify-center">{i+1}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Action button */}
+                <div>
+                    {st.stage === 'initial'   && <button onClick={connect}   className="bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Play className="w-3 h-3"/>Connect</button>}
+                    {(st.stage === 'charging' || st.stage === 'connecting') && <div className="bg-white/20 px-3 py-1 rounded-lg text-xs font-bold animate-pulse">⚡ Charging…</div>}
+                    {st.stage === 'charged'   && <button onClick={discharge} className="bg-amber-500 hover:bg-amber-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Lightbulb className="w-3 h-3"/>Discharge</button>}
+                    {(st.stage === 'discharge'|| st.stage === 'discharged'|| st.stage === 'disconnecting') && <button onClick={reset} disabled={st.stage !== 'discharged'} className="bg-purple-500 hover:bg-purple-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50"><RotateCcw className="w-3 h-3"/>Reset</button>}
+                </div>
+
+                <div className="flex items-center gap-1 text-[10px] text-slate-300">
+                    {['A','B','C','D'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
+                    <span>sel •</span>
+                    <kbd className="px-1 bg-white/20 rounded font-mono">Space</kbd>
+                    <span>act</span>
+                </div>
+
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${con ? 'bg-emerald-500/20 text-emerald-100' : 'bg-red-500/20 text-red-100'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${con ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}/>
+                    {con ? 'Connected' : 'Disconnected'}
+                </div>
+            </header>
+
+            {/* ── Body ── */}
+            <div className="flex-1 p-3 flex gap-3 min-h-0 overflow-hidden">
+                {/* Controls column */}
+                <div className="flex-1 flex flex-col gap-2 min-h-0">
+                    {CTRL.map(c => {
+                        const locked   = st.stage !== 'initial';
+                        const disabled = locked || (c.key !== 'voltage' && c.key !== 'c1' && st.mode === 'simple');
+                        const focused  = focus === c.key;
+                        const v = getV(c.key);
+                        return (
+                            <div key={c.key} onClick={() => { if (!disabled) setFocus(c.key); }}
+                                className={`flex items-center gap-4 bg-white rounded-xl px-4 py-2.5 border-2 cursor-pointer transition-all flex-1
+                                    ${disabled ? 'opacity-40 pointer-events-none' : ''}
+                                    ${focused  ? 'border-pink-400 ring-2 ring-pink-100 shadow-md' : 'border-transparent hover:border-slate-200'}`}>
+                                <div className="w-40 shrink-0 border-r border-slate-100 pr-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-semibold text-slate-500">{c.label}</span>
+                                        <kbd className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${focused ? 'bg-pink-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{c.kbd}</kbd>
+                                    </div>
+                                    <div className="flex items-baseline gap-1 mt-0.5">
+                                        <span className={`font-black text-2xl ${c.color}`}>{v}</span>
+                                        <span className={`font-bold text-xs ${c.color} opacity-60`}>{c.unit}</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <input type="range" min={c.min} max={c.max} step={c.step} value={v} disabled={locked}
+                                        onChange={e => onChange(c.key, +e.target.value)}
+                                        className={`w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer ${c.accent}`}/>
+                                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                                        <span>{c.lo}</span><span>{c.hi}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Stats panel */}
+                <div className="w-60 bg-white rounded-xl p-3 border border-slate-200 shadow flex flex-col gap-2">
+                    <div className="text-center py-1.5 bg-pink-50 rounded-lg border border-pink-100 font-mono font-bold text-pink-700 text-sm">
+                        {st.mode === 'simple' && 'C = C₁'}
+                        {st.mode === 'series' && '1/C = Σ1/Cₙ'}
+                        {st.mode === 'parallel' && 'C = C₁+C₂+C₃'}
+                    </div>
+
+                    <div className={`text-center py-1.5 rounded-lg border text-xs font-bold ${stageInfo.cls}`}>
+                        {stageInfo.text}
+                    </div>
+
+                    <div className="flex flex-col gap-2 flex-1">
+                        {[
+                            { label: 'Total Capacitance', sub: '',         val: `${totalC.toFixed(1)} µF`, bg: 'bg-purple-50 border-purple-100', cl: 'text-purple-700', vc: 'text-purple-600' },
+                            { label: 'Stored Energy',     sub: 'E = ½CV²', val: `${energy.toFixed(2)} mJ`, bg: 'bg-rose-50 border-rose-100',     cl: 'text-rose-700',   vc: 'text-rose-500' },
+                        ].map(s => (
+                            <div key={s.label} className={`flex justify-between items-center p-2.5 rounded-lg border flex-1 ${s.bg}`}>
+                                <div>
+                                    <p className={`text-xs font-semibold ${s.cl}`}>{s.label}</p>
+                                    {s.sub && <p className="text-[9px] font-mono text-slate-400 mt-0.5">{s.sub}</p>}
+                                </div>
+                                <span className={`font-black text-lg ${s.vc}`}>{s.val}</span>
+                            </div>
                         ))}
                     </div>
-
-                    {/* Action Buttons */}
-                    <div className="space-y-4">
-                        {state.stage === 'initial' && (
-                            <button onClick={handleConnect} className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                                <Play className="w-5 h-5" /> Connect Battery
-                            </button>
-                        )}
-                        {(state.stage === 'charging' || state.stage === 'connecting') && (
-                            <div className="w-full py-4 rounded-xl bg-slate-100 text-slate-500 font-bold text-lg text-center animate-pulse">
-                                Charging Capacitor...
-                            </div>
-                        )}
-                        {state.stage === 'charged' && (
-                            <button onClick={handleDisconnect} className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
-                                <Lightbulb className="w-5 h-5" /> Discharge to Bulb
-                            </button>
-                        )}
-                        {(state.stage === 'discharge' || state.stage === 'discharged' || state.stage === 'disconnecting') && (
-                            <button onClick={handleReset} disabled={state.stage === 'discharge' || state.stage === 'disconnecting'} className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <RotateCcw className="w-5 h-5" /> Reset Circuit
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Sliders */}
-                    <div className="space-y-5 opacity-90">
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-slate-700">Voltage</span>
-                                <span className="font-bold text-pink-600">{state.voltage}V</span>
-                            </div>
-                            <input
-                                type="range" min="3" max="24" value={state.voltage}
-                                disabled={state.stage !== 'initial'}
-                                onChange={(e) => updateState({ voltage: parseInt(e.target.value) })}
-                                onKeyDown={(e) => {
-                                    if (state.stage !== 'initial') return;
-                                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                                        updateState({ voltage: Math.min(24, state.voltage + 1) });
-                                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                                        updateState({ voltage: Math.max(3, state.voltage - 1) });
-                                    }
-                                }}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-600 disabled:opacity-50"
-                            />
-                        </div>
-
-                        {/* C1 Control */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-slate-700">C₁ Capacitance</span>
-                                <span className="font-bold text-blue-600">{state.capacitance}µF</span>
-                            </div>
-                            <input
-                                type="range" min="10" max="500" step="10" value={state.capacitance}
-                                disabled={state.stage !== 'initial'}
-                                onChange={(e) => updateState({ capacitance: parseInt(e.target.value) })}
-                                onKeyDown={(e) => {
-                                    if (state.stage !== 'initial') return;
-                                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                                        updateState({ capacitance: Math.min(500, state.capacitance + 10) });
-                                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                                        updateState({ capacitance: Math.max(10, state.capacitance - 10) });
-                                    }
-                                }}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 disabled:opacity-50"
-                            />
-                        </div>
-
-                        {/* C2 Control - Only for series/parallel */}
-                        {(state.mode === 'series' || state.mode === 'parallel') && (
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="font-bold text-slate-700">C₂ Capacitance</span>
-                                    <span className="font-bold text-purple-600">{state.capacitance2}µF</span>
-                                </div>
-                                <input
-                                    type="range" min="10" max="500" step="10" value={state.capacitance2}
-                                    disabled={state.stage !== 'initial'}
-                                    onChange={(e) => updateState({ capacitance2: parseInt(e.target.value) })}
-                                    onKeyDown={(e) => {
-                                        if (state.stage !== 'initial') return;
-                                        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                                            updateState({ capacitance2: Math.min(500, state.capacitance2 + 10) });
-                                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                                            updateState({ capacitance2: Math.max(10, state.capacitance2 - 10) });
-                                        }
-                                    }}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600 disabled:opacity-50"
-                                />
-                            </div>
-                        )}
-
-                        {/* C3 Control - Only for series/parallel */}
-                        {(state.mode === 'series' || state.mode === 'parallel') && (
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="font-bold text-slate-700">C₃ Capacitance</span>
-                                    <span className="font-bold text-pink-600">{state.capacitance3}µF</span>
-                                </div>
-                                <input
-                                    type="range" min="10" max="500" step="10" value={state.capacitance3}
-                                    disabled={state.stage !== 'initial'}
-                                    onChange={(e) => updateState({ capacitance3: parseInt(e.target.value) })}
-                                    onKeyDown={(e) => {
-                                        if (state.stage !== 'initial') return;
-                                        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                                            updateState({ capacitance3: Math.min(500, state.capacitance3 + 10) });
-                                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                                            updateState({ capacitance3: Math.max(10, state.capacitance3 - 10) });
-                                        }
-                                    }}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-pink-600 disabled:opacity-50"
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="bg-slate-900 rounded-2xl p-4 text-white space-y-2 shadow-xl">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-400 font-medium">Total Capacitance</span>
-                            <span className="font-bold text-purple-400">{totalCapacitance.toFixed(1)} µF</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-400 font-medium">Potential Energy</span>
-                            <span className="font-bold text-pink-400">{storedEnergy.toFixed(2)} mJ</span>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </div>
     );
-};
-
-export default CapacitorControls;
+}

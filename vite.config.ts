@@ -27,14 +27,14 @@ export default defineConfig(({ mode, command }) => {
     if (isDisplay) {
       serverConfig.port = 3001; // Display screen on port 3001
       input = "display.html";
-      
+
       // Create a temporary index override for display-only
       const displayRoot = path.resolve(__dirname);
       root = displayRoot;
     } else if (isControl) {
-      serverConfig.port = 3002; // Control screen on port 3002
+      serverConfig.port = 3003; // Control screen on port 3003
       input = "control.html";
-      
+
       // Create a temporary index override for control-only
       const controlRoot = path.resolve(__dirname);
       root = controlRoot;
@@ -63,7 +63,7 @@ export default defineConfig(({ mode, command }) => {
       hmr: {
         protocol: "ws",
         host: "localhost",
-        port: isDisplay ? 3001 : isControl ? 3002 : 5173,
+        port: isDisplay ? 3001 : isControl ? 3003 : 5173,
       },
     },
     plugins: [react(), mode === "development" && componentTagger()].filter(
@@ -81,10 +81,10 @@ export default defineConfig(({ mode, command }) => {
           command === "serve"
             ? path.resolve(__dirname, input)
             : {
-                main: path.resolve(__dirname, "index.html"),
-                display: path.resolve(__dirname, "display.html"),
-                control: path.resolve(__dirname, "control.html"),
-              },
+              main: path.resolve(__dirname, "index.html"),
+              display: path.resolve(__dirname, "display.html"),
+              control: path.resolve(__dirname, "control.html"),
+            },
         output: {
           dir: "dist",
           entryFileNames: "[name].js",

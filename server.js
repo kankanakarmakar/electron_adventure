@@ -14,7 +14,39 @@ const io = new Server(server, {
     }
 });
 
-// Initial States for all components
+// Navigation state for dual-screen sync
+let navigationState = {
+    component: 'home' // 'home', 'resistor', 'capacitor', 'inductor', 'diode'
+};
+
+// Navigation namespace for Display <-> Control sync
+const navigationNsp = io.of('/navigation');
+
+navigationNsp.on('connection', (socket) => {
+    console.log(`[Navigation] User connected: ${socket.id}`);
+
+    // Send current navigation state to new connection
+    socket.emit('currentState', navigationState);
+
+    // Handle navigation request
+    socket.on('navigate', (component) => {
+        console.log(`[Navigation] Navigate to: ${component}`);
+        navigationState.component = component;
+        // Broadcast to ALL clients including sender
+        navigationNsp.emit('navigate', component);
+    });
+
+    // Handle state request
+    socket.on('requestState', () => {
+        socket.emit('currentState', navigationState);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`[Navigation] User disconnected: ${socket.id}`);
+    });
+});
+
+// Initial States for all components (for individual component controls)
 const states = {
     resistor: {
         mode: 'simple',
@@ -72,16 +104,6 @@ const states = {
         socket.emit('initialState', states[component]);
 
         socket.on('updateState', (newState) => {
-            // Merge states shallowly? Or deeply?
-            // For simple structures standard merge is fine. 
-            // For nested like values, we need to be careful if we send partial updates.
-            // We'll assume the client sends what it wants to update.
-            // If they send { values: { ... } }, it overwrites values. 
-            // Better to handle partial deep merge or clients send full sub-objects.
-            // For now, let's do shallow merge of top keys.
-            // If client sends { values: { ...newValues } }, it replaces values.
-            // If we want partial updates to values, we need custom logic or deep merge.
-
             // Custom merge for known nested objects
             if (newState.values && states[component].values) {
                 states[component] = {
@@ -105,5 +127,15 @@ const states = {
 
 const PORT = 3002;
 server.listen(PORT, () => {
-    console.log(`Socket.IO server running on port ${PORT} with namespaces: /resistor, /inductor, /capacitor, /diode`);
+    console.log(`\n============================================`);
+    console.log(`   ELECTRON ADVENTURES - SYNC SERVER`);
+    console.log(`============================================`);
+    console.log(`Socket.IO server running on port ${PORT}`);
+    console.log(`\nNamespaces:`);
+    console.log(`  /navigation - Display <-> Control sync`);
+    console.log(`  /resistor   - Resistor state sync`);
+    console.log(`  /capacitor  - Capacitor state sync`);
+    console.log(`  /inductor   - Inductor state sync`);
+    console.log(`  /diode      - Diode state sync`);
+    console.log(`============================================\n`);
 });

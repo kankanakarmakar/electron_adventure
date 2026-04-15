@@ -1,208 +1,178 @@
 /**
- * Professional Display Screen - Museum Installation
- * Pure teaching/learning display - NO controls visible
- * Shows beautiful circuit animations and educational content
- * Designed for large TV/Projector display
+ * Display Screen - Shows circuit visualizations
+ * Receives navigation commands from Control Panel via WebSocket
  */
 
 import React, { useState, useEffect } from 'react';
-import useWebSocketSync from '@/hooks/useWebSocketSync';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Zap, Volume2, Waves } from 'lucide-react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
+import ResistorCircuit from '@/pages/ResistorCircuit';
+import CapacitorCircuit from '@/pages/CapacitorCircuit';
+import InductorCircuit from '@/pages/InductorCircuit';
+import DiodeCircuit from '@/pages/DiodeCircuit';
+import ElectronicsLogo from '@/components/ElectronicsLogo';
+import '@/index.css';
 
-// Import DISPLAY-ONLY circuit pages (no controls)
-import Index from '@/pages/Index';
-import ResistorDisplay from '@/pages/ResistorDisplay';
-import CapacitorDisplay from '@/pages/CapacitorDisplay';
-import InductorDisplay from '@/pages/InductorDisplay';
-import DiodeDisplay from '@/pages/DiodeDisplay';
-
-interface CircuitState {
-  voltage: number;
-  current: number;
-  resistance?: number;
-  frequency?: number;
-}
+type ComponentType = 'home' | 'resistor' | 'capacitor' | 'inductor' | 'diode';
 
 const DisplayScreenNew: React.FC = () => {
-  const [currentCircuit, setCurrentCircuit] = useState<string>('resistor');
-  const [circuitState, setCircuitState] = useState<CircuitState>({
-    voltage: 5,
-    current: 0,
-    resistance: 10,
-    frequency: 50,
-  });
+  const [currentComponent, setCurrentComponent] = useState<ComponentType>('home');
   const [isConnected, setIsConnected] = useState(false);
-  const [showValueBox, setShowValueBox] = useState(true);
-
-  const { isConnected: wsConnected } = useWebSocketSync({
-    screenType: 'display',
-    onCircuitStateUpdate: (state) => {
-      setCircuitState(state);
-      setCurrentCircuit(state.circuitType || 'resistor');
-      setIsConnected(true);
-    },
-  });
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    setIsConnected(wsConnected);
-  }, [wsConnected]);
+    // Connect to Socket.IO server for navigation sync
+    const newSocket = io('http://localhost:3002/navigation');
+
+    newSocket.on('connect', () => {
+      console.log('[Display] Connected to navigation server');
+      setIsConnected(true);
+      // Request current state on connect
+      newSocket.emit('requestState');
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('[Display] Disconnected from navigation server');
+      setIsConnected(false);
+    });
+
+    newSocket.on('navigate', (component: ComponentType) => {
+      console.log('[Display] Navigation received:', component);
+      setCurrentComponent(component);
+    });
+
+    newSocket.on('currentState', (state: { component: ComponentType }) => {
+      console.log('[Display] Current state received:', state);
+      setCurrentComponent(state.component);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+  // Render the current component
+  const renderComponent = () => {
+    switch (currentComponent) {
+      case 'resistor':
+        return <ResistorCircuit />;
+      case 'capacitor':
+        return <CapacitorCircuit />;
+      case 'inductor':
+        return <InductorCircuit />;
+      case 'diode':
+        return <DiodeCircuit />;
+      case 'home':
+      default:
+        return <HomeDisplay />;
+    }
+  };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      {/* Professional Header - Minimal and Clean */}
-      <div className="absolute top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b-2 border-blue-200 px-8 py-4 shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-blue-900">Circuit Learning Display</h1>
-            <p className="text-blue-600 text-sm mt-1">Interactive Electronics Education System</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Connection Status */}
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
-              isConnected 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-600' : 'bg-red-600'} animate-pulse`}></div>
-              {isConnected ? 'Live' : 'Offline'}
-            </div>
-
-            {/* Circuit Badge */}
-            <Badge className="text-lg px-6 py-2 bg-blue-600 text-white">
-              {currentCircuit.toUpperCase()}
-            </Badge>
-          </div>
+    <div className="w-full h-screen overflow-hidden bg-slate-50">
+      {/* Connection status indicator */}
+      <div className="absolute top-4 right-4 z-50">
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm ${isConnected
+          ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+          : 'bg-red-500/20 text-red-400 border border-red-500/50'
+          }`}>
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+          {isConnected ? 'Live' : 'Offline'}
         </div>
       </div>
 
-      {/* Main Display Area - Circuit Visualization */}
-      <div className="w-full h-full pt-20 pb-32 px-8 overflow-y-auto">
-        <BrowserRouter basename="/display">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/resistor" element={<ResistorDisplay />} />
-            <Route path="/capacitor" element={<CapacitorDisplay />} />
-            <Route path="/inductor" element={<InductorDisplay />} />
-            <Route path="/diode" element={<DiodeDisplay />} />
-          </Routes>
-        </BrowserRouter>
+      {/* Main content */}
+      <div className="w-full h-full">
+        {renderComponent()}
       </div>
 
-      {/* Live Data Display Panel - Bottom Right Corner */}
-      {showValueBox && (
-        <div className="absolute bottom-8 right-8 z-40">
-          <Card className="bg-white shadow-2xl border-2 border-blue-300 rounded-2xl p-6 max-w-sm backdrop-blur-sm">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4 pb-4 border-b-2 border-blue-200">
-              <h3 className="font-bold text-blue-900 text-lg">Live Values</h3>
-              <button
-                onClick={() => setShowValueBox(false)}
-                className="text-blue-400 hover:text-blue-600 text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Voltage */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-5 h-5 text-yellow-600" />
-                <span className="text-sm font-semibold text-gray-600 uppercase">Voltage</span>
-              </div>
-              <div className="text-4xl font-bold text-yellow-600">
-                {circuitState.voltage.toFixed(1)}
-                <span className="text-lg text-gray-500 ml-2">V</span>
-              </div>
-            </div>
-
-            {/* Current */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Waves className="w-5 h-5 text-cyan-600" />
-                <span className="text-sm font-semibold text-gray-600 uppercase">Current</span>
-              </div>
-              <div className="text-4xl font-bold text-cyan-600">
-                {circuitState.current.toFixed(2)}
-                <span className="text-lg text-gray-500 ml-2">A</span>
-              </div>
-            </div>
-
-            {/* Resistance (if applicable) */}
-            {circuitState.resistance !== undefined && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-5 h-5 bg-gradient-to-r from-red-500 to-red-600 rounded-full"></div>
-                  <span className="text-sm font-semibold text-gray-600 uppercase">Resistance</span>
-                </div>
-                <div className="text-4xl font-bold text-red-600">
-                  {circuitState.resistance.toFixed(1)}
-                  <span className="text-lg text-gray-500 ml-2">Ω</span>
-                </div>
-              </div>
-            )}
-
-            {/* Frequency (if applicable) */}
-            {circuitState.frequency !== undefined && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Volume2 className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-semibold text-gray-600 uppercase">Frequency</span>
-                </div>
-                <div className="text-4xl font-bold text-purple-600">
-                  {circuitState.frequency.toFixed(0)}
-                  <span className="text-lg text-gray-500 ml-2">Hz</span>
-                </div>
-              </div>
-            )}
-
-            {/* Info Footer */}
-            <div className="mt-6 pt-4 border-t-2 border-blue-200 text-xs text-gray-500 text-center">
-              Controlled from staff panel • Real-time sync &lt; 200ms
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Restore Button - if panel closed */}
-      {!showValueBox && (
-        <button
-          onClick={() => setShowValueBox(true)}
-          className="absolute bottom-8 right-8 z-40 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg font-semibold"
-        >
-          Show Values
-        </button>
-      )}
-
-      {/* Disconnection Warning - Full Screen Overlay */}
+      {/* Waiting overlay when disconnected */}
       {!isConnected && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white rounded-3xl p-12 text-center max-w-lg shadow-2xl border-4 border-red-500">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-3xl font-bold text-red-600 mb-3">Control Panel Offline</h2>
-            <p className="text-gray-600 text-lg mb-6">
-              Waiting for the staff control panel to connect...
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-40">
+          <div className="bg-slate-800 rounded-3xl p-12 text-center max-w-lg border-2 border-red-500/50 shadow-2xl">
+            <div className="text-6xl mb-4">📡</div>
+            <h2 className="text-3xl font-bold text-red-400 mb-3">Control Panel Offline</h2>
+            <p className="text-slate-300 text-lg mb-6">
+              Waiting for the control panel to connect...
             </p>
-            <p className="text-sm text-gray-500">
-              Ensure the control panel is running on http://localhost:3002
+            <p className="text-sm text-slate-500">
+              Ensure the server is running on http://localhost:3002
             </p>
           </div>
         </div>
       )}
+    </div>
+  );
+};
 
-      {/* Footer Status Bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-900/90 to-blue-900/70 backdrop-blur text-white p-4 z-30">
-        <div className="flex justify-between items-center text-sm">
-          <div>
-            <span className="font-semibold">Status:</span>{' '}
-            <span className={isConnected ? 'text-green-300' : 'text-red-300'}>
-              {isConnected ? '✓ Connected to Control Panel' : '✗ Waiting for Control Panel'}
+// Home Display - Shows waiting state with logo
+const HomeDisplay: React.FC = () => {
+  return (
+    <div className="w-full h-full flex items-center justify-center relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%)' }}>
+
+      {/* Animated background dots - Blue bubbles for light mode */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(30)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-3 h-3 bg-blue-400/20 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `pulse ${2 + Math.random() * 3}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+        {/* Left Side: Text Content */}
+        <div className="flex flex-col items-start text-left space-y-8">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-none">
+            <span className="text-slate-900">Electronics</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+              Universe
             </span>
+          </h1>
+
+          <p className="text-slate-600 text-2xl font-medium max-w-lg leading-relaxed">
+            Interactively explore the fundamental components of modern electronics.
+          </p>
+
+          <div className="flex flex-wrap gap-3 mt-4">
+            {['Resistor', 'Capacitor', 'Inductor', 'Diode'].map((name, i) => (
+              <div
+                key={name}
+                className="px-6 py-3 bg-white/60 backdrop-blur-sm rounded-xl border border-slate-200 text-slate-700 font-bold shadow-sm"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                {name}
+              </div>
+            ))}
           </div>
-          <div className="text-blue-200">Circuit Display v1.0 | Real-time Learning System</div>
+
+          <p className="text-slate-500 text-lg mt-8 animate-pulse flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+            Select a component from the Control Panel to begin
+          </p>
         </div>
+
+        {/* Right Side: Logo */}
+        <div className="flex justify-center items-center relative">
+          {/* Subtle glow behind logo */}
+          <div className="absolute inset-0 bg-purple-500/10 blur-[100px] rounded-full scale-110" />
+          <div className="transform hover:scale-105 transition-transform duration-700 ease-in-out">
+            <ElectronicsLogo size={500} animated={true} />
+          </div>
+        </div>
+
       </div>
     </div>
   );

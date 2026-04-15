@@ -1,206 +1,183 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { Zap, Info } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
-// Socket connection
 const socket = io('http://localhost:3002/inductor');
-
 type CircuitMode = 'simple' | 'series' | 'parallel';
+interface InductorValues { voltage: number; l1: number; l2: number; currentRate: number; }
+type FC = 'voltage' | 'currentRate' | 'l1' | 'l2';
 
-interface InductorValues {
-    voltage: number;
-    l1: number; // mH
-    l2: number; // mH
-    currentRate: number; // A/s
-}
+const CTRL = [
+    { key: 'voltage'     as FC, label: 'Voltage',      kbd: 'A', unit: 'V',   color: 'text-blue-600',   accent: 'accent-blue-600',   min: 1, max: 24,  step: 1, lo: '1V',   hi: '24V'    },
+    { key: 'currentRate' as FC, label: 'dI/dt',         kbd: 'B', unit: 'A/s', color: 'text-purple-600', accent: 'accent-purple-600', min: 1, max: 20,  step: 1, lo: '1A/s', hi: '20A/s'  },
+    { key: 'l1'          as FC, label: 'Inductance L₁', kbd: 'C', unit: 'mH',  color: 'text-indigo-600', accent: 'accent-indigo-600', min: 1, max: 100, step: 5, lo: '1mH',  hi: '100mH'  },
+    { key: 'l2'          as FC, label: 'Inductance L₂', kbd: 'D', unit: 'mH',  color: 'text-indigo-600', accent: 'accent-indigo-600', min: 1, max: 100, step: 5, lo: '1mH',  hi: '100mH'  },
+];
 
-const InductorControls: React.FC = () => {
-    const [mode, setMode] = useState<CircuitMode>('simple');
-    const [values, setValues] = useState<InductorValues>({
-        voltage: 12,
-        l1: 10,
-        l2: 20,
-        currentRate: 5,
-    });
-    const [currentDirection, setCurrentDirection] = useState<'forward' | 'reverse'>('forward');
-    const [connected, setConnected] = useState(false);
+export default function InductorControls() {
+    const [mode, setMode]   = useState<CircuitMode>('simple');
+    const [val, setVal]     = useState<InductorValues>({ voltage: 12, l1: 10, l2: 20, currentRate: 5 });
+    const [dir, setDir]     = useState<'forward'|'reverse'>('forward');
+    const [con, setCon]     = useState(false);
+    const [focus, setFocus] = useState<FC>('voltage');
 
     useEffect(() => {
-        socket.on('connect', () => setConnected(true));
-        socket.on('disconnect', () => setConnected(false));
-
-        socket.on('initialState', (state: any) => {
-            if (state) {
-                setMode(state.mode);
-                setValues(state.values);
-                setCurrentDirection(state.currentDirection);
-            }
-        });
-
-        socket.on('stateUpdated', (state: any) => {
-            if (state) {
-                setMode(state.mode);
-                setValues(state.values);
-                setCurrentDirection(state.currentDirection);
-            }
-        });
-
-        return () => {
-            socket.off('connect');
-            socket.off('disconnect');
-            socket.off('initialState');
-            socket.off('stateUpdated');
-        };
+        socket.on('connect', () => setCon(true));
+        socket.on('disconnect', () => setCon(false));
+        socket.on('initialState', (s: any) => { if (s) { setMode(s.mode); setVal(s.values); setDir(s.currentDirection); } });
+        socket.on('stateUpdated', (s: any) => { if (s) { setMode(s.mode); setVal(s.values); setDir(s.currentDirection); } });
+        return () => { socket.off('connect'); socket.off('disconnect'); socket.off('initialState'); socket.off('stateUpdated'); };
     }, []);
 
-    const updateState = (updates: any) => {
-        socket.emit('updateState', updates);
-        // Optimistic update
-        if (updates.mode) setMode(updates.mode);
-        if (updates.values) setValues({ ...values, ...updates.values });
-        if (updates.currentDirection) setCurrentDirection(updates.currentDirection);
+    const emit = useCallback((u: any) => {
+        socket.emit('updateState', u);
+        if (u.mode) setMode(u.mode);
+        if (u.values) setVal(p => ({ ...p, ...u.values }));
+        if (u.currentDirection) setDir(u.currentDirection);
+    }, []);
+
+    useEffect(() => {
+        const h = (e: KeyboardEvent) => {
+            if (e.key === '1') emit({ mode: 'simple' });
+            else if (e.key === '2') emit({ mode: 'series' });
+            else if (e.key === '3') emit({ mode: 'parallel' });
+            const k = e.key.toLowerCase();
+            if (k === 'a') { setFocus('voltage');     return; }
+            if (k === 'b') { setFocus('currentRate'); return; }
+            if (k === 'c') { setFocus('l1');          return; }
+            if (k === 'd') { if (mode !== 'simple') setFocus('l2'); return; }
+            if (k === 'f') { emit({ currentDirection: dir === 'forward' ? 'reverse' : 'forward' }); return; }
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const d = e.key === 'ArrowUp' ? 1 : -1;
+                const c = CTRL.find(x => x.key === focus)!;
+                const cur = focus === 'voltage' ? val.voltage : focus === 'currentRate' ? val.currentRate : focus === 'l1' ? val.l1 : val.l2;
+                const next = Math.max(c.min, Math.min(c.max, cur + d * c.step));
+                if (focus === 'voltage')     emit({ values: { ...val, voltage: next } });
+                else if (focus === 'currentRate') emit({ values: { ...val, currentRate: next } });
+                else if (focus === 'l1')     emit({ values: { ...val, l1: next } });
+                else if (focus === 'l2' && mode !== 'simple') emit({ values: { ...val, l2: next } });
+            }
+        };
+        window.addEventListener('keydown', h);
+        return () => window.removeEventListener('keydown', h);
+    }, [emit, val, mode, focus, dir]);
+
+    const getV = (k: FC) => k === 'voltage' ? val.voltage : k === 'currentRate' ? val.currentRate : k === 'l1' ? val.l1 : val.l2;
+    const onChange = (k: FC, v: number) => {
+        if (k === 'voltage')     emit({ values: { ...val, voltage: v } });
+        else if (k === 'currentRate') emit({ values: { ...val, currentRate: v } });
+        else if (k === 'l1')    emit({ values: { ...val, l1: v } });
+        else                     emit({ values: { ...val, l2: v } });
     };
 
-    // Derived values
-    const getTotalInductance = () => {
-        switch (mode) {
-            case 'simple': return values.l1;
-            case 'series': return values.l1 + values.l2;
-            case 'parallel': return (values.l1 * values.l2) / (values.l1 + values.l2);
-        }
-    };
-
-    const getInducedVoltage = () => {
-        const L = getTotalInductance() / 1000; // Convert mH to H
-        return (L * values.currentRate).toFixed(2);
-    };
-
-    const getCurrent = () => {
-        return (values.voltage / 10).toFixed(2);
-    };
-
-    const totalInductance = getTotalInductance();
-    const inducedVoltage = getInducedVoltage();
-    const current = getCurrent();
-
-    const updateValue = (key: keyof InductorValues, value: number) => {
-        const newValues = { ...values, [key]: value };
-        updateState({ values: newValues });
-    };
+    const totalL = mode === 'simple' ? val.l1 : mode === 'series' ? val.l1 + val.l2 : (val.l1 * val.l2) / (val.l1 + val.l2);
+    const vInduced = ((totalL / 1000) * val.currentRate).toFixed(2);
+    const I = (val.voltage / 10).toFixed(2);
 
     return (
-        <div className="min-h-screen bg-slate-50 p-8 flex flex-col items-center justify-center">
-            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white">
-                    <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-2xl font-black tracking-tight">Inductor Controls</h2>
-                        <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-red-400'}`}></div>
+        <div className="h-screen w-full bg-slate-100 flex flex-col overflow-hidden">
+            {/* ── Header ── */}
+            <header className="bg-gradient-to-r from-blue-600 to-indigo-700 px-4 py-2 text-white flex items-center justify-between shadow flex-shrink-0">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                        <Zap className="w-4 h-4" fill="currentColor" />
                     </div>
-                    <p className="text-blue-100 font-medium">Remote Control Panel</p>
+                    <div>
+                        <p className="text-base font-black leading-none">Inductor Controls</p>
+                        <p className="text-blue-100 text-[10px]">Remote Control Panel</p>
+                    </div>
                 </div>
 
-                <div className="p-6 space-y-8">
-                    {/* Mode Selection */}
-                    <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-xl">
-                        {(['simple', 'series', 'parallel'] as CircuitMode[]).map((m) => (
-                            <button
-                                key={m}
-                                onClick={() => updateState({ mode: m })}
-                                className={`py-2 rounded-lg text-sm font-bold transition-all ${mode === m ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
-                                    }`}
-                            >
-                                {m.charAt(0).toUpperCase() + m.slice(1)}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Direction */}
-                    <div className="flex items-center justify-between p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-                        <span className="font-bold text-slate-700">Current Direction</span>
-                        <button
-                            onClick={() => updateState({ currentDirection: currentDirection === 'forward' ? 'reverse' : 'forward' })}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"
-                        >
-                            {currentDirection === 'forward' ? 'Forward ➡️' : 'Reverse ⬅️'}
+                <div className="flex items-center gap-1.5 bg-white/10 p-1 rounded-lg">
+                    {(['simple','series','parallel'] as CircuitMode[]).map((m, i) => (
+                        <button key={m} onClick={() => emit({ mode: m })}
+                            className={`relative px-3 py-1 rounded-md text-xs font-bold transition-all ${mode === m ? 'bg-white text-blue-600 shadow scale-105' : 'text-white/80 hover:bg-white/10'}`}>
+                            {m[0].toUpperCase()+m.slice(1)}
+                            <span className="absolute -top-1 -right-1 text-[8px] bg-blue-900 text-white w-3.5 h-3.5 rounded-full flex items-center justify-center">{i+1}</span>
                         </button>
-                    </div>
+                    ))}
+                </div>
 
-                    {/* Sliders / Controls */}
-                    <div className="space-y-6">
-                        {/* Voltage */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-slate-700">Voltage</span>
-                                <span className="font-bold text-blue-600">{values.voltage}V</span>
-                            </div>
-                            <input
-                                type="range" min="1" max="24" value={values.voltage}
-                                onChange={(e) => updateValue('voltage', parseInt(e.target.value))}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            />
-                        </div>
+                <button onClick={() => emit({ currentDirection: dir === 'forward' ? 'reverse' : 'forward' })}
+                    className="bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <kbd className="text-[9px] px-1 bg-white/20 rounded">F</kbd>
+                    {dir === 'forward' ? 'Forward ➡️' : 'Reverse ⬅️'}
+                </button>
 
-                        {/* dI/dt */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-slate-700">Current Rate (dI/dt)</span>
-                                <span className="font-bold text-purple-600">{values.currentRate} A/s</span>
-                            </div>
-                            <input
-                                type="range" min="1" max="20" value={values.currentRate}
-                                onChange={(e) => updateValue('currentRate', parseInt(e.target.value))}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                            />
-                        </div>
+                <div className="flex items-center gap-1 text-[10px] text-slate-300">
+                    {['A','B','C','D'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
+                    <span>select •</span>
+                    {['↑','↓'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
+                    <span>adjust</span>
+                </div>
 
-                        {/* L1 */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="font-bold text-slate-700">Inductance L1</span>
-                                <span className="font-bold text-indigo-600">{values.l1}mH</span>
-                            </div>
-                            <input
-                                type="range" min="1" max="100" step="5" value={values.l1}
-                                onChange={(e) => updateValue('l1', parseInt(e.target.value))}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                            />
-                        </div>
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${con ? 'bg-emerald-500/20 text-emerald-100' : 'bg-red-500/20 text-red-100'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${con ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}/>
+                    {con ? 'Connected' : 'Disconnected'}
+                </div>
+            </header>
 
-                        {/* L2 */}
-                        {mode !== 'simple' && (
-                            <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
-                                <div className="flex justify-between">
-                                    <span className="font-bold text-slate-700">Inductance L2</span>
-                                    <span className="font-bold text-indigo-600">{values.l2}mH</span>
+            {/* ── Body ── */}
+            <div className="flex-1 p-3 flex gap-3 min-h-0 overflow-hidden">
+                {/* Controls column */}
+                <div className="flex-1 flex flex-col gap-2 min-h-0">
+                    {CTRL.map(c => {
+                        const disabled = c.key === 'l2' && mode === 'simple';
+                        const focused  = focus === c.key;
+                        const v = getV(c.key);
+                        return (
+                            <div key={c.key} onClick={() => { if (!disabled) setFocus(c.key); }}
+                                className={`flex items-center gap-4 bg-white rounded-xl px-4 py-2.5 border-2 cursor-pointer transition-all flex-1
+                                    ${disabled ? 'opacity-40 pointer-events-none' : ''}
+                                    ${focused  ? 'border-blue-400 ring-2 ring-blue-100 shadow-md' : 'border-transparent hover:border-slate-200'}`}>
+                                <div className="w-40 shrink-0 border-r border-slate-100 pr-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-semibold text-slate-500">{c.label}</span>
+                                        <kbd className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${focused ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{c.kbd}</kbd>
+                                    </div>
+                                    <div className="flex items-baseline gap-1 mt-0.5">
+                                        <span className={`font-black text-2xl ${c.color}`}>{v}</span>
+                                        <span className={`font-bold text-xs ${c.color} opacity-60`}>{c.unit}</span>
+                                    </div>
                                 </div>
-                                <input
-                                    type="range" min="1" max="100" step="5" value={values.l2}
-                                    onChange={(e) => updateValue('l2', parseInt(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                />
+                                <div className="flex-1">
+                                    <input type="range" min={c.min} max={c.max} step={c.step} value={v}
+                                        onChange={e => onChange(c.key, +e.target.value)}
+                                        className={`w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer ${c.accent}`}/>
+                                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                                        <span>{c.lo}</span><span>{c.hi}</span>
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                    </div>
+                        );
+                    })}
+                </div>
 
-                    {/* Stats */}
-                    <div className="bg-slate-900 rounded-2xl p-4 text-white space-y-2 shadow-xl">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-400 font-medium">Total Inductance</span>
-                            <span className="font-bold text-emerald-400">{totalInductance.toFixed(1)} mH</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-400 font-medium">Induced Voltage</span>
-                            <span className="font-bold text-amber-400">{inducedVoltage} V</span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-400 font-medium">Current</span>
-                            <span className="font-bold text-cyan-400">{current} A</span>
-                        </div>
+                {/* Stats panel */}
+                <div className="w-60 bg-white rounded-xl p-3 border border-slate-200 shadow flex flex-col gap-2">
+                    <div className="text-center py-1.5 bg-blue-50 rounded-lg border border-blue-100 font-mono font-bold text-blue-700 text-sm">
+                        {mode === 'simple' && 'L = L₁'}
+                        {mode === 'series' && 'L = L₁ + L₂'}
+                        {mode === 'parallel' && '1/L = 1/L₁ + 1/L₂'}
+                    </div>
+                    <div className="flex flex-col gap-2 flex-1">
+                        {[
+                            { label: 'Total Inductance',  sub: '',             val: `${totalL.toFixed(1)} mH`, bg: 'bg-emerald-50 border-emerald-100', cl: 'text-emerald-700', vc: 'text-emerald-600' },
+                            { label: 'Induced Voltage',   sub: 'V = L×(dI/dt)', val: `${vInduced} V`,           bg: 'bg-amber-50 border-amber-100',    cl: 'text-amber-700',  vc: 'text-amber-600' },
+                            { label: 'Current',           sub: '',             val: `${I} A`,                  bg: 'bg-cyan-50 border-cyan-100',      cl: 'text-cyan-700',   vc: 'text-cyan-600' },
+                        ].map(s => (
+                            <div key={s.label} className={`flex justify-between items-center p-2.5 rounded-lg border flex-1 ${s.bg}`}>
+                                <div>
+                                    <p className={`text-xs font-semibold ${s.cl}`}>{s.label}</p>
+                                    {s.sub && <p className="text-[9px] font-mono text-slate-400 mt-0.5">{s.sub}</p>}
+                                </div>
+                                <span className={`font-black text-lg ${s.vc}`}>{s.val}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
         </div>
     );
-};
-
-export default InductorControls;
+}
