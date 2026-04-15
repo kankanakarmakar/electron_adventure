@@ -407,9 +407,9 @@ const CapacitorCircuit: React.FC = () => {
                                     {/* Right plate */}
                                     <rect x="21" y="30" width="14" height="80" rx="3" fill={`rgba(236, 72, 153, ${0.5 + animation.chargeLevel * 0.5})`} stroke="#ec4899" strokeWidth="2" />
                                     <text x="50" y="75" textAnchor="start" fontSize="16" fontWeight="900" fill="#be185d">+</text>
-                                    {/* Labels - Left side (consistent with series/parallel) */}
-                                    <text x="-55" y="50" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₁</text>
-                                    <text x="-55" y="70" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance}µF</text>
+                                    {/* Labels - Left side, placed above and below the wire (which enters at relative y=60) */}
+                                    <text x="-55" y="45" textAnchor="end" fontSize="16" fontWeight="bold" fill="#1e293b">C₁</text>
+                                    <text x="-55" y="85" textAnchor="end" fontSize="13" fontWeight="bold" fill="#475569">{state.capacitance}µF</text>
                                 </g>
 
                                 {/* Battery - Bottom (only during charging phases) */}

@@ -129,17 +129,9 @@ export default function CapacitorControls() {
                     {(st.stage === 'discharge'|| st.stage === 'discharged'|| st.stage === 'disconnecting') && <button onClick={reset} disabled={st.stage !== 'discharged'} className="bg-purple-500 hover:bg-purple-600 px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50"><RotateCcw className="w-3 h-3"/>Reset</button>}
                 </div>
 
-                <div className="flex items-center gap-1 text-[10px] text-slate-300">
-                    {['A','B','C','D'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
-                    <span>sel •</span>
-                    <kbd className="px-1 bg-white/20 rounded font-mono">Space</kbd>
-                    <span>act</span>
-                </div>
 
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${con ? 'bg-emerald-500/20 text-emerald-100' : 'bg-red-500/20 text-red-100'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${con ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}/>
-                    {con ? 'Connected' : 'Disconnected'}
-                </div>
+
+
             </header>
 
             {/* ── Body ── */}
@@ -159,7 +151,6 @@ export default function CapacitorControls() {
                                 <div className="w-40 shrink-0 border-r border-slate-100 pr-4">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-slate-500">{c.label}</span>
-                                        <kbd className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${focused ? 'bg-pink-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{c.kbd}</kbd>
                                     </div>
                                     <div className="flex items-baseline gap-1 mt-0.5">
                                         <span className={`font-black text-2xl ${c.color}`}>{v}</span>

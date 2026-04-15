@@ -102,15 +102,8 @@ const DiodeControls = () => {
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 text-white flex-shrink-0">
                     <div className="flex justify-between items-center">
                         <h2 className="text-2xl font-black tracking-tight">Diode Controls</h2>
-                        <div className={`w-3 h-3 rounded-full ${connected ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-red-400'}`}></div>
                     </div>
-                    {/* Keyboard hint in header */}
-                    <div className="flex gap-3 mt-2 text-[11px] text-blue-100 font-mono flex-wrap">
-                        <span><kbd className="px-1 bg-white/20 rounded">1</kbd>–<kbd className="px-1 bg-white/20 rounded">4</kbd> tabs</span>
-                        <span><kbd className="px-1 bg-white/20 rounded">↑</kbd><kbd className="px-1 bg-white/20 rounded">↓</kbd> voltage</span>
-                        {state.tab === 'breakdown' && <><span><kbd className="px-1 bg-white/20 rounded">Z</kbd> Zener</span><span><kbd className="px-1 bg-white/20 rounded">A</kbd> Avalanche</span></>}
-                        {state.tab === 'intro' && <span><kbd className="px-1 bg-white/20 rounded">Enter</kbd> toggle</span>}
-                    </div>
+                    {/* Keyboard hint removed */}
                 </div>
 
                 {/* Card Body */}
@@ -151,7 +144,7 @@ const DiodeControls = () => {
                                     >
                                         {state.intro.joined ? 'Disconnect Junction' : 'Form Junction'}
                                     </button>
-                                    <p className="text-[11px] text-slate-400 font-mono">Press <kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200">Enter</kbd> to toggle</p>
+
                                 </div>
                             </div>
                         )}
@@ -178,10 +171,7 @@ const DiodeControls = () => {
                                     ${state.forward.voltage >= 0.7 ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
                                     {state.forward.voltage >= 0.7 ? '✓ Diode conducting — current flowing' : '○ Below threshold — diode OFF'}
                                 </div>
-                                <p className="text-center text-[11px] text-slate-400 font-mono">
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> to adjust
-                                </p>
+
                             </div>
                         )}
 
@@ -205,10 +195,7 @@ const DiodeControls = () => {
                                 <div className="mt-2 p-4 rounded-xl text-center text-sm font-bold bg-red-50 text-red-600 border border-red-200">
                                     Diode is blocking — only tiny leakage current (~µA)
                                 </div>
-                                <p className="text-center text-[11px] text-slate-400 font-mono">
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> to adjust
-                                </p>
+
                             </div>
                         )}
 
@@ -223,8 +210,7 @@ const DiodeControls = () => {
                                             ${state.breakdown.type === 'zener' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}
                                     >
                                         Zener (~5V)
-                                        <span className={`absolute top-1 right-1 text-[9px] px-1 rounded font-mono
-                                            ${state.breakdown.type === 'zener' ? 'bg-purple-200 text-purple-700' : 'bg-slate-100 text-slate-400'}`}>Z</span>
+
                                     </button>
                                     <button
                                         onClick={() => updateSubState('breakdown', { type: 'avalanche', voltage: 0 })}
@@ -232,8 +218,7 @@ const DiodeControls = () => {
                                             ${state.breakdown.type === 'avalanche' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 text-slate-400 hover:border-slate-300'}`}
                                     >
                                         Avalanche (&gt;50V)
-                                        <span className={`absolute top-1 right-1 text-[9px] px-1 rounded font-mono
-                                            ${state.breakdown.type === 'avalanche' ? 'bg-purple-200 text-purple-700' : 'bg-slate-100 text-slate-400'}`}>A</span>
+
                                     </button>
                                 </div>
 
@@ -256,12 +241,7 @@ const DiodeControls = () => {
                                         <span>Max</span>
                                     </div>
                                 </div>
-                                <p className="text-center text-[11px] text-slate-400 font-mono">
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200">↑</kbd>
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">↓</kbd> adjust &bull;
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">Z</kbd> Zener &bull;
-                                    <kbd className="px-1.5 py-0.5 bg-slate-100 rounded border border-slate-200 ml-1">A</kbd> Avalanche
-                                </p>
+
                             </div>
                         )}
                     </div>

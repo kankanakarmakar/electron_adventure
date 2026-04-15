@@ -85,34 +85,30 @@ const InductorCircuit: React.FC = () => {
 
                 {/* Info overlay - Inside Card */}
                 {/* Dynamic Info Overlay - Standardized Style */}
-                <div className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-xl border border-cyan-200/50 max-w-md transition-all duration-300">
+                <div className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-xl border border-cyan-200/50 max-w-md transition-all">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-colors duration-500 ${currentOn ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-indigo-500/30' : 'bg-slate-200'}`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-colors duration-500 flex-shrink-0 ${currentOn ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/30' : 'bg-slate-200'}`}>
                             <Zap className={`w-6 h-6 ${currentOn ? 'text-white' : 'text-slate-400'}`} />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-slate-800">{info.title}</h2>
                             <div className={`text-xs font-bold uppercase tracking-wider ${currentOn ? 'text-indigo-600' : 'text-slate-500'}`}>
-                                {currentOn ? 'Field Building / Active' : 'Circuit Open / Inactive'}
+                                {currentOn ? `Field Building · ${currentDirection}` : 'Inactive'}
                             </div>
                         </div>
                     </div>
-                    <p className="text-sm text-slate-600 leading-relaxed min-h-[40px]">
-                        {currentOn
-                            ? "Current is flowing through the coil, generating a magnetic field. The inductor opposes this change, storing energy in the field."
-                            : "No current flows. The magnetic field has collapsed. Close the switch (if available) or wait for simulation cycle."}
-                    </p>
 
-                    {/* Live Stats Row */}
-                    <div className="mt-4 flex items-center gap-3">
-                        <div className="flex-1 bg-slate-100 rounded-lg p-2 flex items-center gap-2">
+                    <p className="text-sm text-slate-600 leading-relaxed mb-4">{info.description}</p>
+
+                    {/* Live Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-slate-100 rounded-lg p-2 text-center flex items-center justify-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${currentOn ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}></div>
-                            <span className="text-xs font-bold text-slate-600">{currentOn ? 'MAGNETIZED' : 'DEMAGNETIZED'}</span>
+                            <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{currentOn ? 'ACTIVE' : 'OFF'}</span>
                         </div>
-                        <div className="bg-slate-800 rounded-lg px-3 py-2 text-center min-w-[100px]">
-                            <div className="text-[10px] text-cyan-400 font-semibold uppercase">Est. Energy</div>
+                        <div className="bg-slate-800 rounded-lg p-2 text-center">
+                            <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Energy</div>
                             <div className="text-sm font-bold text-white">
-                                {/* Simple proportional energy display based on L and State */}
                                 {currentOn ? (0.5 * (mode === 'simple' ? values.l1 : values.l1 + values.l2) * 0.1).toFixed(2) : '0.00'} mJ
                             </div>
                         </div>
@@ -192,17 +188,17 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                 {/* Magnetic field rings - ANIMATED */}
                 {currentOn && mode === 'simple' && (
                     <>
-                        {Array.from({ length: Math.min(Math.ceil(values.l1 / 15), 6) + 2 }, (_, i) => i + 1).map((ring) => (
+                        {Array.from({ length: Math.min(Math.ceil(values.l1 / 15), 5) + 1 }, (_, i) => i + 1).map((ring) => (
                             <ellipse
                                 key={ring}
                                 cx="260"
                                 cy="70"
-                                rx={40 + ring * (20 + values.l1 / 10) * (fieldStrength / 100)}
-                                ry={25 + ring * (14 + values.l1 / 15) * (fieldStrength / 100)}
+                                rx={30 + ring * Math.min(16 + values.l1 / 12, 22) * (fieldStrength / 100)}
+                                ry={18 + ring * Math.min(10 + values.l1 / 18, 14) * (fieldStrength / 100)}
                                 fill="none"
                                 stroke="url(#inductorGradient)"
-                                strokeWidth={1.5 + values.l1 / 50}
-                                opacity={(fieldStrength / 120) * (0.5 + values.l1 / 100)}
+                                strokeWidth={1.5 + values.l1 / 60}
+                                opacity={(fieldStrength / 130) * (0.45 + values.l1 / 120)}
                                 style={{
                                     transformOrigin: '260px 70px',
                                     animation: currentDirection === 'reverse'
@@ -228,7 +224,12 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                                 stroke="url(#inductorGradient)"
                                 strokeWidth="1.5"
                                 opacity={fieldStrength / 160}
-                                style={{ transformOrigin: '182px 70px', animation: `spin-forward ${3 + ring}s linear infinite` }}
+                                style={{
+                                    transformOrigin: '182px 70px',
+                                    animation: currentDirection === 'reverse'
+                                        ? `spin-reverse ${3 + ring}s linear infinite`
+                                        : `spin-forward ${3 + ring}s linear infinite`
+                                }}
                             />
                         ))}
                         {[1, 2, 3].map((ring) => (
@@ -242,7 +243,12 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                                 stroke="url(#inductorGradient)"
                                 strokeWidth="1.5"
                                 opacity={fieldStrength / 160}
-                                style={{ transformOrigin: '312px 70px', animation: `spin-forward ${3 + ring}s linear infinite` }}
+                                style={{
+                                    transformOrigin: '312px 70px',
+                                    animation: currentDirection === 'reverse'
+                                        ? `spin-reverse ${3 + ring}s linear infinite`
+                                        : `spin-forward ${3 + ring}s linear infinite`
+                                }}
                             />
                         ))}
                     </>
@@ -263,7 +269,12 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                                 stroke="url(#inductorGradient)"
                                 strokeWidth="1.5"
                                 opacity={fieldStrength / 160}
-                                style={{ transformOrigin: '282px 40px', animation: `spin-forward ${3 + ring}s linear infinite` }}
+                                style={{
+                                    transformOrigin: '282px 40px',
+                                    animation: currentDirection === 'reverse'
+                                        ? `spin-reverse ${3 + ring}s linear infinite`
+                                        : `spin-forward ${3 + ring}s linear infinite`
+                                }}
                             />
                         ))}
                         {/* L2 Magnetic field (lower branch) */}
@@ -278,7 +289,12 @@ function InductorCircuitCanvas({ mode, values, currentOn, currentDirection }: In
                                 stroke="url(#inductorGradient)"
                                 strokeWidth="1.5"
                                 opacity={fieldStrength / 160}
-                                style={{ transformOrigin: '282px 120px', animation: `spin-forward ${3 + ring}s linear infinite` }}
+                                style={{
+                                    transformOrigin: '282px 120px',
+                                    animation: currentDirection === 'reverse'
+                                        ? `spin-reverse ${3 + ring}s linear infinite`
+                                        : `spin-forward ${3 + ring}s linear infinite`
+                                }}
                             />
                         ))}
                     </>

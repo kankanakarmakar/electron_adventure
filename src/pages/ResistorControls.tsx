@@ -94,17 +94,9 @@ export default function ResistorControls() {
                     ))}
                 </div>
 
-                <div className="flex items-center gap-1 text-[10px] text-slate-300">
-                    {['A','B','C'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
-                    <span>select •</span>
-                    {['↑','↓'].map(k => <kbd key={k} className="px-1 bg-white/20 rounded font-mono">{k}</kbd>)}
-                    <span>adjust</span>
-                </div>
 
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${connected ? 'bg-emerald-500/20 text-emerald-100' : 'bg-red-500/20 text-red-100'}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}/>
-                    {connected ? 'Connected' : 'Disconnected'}
-                </div>
+
+
             </header>
 
             {/* ── Body ── */}
@@ -124,7 +116,6 @@ export default function ResistorControls() {
                                 <div className="w-40 shrink-0 border-r border-slate-100 pr-4">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-semibold text-slate-500">{c.label}</span>
-                                        <kbd className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${focused ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{c.kbd}</kbd>
                                     </div>
                                     <div className="flex items-baseline gap-1 mt-0.5">
                                         <span className={`font-black text-3xl ${c.color}`}>{v}</span>
