@@ -170,23 +170,23 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
     // Draw zigzag resistor symbol with colored bands - LARGER SIZE
     const renderResistor = (x: number, y: number, label: string, ohmValue: number) => (
         <g transform={`translate(${x}, ${y})`}>
-            {/* Resistor body background - cream/beige color - BIGGER */}
-            <rect x="8" y="-20" width="64" height="40" rx="5" fill="#fef3c7" stroke="#d97706" strokeWidth="2" />
+            {/* Resistor body background - cream/beige color - THINNER and LONGER */}
+            <rect x="10" y="-10" width="100" height="20" rx="5" fill="#fef3c7" stroke="#d97706" strokeWidth="2" />
 
-            {/* Color bands on resistor - BIGGER */}
-            <rect x="16" y="-20" width="8" height="40" fill="#ef4444" />
-            <rect x="28" y="-20" width="8" height="40" fill="#f97316" />
-            <rect x="40" y="-20" width="8" height="40" fill="#eab308" />
-            <rect x="52" y="-20" width="8" height="40" fill="#84cc16" />
+            {/* Color bands on resistor */}
+            <rect x="24" y="-10" width="6" height="20" fill="#ef4444" />
+            <rect x="44" y="-10" width="6" height="20" fill="#f97316" />
+            <rect x="64" y="-10" width="6" height="20" fill="#eab308" />
+            <rect x="84" y="-10" width="6" height="20" fill="#84cc16" />
 
             {/* Wire leads */}
-            <line x1="0" y1="0" x2="8" y2="0" stroke="#374151" strokeWidth="3" />
-            <line x1="72" y1="0" x2="80" y2="0" stroke="#374151" strokeWidth="3" />
+            <line x1="0" y1="0" x2="10" y2="0" stroke="#374151" strokeWidth="3" />
+            <line x1="110" y1="0" x2="120" y2="0" stroke="#374151" strokeWidth="3" />
 
             {/* Label above */}
-            <text x="40" y="-32" textAnchor="middle" fill="#1e293b" fontSize="18" fontWeight="bold">{label}</text>
+            <text x="60" y="-24" textAnchor="middle" fill="#1e293b" fontSize="18" fontWeight="bold">{label}</text>
             {/* Value below */}
-            <text x="40" y="48" textAnchor="middle" fill="#1e293b" fontSize="16" fontWeight="bold">{ohmValue}Ω</text>
+            <text x="60" y="32" textAnchor="middle" fill="#1e293b" fontSize="16" fontWeight="bold">{ohmValue}Ω</text>
         </g>
     );
 
@@ -308,9 +308,9 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                 {mode === 'simple' && (
                     <>
                         <line x1="80" y1="254" x2="80" y2="220" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="220" x2="200" y2="220" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(200, 220, 'R1', values.r1)}
-                        <line x1="280" y1="220" x2="410" y2="220" stroke={wireColor} strokeWidth="4" />
+                        <line x1="80" y1="220" x2="180" y2="220" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(180, 220, 'R1', values.r1)}
+                        <line x1="300" y1="220" x2="410" y2="220" stroke={wireColor} strokeWidth="4" />
                         {renderBulb(420, 190, bulbBrightness, bulbOn)}
                         <line x1="430" y1="220" x2="460" y2="220" stroke={wireColor} strokeWidth="4" />
                         <line x1="460" y1="220" x2="460" y2="400" stroke={wireColor} strokeWidth="4" />
@@ -318,7 +318,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                         <line x1="80" y1="400" x2="80" y2="340" stroke={wireColor} strokeWidth="4" />
                         {renderElectrons(
                             [
-                                "80;80;200;280;410;410;430;460;460;80;80",
+                                "80;80;180;300;410;410;430;460;460;80;80",
                                 "340;220;220;220;220;220;220;220;400;400;340"
                             ],
                             12,
@@ -331,11 +331,11 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                 {mode === 'series' && (
                     <>
                         <line x1="80" y1="254" x2="80" y2="220" stroke={wireColor} strokeWidth="4" />
-                        <line x1="80" y1="220" x2="140" y2="220" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(140, 220, 'R1', values.r1)}
-                        <line x1="220" y1="220" x2="250" y2="220" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(250, 220, 'R2', values.r2)}
-                        <line x1="330" y1="220" x2="410" y2="220" stroke={wireColor} strokeWidth="4" />
+                        <line x1="80" y1="220" x2="120" y2="220" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(120, 220, 'R1', values.r1)}
+                        <line x1="240" y1="220" x2="260" y2="220" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(260, 220, 'R2', values.r2)}
+                        <line x1="380" y1="220" x2="410" y2="220" stroke={wireColor} strokeWidth="4" />
                         {renderBulb(420, 190, bulbBrightness, bulbOn)}
                         <line x1="430" y1="220" x2="460" y2="220" stroke={wireColor} strokeWidth="4" />
                         <line x1="460" y1="220" x2="460" y2="400" stroke={wireColor} strokeWidth="4" />
@@ -343,7 +343,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                         <line x1="80" y1="400" x2="80" y2="340" stroke={wireColor} strokeWidth="4" />
                         {renderElectrons(
                             [
-                                "80;80;140;220;250;330;410;410;430;460;460;80;80",
+                                "80;80;120;240;260;380;410;410;430;460;460;80;80",
                                 "340;220;220;220;220;220;220;220;220;220;400;400;340"
                             ],
                             10,
@@ -361,16 +361,16 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
 
                         {/* Upper branch - R1 (Moved down from 165 to 170) */}
                         <line x1="160" y1="220" x2="160" y2="170" stroke={wireColor} strokeWidth="4" />
-                        <line x1="160" y1="170" x2="190" y2="170" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(190, 170, 'R1', values.r1)}
-                        <line x1="270" y1="170" x2="300" y2="170" stroke={wireColor} strokeWidth="4" />
+                        <line x1="160" y1="170" x2="170" y2="170" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(170, 170, 'R1', values.r1)}
+                        <line x1="290" y1="170" x2="300" y2="170" stroke={wireColor} strokeWidth="4" />
                         <line x1="300" y1="170" x2="300" y2="220" stroke={wireColor} strokeWidth="4" />
 
                         {/* Lower branch - R2 (Moved up from 275 to 270) */}
                         <line x1="160" y1="220" x2="160" y2="270" stroke={wireColor} strokeWidth="4" />
-                        <line x1="160" y1="270" x2="190" y2="270" stroke={wireColor} strokeWidth="4" />
-                        {renderResistor(190, 270, 'R2', values.r2)}
-                        <line x1="270" y1="270" x2="300" y2="270" stroke={wireColor} strokeWidth="4" />
+                        <line x1="160" y1="270" x2="170" y2="270" stroke={wireColor} strokeWidth="4" />
+                        {renderResistor(170, 270, 'R2', values.r2)}
+                        <line x1="290" y1="270" x2="300" y2="270" stroke={wireColor} strokeWidth="4" />
                         <line x1="300" y1="270" x2="300" y2="220" stroke={wireColor} strokeWidth="4" />
                         <circle cx="300" cy="220" r="4" fill={wireColor} />
 
@@ -389,7 +389,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="7" fill="#60a5fa" opacity="0.9">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;160;190;270;300;300;410;410;430;460;460;80;80"
+                                                values="80;80;160;160;170;290;300;300;410;410;430;460;460;80;80"
                                                 dur={`${electronSpeed * 1.5}s`}
                                                 begin={`${i * electronSpeed * 0.5}s`}
                                                 repeatCount="indefinite"
@@ -405,7 +405,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="3" fill="#ffffff" opacity="0.9">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;160;190;270;300;300;410;410;430;460;460;80;80"
+                                                values="80;80;160;160;170;290;300;300;410;410;430;460;460;80;80"
                                                 dur={`${electronSpeed * 1.5}s`}
                                                 begin={`${i * electronSpeed * 0.5}s`}
                                                 repeatCount="indefinite"
@@ -426,7 +426,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="7" fill="#60a5fa" opacity="0.9">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;160;190;270;300;300;410;410;430;460;460;80;80"
+                                                values="80;80;160;160;170;290;300;300;410;410;430;460;460;80;80"
                                                 dur={`${electronSpeed * 1.5}s`}
                                                 begin={`${i * electronSpeed * 0.5 + 0.25}s`}
                                                 repeatCount="indefinite"
@@ -442,7 +442,7 @@ function ResistorCircuitCanvas({ mode, values, bulbOn, bulbBrightness, electronS
                                         <circle r="3" fill="#ffffff" opacity="0.9">
                                             <animate
                                                 attributeName="cx"
-                                                values="80;80;160;160;190;270;300;300;410;410;430;460;460;80;80"
+                                                values="80;80;160;160;170;290;300;300;410;410;430;460;460;80;80"
                                                 dur={`${electronSpeed * 1.5}s`}
                                                 begin={`${i * electronSpeed * 0.5 + 0.25}s`}
                                                 repeatCount="indefinite"

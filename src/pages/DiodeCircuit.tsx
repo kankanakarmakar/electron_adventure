@@ -159,6 +159,13 @@ const DiodeCircuit = () => {
                 <g>
                     <rect x={pX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#pTypeGrad)" stroke="rgba(255,120,180,0.45)" strokeWidth="2" filter="url(#softGlow)" />
                     <text x={pX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-[#be185d] text-sm font-bold">P-Type Semiconductor</text>
+                    {Array.from({ length: (cols - 1) * (rows - 1) }).map((_, i) => {
+                        const col = i % (cols - 1); const row = Math.floor(i / (cols - 1));
+                        const gapX = pX + paddingX + col * spacingX + spacingX / 2;
+                        const gapY = rectY + paddingY + row * spacingY + spacingY / 2;
+                        if (joined && gapX > boundaryX - depletionHalfWidth) return null;
+                        return <text key={`p-naked-${i}`} x={gapX} y={gapY + 6} textAnchor="middle" fill="#be185d" fontSize="20" fontWeight="bold" opacity="0.6">+</text>;
+                    })}
                     {holes.map(h => {
                         const drift = joined ? Math.max(0, (boundaryX - h.baseX) * 0.02 * depletionProgress) : Math.sin((t + h.id * 10) * 0.02) * 0.9;
                         const cx = h.baseX + drift;
@@ -175,6 +182,13 @@ const DiodeCircuit = () => {
                 <g>
                     <rect x={nX} y={rectY} width={blockW} height={rectH} rx="18" fill="url(#nTypeGrad)" stroke="rgba(120,180,255,0.45)" strokeWidth="2" filter="url(#softGlow)" />
                     <text x={nX + blockW / 2} y={rectY - 16} textAnchor="middle" className="fill-[#1e40af] text-sm font-bold">N-Type Semiconductor</text>
+                    {Array.from({ length: (cols - 1) * (rows - 1) }).map((_, i) => {
+                        const col = i % (cols - 1); const row = Math.floor(i / (cols - 1));
+                        const gapX = nX + paddingX + col * spacingX + spacingX / 2;
+                        const gapY = rectY + paddingY + row * spacingY + spacingY / 2;
+                        if (joined && gapX < boundaryX + depletionHalfWidth) return null;
+                        return <text key={`n-naked-${i}`} x={gapX} y={gapY + 5} textAnchor="middle" fill="#1e40af" fontSize="22" fontWeight="bold" opacity="0.6">−</text>;
+                    })}
                     {electrons.map(e => {
                         const drift = joined ? -Math.max(0, (e.baseX - boundaryX) * 0.02 * depletionProgress) : Math.sin((t + e.id * 9) * 0.02) * 0.9;
                         const cx = e.baseX + drift;
@@ -277,6 +291,14 @@ const DiodeCircuit = () => {
                             else { ex = 35; ey = 230 - ((progress - seg3) / (1 - seg3)) * 37; }
                             return <circle key={`e-wire-${i}`} cx={ex} cy={ey} r="5" fill="#1e40af" filter="url(#glowForward)" style={{ opacity: 0.9 }} />;
                         })}
+                        {Array.from({ length: 8 }).map((_, i) => {
+                            const diodePathLength = nX + boxW - pX;
+                            const progress = ((t * 3 + i * (diodePathLength / 8)) % diodePathLength) / diodePathLength;
+                            const ex = pX + progress * diodePathLength;
+                            const ey = 140;
+                            const fill = ex < boundary ? "#22c55e" : "#1e40af";
+                            return <circle key={`e-diode-${i}`} cx={ex} cy={ey} r="5" fill={fill} filter="url(#glowForward)" style={{ opacity: 0.9 }} />;
+                        })}
                     </g>
                 )}
 
@@ -290,6 +312,12 @@ const DiodeCircuit = () => {
 
                 <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#ec4899" strokeWidth="2" />
                 <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#be185d" fontSize="14" fontWeight="bold">P-type</text>
+                {Array.from({ length: (cols - 1) * (rows - 1) }).map((_, i) => {
+                    const col = i % (cols - 1); const row = Math.floor(i / (cols - 1));
+                    const gapX = pX + paddingX + col * spacingX + spacingX / 2;
+                    const gapY = 80 + paddingY + row * spacingY + spacingY / 2;
+                    return <text key={`p-naked-${i}`} x={gapX} y={gapY + 6} textAnchor="middle" fill="#be185d" fontSize="20" fontWeight="bold" opacity="0.6">+</text>;
+                })}
                 {Array.from({ length: cols * rows }).map((_, i) => {
                     const col = i % cols; const row = Math.floor(i / cols);
                     const baseX = pX + paddingX + col * spacingX; const baseY = 80 + paddingY + row * spacingY;
@@ -308,6 +336,12 @@ const DiodeCircuit = () => {
 
                 <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="2" />
                 <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e40af" fontSize="14" fontWeight="bold">N-type</text>
+                {Array.from({ length: (cols - 1) * (rows - 1) }).map((_, i) => {
+                    const col = i % (cols - 1); const row = Math.floor(i / (cols - 1));
+                    const gapX = nX + paddingX + col * spacingX + spacingX / 2;
+                    const gapY = 80 + paddingY + row * spacingY + spacingY / 2;
+                    return <text key={`n-naked-${i}`} x={gapX} y={gapY + 5} textAnchor="middle" fill="#1e40af" fontSize="22" fontWeight="bold" opacity="0.6">−</text>;
+                })}
                 {Array.from({ length: cols * rows }).map((_, i) => {
                     const col = i % cols; const row = Math.floor(i / cols);
                     const baseX = nX + paddingX + col * spacingX; const baseY = 80 + paddingY + row * spacingY;
@@ -374,6 +408,13 @@ const DiodeCircuit = () => {
                 <rect x={pX} y={80} width={boxW} height={120} rx="12" fill="rgba(244,114,182,0.25)" stroke="#be185d" strokeWidth="3" />
                 <text x={pX + boxW / 2} y={70} textAnchor="middle" fill="#831843" fontSize="14" fontWeight="bold">P-type</text>
 
+                {Array.from({ length: 4 * 3 }).map((_, i) => {
+                    const col = i % 4; const row = Math.floor(i / 4);
+                    const gapX = pX + 15 + col * ((boxW - 30) / 4) + ((boxW - 30) / 4) / 2;
+                    const gapY = 80 + 15 + row * ((120 - 30) / 3) + ((120 - 30) / 3) / 2;
+                    return <text key={`p-naked-${i}`} x={gapX} y={gapY + 6} textAnchor="middle" fill="#be185d" fontSize="20" fontWeight="bold" opacity="0.6">+</text>;
+                })}
+
                 {/* P-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
                 {Array.from({ length: 20 }).map((_, i) => {
                     const cols = 5;
@@ -405,6 +446,13 @@ const DiodeCircuit = () => {
                 {/* N box - Majority: ELECTRONS (⊖), Minority: holes (⊕) */}
                 <rect x={nX} y={80} width={boxW} height={120} rx="12" fill="rgba(96,165,250,0.25)" stroke="#1e40af" strokeWidth="3" />
                 <text x={nX + boxW / 2} y={70} textAnchor="middle" fill="#1e3a5f" fontSize="14" fontWeight="bold">N-type</text>
+
+                {Array.from({ length: 4 * 3 }).map((_, i) => {
+                    const col = i % 4; const row = Math.floor(i / 4);
+                    const gapX = nX + 15 + col * ((boxW - 30) / 4) + ((boxW - 30) / 4) / 2;
+                    const gapY = 80 + 15 + row * ((120 - 30) / 3) + ((120 - 30) / 3) / 2;
+                    return <text key={`n-naked-${i}`} x={gapX} y={gapY + 5} textAnchor="middle" fill="#1e40af" fontSize="22" fontWeight="bold" opacity="0.6">−</text>;
+                })}
 
                 {/* N-type carriers - 5 cols × 4 rows = 20 carriers matching forward bias */}
                 {Array.from({ length: 20 }).map((_, i) => {
@@ -521,6 +569,10 @@ const DiodeCircuit = () => {
                 <rect x="140" y="60" width="80" height="100" rx="10" fill="rgba(244,114,182,0.25)" stroke="#be185d" strokeWidth="3" />
                 <text x="180" y="50" textAnchor="middle" fill="#831843" fontSize="12" fontWeight="bold">P-type</text>
 
+                {Array.from({ length: 2 }).map((_, i) => (
+                    <text key={`p-naked-${i}`} x={170} y={94 + i * 28 + 6} textAnchor="middle" fill="#be185d" fontSize="20" fontWeight="bold" opacity="0.6">+</text>
+                ))}
+
                 {/* P-type carriers */}
                 {Array.from({ length: 6 }).map((_, i) => {
                     const col = i % 2;
@@ -560,6 +612,10 @@ const DiodeCircuit = () => {
                 {/* N-type block */}
                 <rect x="380" y="60" width="80" height="100" rx="10" fill="rgba(96,165,250,0.25)" stroke="#3b82f6" strokeWidth="3" />
                 <text x="420" y="50" textAnchor="middle" fill="#1e3a5f" fontSize="12" fontWeight="bold">N-type</text>
+
+                {Array.from({ length: 2 }).map((_, i) => (
+                    <text key={`n-naked-${i}`} x={415} y={94 + i * 28 + 5} textAnchor="middle" fill="#1e40af" fontSize="22" fontWeight="bold" opacity="0.6">−</text>
+                ))}
 
                 {/* N-type carriers */}
                 {Array.from({ length: 6 }).map((_, i) => {

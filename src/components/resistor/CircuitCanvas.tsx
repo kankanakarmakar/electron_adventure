@@ -48,8 +48,8 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const bottomWireY = bottom - componentSize * 1.0;
 
         // Resistor on top wire
-        const r1Width = componentSize * 2.0;
-        const r1Height = componentSize * 0.9;
+        const r1Width = componentSize * 2.6;
+        const r1Height = componentSize * 0.6;
         const r1X = centerX - componentSize * 1.5;
         const r1Y = simpleTopWireY - r1Height / 2;
         const r1LeftLead = r1X;
@@ -106,16 +106,16 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const seriesBottomRailY = bottom - componentSize * 1.0;
 
         // R1 on top wire
-        const seriesR1Width = componentSize * 1.7;
-        const seriesR1Height = componentSize * 0.85;
+        const seriesR1Width = componentSize * 2.2;
+        const seriesR1Height = componentSize * 0.6;
         const seriesR1X = centerX - componentSize * 3.0;
         const seriesR1Y = seriesTopRailY - seriesR1Height / 2;
         const seriesR1Left = seriesR1X;
         const seriesR1Right = seriesR1X + seriesR1Width;
 
         // R2 on top wire
-        const seriesR2Width = componentSize * 1.7;
-        const seriesR2Height = componentSize * 0.85;
+        const seriesR2Width = componentSize * 2.2;
+        const seriesR2Height = componentSize * 0.6;
         const seriesR2X = centerX + componentSize * 0.2;
         const seriesR2Y = seriesTopRailY - seriesR2Height / 2;
         const seriesR2Left = seriesR2X;
@@ -186,16 +186,16 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
         const rightVerticalX = centerX + componentSize * 0.5; // Compact parallel section
 
         // R1 on top branch - CENTERED on wire line
-        const parallelR1Width = componentSize * 2.2;
-        const parallelR1Height = componentSize * 0.8;
+        const parallelR1Width = componentSize * 2.8;
+        const parallelR1Height = componentSize * 0.6;
         const parallelR1X = (leftVerticalX + rightVerticalX) / 2 - parallelR1Width / 2;
         const parallelR1Y = topBranchY - parallelR1Height / 2; // Centered on wire
         const parallelR1Left = parallelR1X;
         const parallelR1Right = parallelR1X + parallelR1Width;
 
         // R2 on bottom branch - CENTERED on wire line
-        const parallelR2Width = componentSize * 2.2;
-        const parallelR2Height = componentSize * 0.8;
+        const parallelR2Width = componentSize * 2.8;
+        const parallelR2Height = componentSize * 0.6;
         const parallelR2X = (leftVerticalX + rightVerticalX) / 2 - parallelR2Width / 2;
         const parallelR2Y = bottomBranchY - parallelR2Height / 2; // Centered on wire
         const parallelR2Left = parallelR2X;
@@ -388,8 +388,8 @@ export function CircuitCanvas({ mode, values }: CircuitCanvasProps) {
   // Realistic resistor with color bands
   const drawResistor = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, value: number, label: string) => {
     const centerY = y + height / 2;
-    const bodyWidth = width * 0.7;
-    const bodyHeight = height * 0.8;
+    const bodyWidth = width * 0.85;
+    const bodyHeight = height * 0.6;
     const bodyX = x + (width - bodyWidth) / 2;
 
     // Lead wires
